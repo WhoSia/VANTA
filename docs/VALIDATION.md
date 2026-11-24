@@ -25,3 +25,7 @@ Subsequent documentation-only changes do not change tested source bytes; CI poli
 ## 0.2.0 current evidence
 
 CI policy change `6ca2b55` passed [CI #5](https://github.com/WhoSia/VANTA/actions/runs/45471166925). The 0.2.0 source revision `ee4623eb9ab81e9510951bddf1c9538430704750` changes the plan validator, target bitrate budget, source-aware heuristic and H.264/HEVC encoding options; [Windows CI](https://github.com/WhoSia/VANTA/actions/runs/45472107616) is pending. The version-only run was superseded and is not evidence. Documentation commits do not modify those build inputs. No measured quality score, exact size guarantee or FPS conversion support yet.
+
+## Preview development
+
+Exact core SHA ee4623eb9ab81e9510951bddf1c9538430704750 passed [CI 45472107616](https://github.com/WhoSia/VANTA/actions/runs/45472107616): zero build warnings/errors, smoke budget and rules tests, H.264 fast preset, prior HEVC and timeline tests, artifact 14958745346 (126203 compressed bytes). New GUI SHA 93531cbd01b45c158c83aa395cab3f57e5303480 adds editable settings, target input, candidate evidence and guarded encoding via existing validated core. [CI 45473261311](https://github.com/WhoSia/VANTA/actions/runs/45473261311) pending. User requested an installable working preview; GUI execution is brought forward for preview only, not formal release acceptance. Interactive GUI behavior, actual installation and dependencies on the user's machine remain unverified. No claim of percentage progress, measured visual quality or exact output size.
