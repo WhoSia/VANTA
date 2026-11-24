@@ -15,6 +15,18 @@ try
 {
     var resolved=await Toolchain.DiscoverAsync(ct);
     Check(Path.IsPathFullyQualified(resolved.Ffmpeg)&&Path.IsPathFullyQualified(resolved.Ffprobe)&&resolved.Codecs.Contains("libx264")&&resolved.Codecs.Contains("libx265"),"Toolchain resolution");
+    var softwareCheck=await EncoderDiagnostics.CheckAsync(resolved,["libx264","libx265"],ct);
+    Check(softwareCheck.Count==2&&softwareCheck.All(r=>r.State=="Sample passed"),"Software diagnostic positive controls");
+    var hardwareCheck=await EncoderDiagnostics.CheckAsync(resolved,EncoderDiagnostics.HardwareCandidates,ct);
+    Check(hardwareCheck.Count==6&&hardwareCheck.All(r=>r.State is "Sample passed" or "Not listed" or "Failed" or "Timed out"),"Hardware diagnostic classification");
+    foreach(var item in hardwareCheck)Console.WriteLine($"ENCODER_DIAG {item.Encoder} {item.State}: {item.Detail}");
+    using(var preCanceled=new CancellationTokenSource())
+    {
+        preCanceled.Cancel();bool stopped=false;
+        try{await EncoderDiagnostics.CheckAsync(resolved,["libx264"],preCanceled.Token);}catch(OperationCanceledException){stopped=true;}
+        Check(stopped,"Diagnostic pre-cancel");
+    }
+    Console.WriteLine("Encoder diagnostic positive controls and classification passed.");
     var previousDir=Environment.GetEnvironmentVariable("VANTA_FFMPEG_DIR");
     try
     {

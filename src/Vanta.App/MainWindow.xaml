@@ -8,7 +8,7 @@
 <TextBlock Text="VANTA" FontSize="30" FontWeight="SemiBold"/>
 <TextBlock Text="Video compression · 0.2.0 development preview" Foreground="#526071" Margin="0,2,0,16"/>
 <Border Background="White" CornerRadius="8" Padding="16"><StackPanel>
-<WrapPanel><Button x:Name="OpenButton" Content="Open video or drop here" Click="OnOpen"/><Button x:Name="BatchButton" Content="Batch compression…" Click="OnBatch"/></WrapPanel>
+<WrapPanel><Button x:Name="OpenButton" Content="Open video or drop here" Click="OnOpen"/><Button x:Name="BatchButton" Content="Batch compression…" Click="OnBatch"/><Button x:Name="DiagnosticsButton" Content="Check hardware encoders…" Click="OnDiagnostics"/></WrapPanel>
 <TextBlock x:Name="Source" TextWrapping="Wrap" Margin="0,10,0,0"/>
 </StackPanel></Border>
 <TextBlock Text="Suggested plans" FontWeight="SemiBold" Margin="0,16,0,6"/>

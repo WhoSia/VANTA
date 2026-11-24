@@ -40,6 +40,28 @@ public partial class MainWindow : Window
     {
         if(current is null)new BatchWindow{Owner=this}.ShowDialog();
     }
+    private async void OnDiagnostics(object sender,RoutedEventArgs e)
+    {
+        if(current is not null)return;
+        using var cts=new CancellationTokenSource();current=cts;
+        encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
+        Editor.IsEnabled=Plans.IsEnabled=false;CancelButton.IsEnabled=true;
+        BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
+        Status.Text="Testing listed hardware encoders on synthetic frames…";
+        try
+        {
+            var resolved=await Toolchain.DiscoverAsync(cts.Token);
+            var results=await EncoderDiagnostics.CheckAsync(resolved,EncoderDiagnostics.HardwareCandidates,cts.Token);
+            Status.Text=string.Join(Environment.NewLine,results.Select(r=>$"{r.Encoder}: {r.State} — {r.Detail}"))+Environment.NewLine+"Diagnostic only. Hardware encoding is not enabled.";
+        }
+        catch(OperationCanceledException){Status.Text="Diagnostics canceled or timed out.";}
+        catch(Exception ex){Status.Text=ex.Message;}
+        finally
+        {
+            current=null;encoding=false;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=Plans.IsEnabled=true;
+            Editor.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();
+        }
+    }
     private async Task LoadAsync(string path)
     {
         current?.Cancel();
