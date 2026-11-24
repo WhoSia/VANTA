@@ -1,0 +1,56 @@
+name: Windows CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: windows-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: SDK diagnostics
+        run: dotnet --info
+      - name: Build desktop
+        run: dotnet build src/Vanta.App/Vanta.App.csproj -c Release
+      - name: Core smoke tests
+        run: dotnet run --project tests/Vanta.Smoke/Vanta.Smoke.csproj -c Release
+      - name: Resolve FFmpeg
+        shell: pwsh
+        run: |
+          if (!(Get-Command ffmpeg -ErrorAction SilentlyContinue) -or !(Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+            $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path
+          }
+          ffmpeg -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
+          ffprobe -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: FFmpeg integration
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release
+      - name: Publish framework-dependent Windows x64 preview
+        run: dotnet publish src/Vanta.App/Vanta.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/VANTA
+      - name: Measure preview
+        shell: pwsh
+        run: |
+          $bytes = (Get-ChildItem artifacts/VANTA -Recurse -File | Measure-Object Length -Sum).Sum
+          "Application files: $bytes bytes (external runtime and FFmpeg excluded)" >> $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VANTA-win-x64-development
+          path: artifacts/VANTA/
+          if-no-files-found: error
+          retention-days: 7
