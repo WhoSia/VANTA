@@ -2,7 +2,7 @@ using System.Globalization;
 namespace Vanta.Core;
 public static class Encoder
 {
-    public static async Task EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default)
+    public static async Task EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null)
     {
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
@@ -22,7 +22,12 @@ public static class Encoder
             if(plan.TwoPass) throw new NotSupportedException("Two-pass encoding is pending Windows path and timing validation");
             var args=new List<string>(common);
             args.AddRange(["-map","0:a?","-c:a","copy","-tag:v",plan.Codec=="libx265"?"hvc1":"avc1","-movflags","+faststart",temp]);
-            await Checked(ffmpeg,args,ct);
+            args.InsertRange(0,["-progress","pipe:1","-nostats","-loglevel","error"]);
+            progress?.Report(new("Encoding",0));
+            var parser=new ProgressParser(source.Seconds,progress);
+            var encoded=await ProcessRunner.RunAsync(ffmpeg,args,ct,parser.Read);
+            if(encoded.ExitCode!=0)throw new InvalidOperationException(encoded.Error);
+            progress?.Report(new("Validating",null));
             var actualDetails=await Probe.InspectAsync(ffprobe,temp,ct);
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
@@ -34,6 +39,7 @@ public static class Encoder
             await Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);
             ct.ThrowIfCancellationRequested();
             File.Move(temp,output,false);
+            progress?.Report(new("Complete",1));
         }
         finally { if(File.Exists(temp)) File.Delete(temp); }
     }

@@ -30,4 +30,9 @@ foreach(var bad in new[]{plans[0] with {Codec="invalid"},plans[0] with {Height=1
     rejected=false;try{PlanRules.Validate(bad,source);}catch(ArgumentException){rejected=true;}Check(rejected,"Unsupported plan rejected");
 }
 rejected=false;try{PlanRules.TargetRate(source,100);}catch(ArgumentException){rejected=true;}Check(rejected,"Impossible target rejected");
+var observed=new List<EncodeProgress>();
+var parser=new ProgressParser(10,new ImmediateProgress(observed.Add));
+foreach(var line in new[]{"out_time_us=N/A","out_time_us=-5","out_time_us=3000000","out_time_us=2000000","out_time_us=10000000"})parser.Read(line);
+Check(observed.Count==2 && observed[0].Fraction==.3 && observed[1].Fraction==.999,"Monotonic encoding progress capped before validation");
 Console.WriteLine("Smoke checks passed");
+sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}

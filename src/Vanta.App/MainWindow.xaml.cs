@@ -8,6 +8,7 @@ public partial class MainWindow : Window
 {
     private CancellationTokenSource? current;
     private MediaInfo? media;
+    private Toolchain? tools;
     private string? sourcePath;
     private Plan? activePlan;
     private bool applying,encoding;
@@ -36,21 +37,23 @@ public partial class MainWindow : Window
     {
         current?.Cancel();
         using var cts=new CancellationTokenSource();current=cts;
-        media=null;sourcePath=null;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
-        CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;
+        media=null;tools=null;sourcePath=null;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
+        CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
         try
         {
-            var details=await Probe.InspectAsync("ffprobe",path,cts.Token);
+            var resolved=await Toolchain.DiscoverAsync(cts.Token);
+            var details=await Probe.InspectAsync(resolved.Ffprobe,path,cts.Token);
             if(current!=cts)return;
             var m=details.Info;
             Source.Text=$"{System.IO.Path.GetFileName(path)} · {m.Width}×{m.Height} · {m.Fps:F2} fps · {m.Codec} · {m.Bytes/1e6:F1} MB";
             if(!details.Supported){Status.Text=details.Reason;return;}
-            media=m;sourcePath=path;
-            var rows=Planner.Propose(m).Select(p=>new PlanRow(p,$"{p.Name} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} saved)")).ToArray();
+            tools=resolved;media=m;sourcePath=path;
+            CodecBox.ItemsSource=resolved.Codecs;
+            var rows=Planner.Propose(m).Select(p=>resolved.Codecs.Contains(p.Codec)?p:p with {Codec=resolved.Codecs[0]}).Select(p=>new PlanRow(p,$"{p.Name} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} saved)")).ToArray();
             Plans.ItemsSource=rows;
             Editor.IsEnabled=true;
             if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
-            else Apply(new Plan("Custom","libx265",m.Height,PlanRules.MinimumVideoRate,0,"medium",false));
+            else Apply(new Plan("Custom",resolved.Codecs[0],m.Height,PlanRules.MinimumVideoRate,0,"medium",false));
             Status.Text=rows.Length<3?"Fewer than three feasible savings estimates. Custom settings are available.":"Select or edit a plan. Actual output size may differ.";
         }
         catch(OperationCanceledException){if(current==cts)Status.Text="Analysis canceled.";}
@@ -68,7 +71,7 @@ public partial class MainWindow : Window
         finally{applying=false;}
         RefreshEstimate();
     }
-    private void OnSettings(object sender,RoutedEventArgs e){if(!applying)RefreshEstimate();}
+    private void OnSettings(object sender,RoutedEventArgs e){if(!applying){if(Plans is not null)Plans.SelectedIndex=-1;RefreshEstimate();}}
     private void RefreshEstimate()
     {
         activePlan=null;
@@ -76,7 +79,7 @@ public partial class MainWindow : Window
         EncodeButton.IsEnabled=false;
         try
         {
-            if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out int h)||!decimal.TryParse(RateBox.Text,NumberStyles.Number,CultureInfo.InvariantCulture,out decimal kb)||kb<64||kb>100000)throw new ArgumentException("Enter a valid height and bitrate.");
+            if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out int h)||!decimal.TryParse(RateBox.Text,NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out decimal kb)||kb<64||kb>100000)throw new ArgumentException("Enter a valid height and bitrate.");
             var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,(long)(kb*1000),0,PresetBox.SelectedItem as string??"",false);
             var v=CandidateEvaluation.Evaluate(p,media);
             activePlan=p;
@@ -100,15 +103,22 @@ public partial class MainWindow : Window
     private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
     private async void OnEncode(object sender,RoutedEventArgs e)
     {
-        if(current is not null||activePlan is null||sourcePath is null)return;
-        var p=activePlan;var input=sourcePath;
+        if(current is not null||activePlan is null||sourcePath is null||tools is null)return;
+        var p=activePlan;var input=sourcePath;var resolved=tools;
         var dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileNameWithoutExtension(input)+".vanta.mp4",OverwritePrompt=true};
         if(dlg.ShowDialog()!=true)return;
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;Status.Text="Encoding and validating…";
         try
         {
-            await Encoder.EncodeAsync("ffmpeg","ffprobe",input,dlg.FileName,p,cts.Token);
+            var progress=new Progress<EncodeProgress>(x=>
+            {
+                if(current!=cts||cts.IsCancellationRequested)return;
+                BusyBar.IsIndeterminate=x.Fraction is null;
+                BusyBar.Value=(x.Fraction??0)*100;
+                Status.Text=x.Fraction is double fraction?$"{x.Stage} · {fraction:P0}":x.Stage+"…";
+            });
+            await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress);
             var bytes=new System.IO.FileInfo(dlg.FileName).Length;
             Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)media!.Bytes:P1} actual savings";
         }

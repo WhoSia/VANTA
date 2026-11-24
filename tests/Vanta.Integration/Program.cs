@@ -13,6 +13,8 @@ static void Check(bool condition,string message) { if(!condition) throw new Exce
 static string Hash(string path) { using var s=File.OpenRead(path); return Convert.ToHexString(SHA256.HashData(s)); }
 try
 {
+    var resolved=await Toolchain.DiscoverAsync(ct);
+    Check(Path.IsPathFullyQualified(resolved.Ffmpeg)&&Path.IsPathFullyQualified(resolved.Ffprobe)&&resolved.Codecs.Contains("libx264")&&resolved.Codecs.Contains("libx265"),"Toolchain resolution");
     var input=Path.Combine(root,"input sample.mp4");
     var output=Path.Combine(root,"output sample.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=5","-itsoffset","0.2","-f","lavfi","-i","sine=frequency=440:sample_rate=48000:duration=4.8","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",input);
@@ -20,7 +22,9 @@ try
     var source=await Probe.InspectAsync("ffprobe",input,ct);
     Check(source.Supported,source.Reason);
     var plan=new Plan("CI","libx265",180,180000,0,"medium",false,true);
-    await Encoder.EncodeAsync("ffmpeg","ffprobe",input,output,plan,ct);
+    var events=new List<EncodeProgress>();
+    await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,plan,ct,new ImmediateProgress(events.Add));
+    Check(events.Any(x=>x.Stage=="Encoding"&&x.Fraction>0)&&events.Any(x=>x.Stage=="Validating")&&events.Last().Stage=="Complete","Actual progress stages");
     Check(File.Exists(output),"Output not published");
     Check(Hash(input)==before,"Source changed");
     var dest=await Probe.InspectAsync("ffprobe",output,ct);
@@ -91,3 +95,4 @@ try
     Console.WriteLine("Windows FFmpeg integration checks passed.");
 }
 finally { Directory.Delete(root,true); }
+sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}
