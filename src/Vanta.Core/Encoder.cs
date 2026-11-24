@@ -2,7 +2,7 @@ using System.Globalization;
 namespace Vanta.Core;
 public static class Encoder
 {
-    public static async Task EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null)
+    public static async Task EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false)
     {
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
@@ -17,9 +17,16 @@ public static class Encoder
         if(plan.Height!=source.Height) common.AddRange(["-vf",$"scale=-2:{plan.Height}"]);
         try
         {
-            // Single continuous encode for each pass. No segment concatenation.
+            // Continuous encoding is the default. The explicit experimental path shares every final validation gate.
             // x265 stats paths use encoder-specific escaping; keep two-pass disabled until tested.
             if(plan.TwoPass) throw new NotSupportedException("Two-pass encoding is pending Windows path and timing validation");
+            if(experimentalSplit)
+            {
+                progress?.Report(new("Experimental split",null));
+                await ExperimentalSplit.EncodeVideoAndMuxAsync(ffmpeg,ffprobe,input,temp,details,plan,ct);
+            }
+            else
+            {
             var args=new List<string>(common);
             args.AddRange(["-map","0:a?","-c:a","copy","-tag:v",plan.Codec=="libx265"?"hvc1":"avc1","-movflags","+faststart",temp]);
             args.InsertRange(0,["-progress","pipe:1","-nostats","-loglevel","error"]);
@@ -27,6 +34,7 @@ public static class Encoder
             var parser=new ProgressParser(source.Seconds,progress);
             var encoded=await ProcessRunner.RunAsync(ffmpeg,args,ct,parser.Read);
             if(encoded.ExitCode!=0)throw new InvalidOperationException(encoded.Error);
+            }
             progress?.Report(new("Validating",null));
             var actualDetails=await Probe.InspectAsync(ffprobe,temp,ct);
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);

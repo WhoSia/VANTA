@@ -93,7 +93,7 @@ try
             Console.WriteLine(FormattableString.Invariant($"ABR_MATRIX {label} {codec} {preset} predicted={estimate:F0} actual={size} error_pct={(size/estimate-1)*100:F2}"));
         }
     }
-    Console.WriteLine("All 12 codec/preset/fixture matrix encodes passed.");
+    Console.WriteLine("All 16 codec/preset/fixture matrix encodes passed.");
     var batchA=OutputNames.Suggest(input);
     var batchB=OutputNames.Suggest(silent);
     var updates=new System.Collections.Concurrent.ConcurrentQueue<BatchUpdate>();
@@ -115,6 +115,18 @@ try
     await Encoder.EncodeAsync("ffmpeg","ffprobe",longInput,longOutput,plan,ct);
     Check(File.Exists(longOutput),"Long output absent");
     Console.WriteLine("120-second NTSC-rate timeline passed.");
+    var splitOut=Path.Combine(root,"experimental split.mp4");
+    var splitPlan=plan with {Codec="libx264"};
+    var splitWatch=System.Diagnostics.Stopwatch.StartNew();
+    await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,longInput,splitOut,splitPlan,ct,experimentalSplit:true);
+    Check(File.Exists(splitOut),"Experimental split output absent");
+    Console.WriteLine(FormattableString.Invariant($"Experimental split 120s NTSC passed, end-to-end seconds={splitWatch.Elapsed.TotalSeconds:F3}, bytes={new FileInfo(splitOut).Length}"));
+    var rejectedSplit=Path.Combine(root,"rejected VFR split.mp4");
+    rejected=false;
+    try{await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,vfr,rejectedSplit,splitPlan,ct,experimentalSplit:true);}
+    catch(NotSupportedException){rejected=true;}
+    Check(rejected&&!File.Exists(rejectedSplit)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"VFR split failed closed");
+    Console.WriteLine("Experimental VFR split rejected; no leaked output or segments.");
     var activeOutput=Path.Combine(root,"active cancellation.mp4");
     using var active=CancellationTokenSource.CreateLinkedTokenSource(ct);
     var task=Encoder.EncodeAsync("ffmpeg","ffprobe",longInput,activeOutput,plan,active.Token);
