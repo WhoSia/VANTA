@@ -2,22 +2,59 @@ namespace Vanta.Core;
 public sealed record MediaInfo(long Bytes, double Seconds, int Width, int Height, double Fps, string Codec, int AudioTracks, long AudioBitsPerSecond);
 public sealed record Plan(string Name, string Codec, int Height, long VideoBitsPerSecond, long AudioBitsPerSecond, string Preset, bool TwoPass, bool CopyAudio = true)
 {
-    public double EstimateBytes(MediaInfo m) => m.Seconds * (VideoBitsPerSecond + (CopyAudio ? m.AudioBitsPerSecond : AudioBitsPerSecond * (double)m.AudioTracks)) / 8 * 1.005;
+    public double EstimateBytes(MediaInfo m) => m.Seconds * (VideoBitsPerSecond + (CopyAudio ? m.AudioBitsPerSecond : AudioBitsPerSecond * (double)m.AudioTracks)) / 8 * PlanRules.Overhead;
     public double Savings(MediaInfo m) => 1 - EstimateBytes(m) / m.Bytes;
+}
+public static class PlanRules
+{
+    public static IReadOnlyList<string> Codecs { get; } = Array.AsReadOnly(new[]{"libx264","libx265"});
+    public static IReadOnlyList<string> Presets { get; } = Array.AsReadOnly(new[]{"fast","medium","slow"});
+    public const long MinimumVideoRate=64000;
+    public const long MaximumVideoRate=100_000_000;
+    public const double Overhead=1.005;
+    public static void ValidateSource(MediaInfo m)
+    {
+        if(m.Bytes<=0 || !double.IsFinite(m.Seconds) || m.Seconds<=0 || m.Width<2 || m.Height<2 || m.Width%2!=0 || m.Height%2!=0 || m.AudioTracks<0 || m.AudioBitsPerSecond<0 || (m.AudioTracks>0 && m.AudioBitsPerSecond==0) || (m.AudioTracks==0 && m.AudioBitsPerSecond!=0))
+            throw new ArgumentException("Invalid source metadata");
+    }
+    public static void Validate(Plan p,MediaInfo m)
+    {
+        ValidateSource(m);
+        if(!Codecs.Contains(p.Codec) || !Presets.Contains(p.Preset) || p.Height<2 || p.Height%2!=0 || p.Height>m.Height || p.VideoBitsPerSecond<MinimumVideoRate || p.VideoBitsPerSecond>MaximumVideoRate || !p.CopyAudio || p.AudioBitsPerSecond!=0 || p.TwoPass)
+            throw new ArgumentException("Unsupported compression settings");
+    }
+    public static long TargetRate(MediaInfo m,double targetBytes)
+    {
+        ValidateSource(m);
+        if(!double.IsFinite(targetBytes)||targetBytes<=0) throw new ArgumentException("Invalid target size");
+        double available=targetBytes/m.Seconds*8/Overhead-m.AudioBitsPerSecond;
+        if(!double.IsFinite(available)||available<MinimumVideoRate||available>MaximumVideoRate) throw new ArgumentException("Target outside supported bitrate budget (including copied audio)");
+        return (long)Math.Floor(available);
+    }
 }
 public static class Planner
 {
+    // Conservative source-aware heuristic. No measured visual quality claims.
     public static IReadOnlyList<Plan> Propose(MediaInfo m)
     {
-        if (m.Bytes <= 0 || !double.IsFinite(m.Seconds) || m.Seconds <= 0 || m.Height <= 0 || m.Width <= 0 || m.AudioBitsPerSecond < 0 || (m.AudioTracks > 0 && m.AudioBitsPerSecond == 0)) throw new ArgumentException("Invalid source metadata");
-        var total = m.Bytes * 8.0 / m.Seconds;
-        var result = new List<Plan>();
-        foreach (var (name, fraction, height) in new[] { ("Quality", .80, m.Height), ("Balanced", .55, m.Height), ("Compact", .30, Math.Min(720,m.Height)) })
+        PlanRules.ValidateSource(m);
+        var result=new List<Plan>();
+        double sourceRate=m.Bytes/m.Seconds*8-m.AudioBitsPerSecond;
+        if(!double.IsFinite(sourceRate)||sourceRate<=0) return result;
+        bool efficient=m.Codec is "hevc" or "av1" or "vp9";
+        double fps=double.IsFinite(m.Fps)&&m.Fps>0?m.Fps:30;
+        double density=sourceRate/(m.Width*(double)m.Height*fps);
+        // Avoid aggressive recommendations for already compressed sources.
+        double[] fractions=efficient||density<.035?[.95,.80,.65]:[.80,.55,.30];
+        string[] names=["Quality","Balanced","Compact"];
+        for(int i=0;i<3;i++)
         {
-            var available = total * fraction / 1.005 - m.AudioBitsPerSecond;
-            if (height<2 || available < 64000 || available > long.MaxValue) continue;
-            var p = new Plan(name,"libx265",height-height%2,(long)available,0,"medium",false,true);
-            if (p.Savings(m)>0) result.Add(p);
+            int height=i==2&&density>=.035?Math.Min(m.Height,720):m.Height;
+            height-=height%2;
+            double rate=sourceRate*fractions[i];
+            if(!double.IsFinite(rate)||rate<PlanRules.MinimumVideoRate)continue;
+            var p=new Plan(names[i],"libx265",height,(long)Math.Min(rate,PlanRules.MaximumVideoRate),0,"medium",false,true);
+            if(p.Savings(m)>0 && !result.Any(q=>q.Height==p.Height&&q.VideoBitsPerSecond==p.VideoBitsPerSecond&&q.Codec==p.Codec))result.Add(p);
         }
         return result;
     }

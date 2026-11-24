@@ -7,11 +7,10 @@ public static class Encoder
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
         if(!string.Equals(Path.GetExtension(output),".mp4",StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Only MP4 is supported in this prototype");
-        if(plan.Codec!="libx265" || plan.Height<2 || plan.Height%2!=0 || plan.VideoBitsPerSecond<64000 || !plan.CopyAudio || plan.Preset!="medium") throw new ArgumentException("Unsupported plan");
         var details=await Probe.InspectAsync(ffprobe,input,ct);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
         var source=details.Info;
-        if(plan.Height>source.Height) throw new ArgumentException("Upscaling is not supported");
+        PlanRules.Validate(plan,source);
         var dir=Path.GetDirectoryName(output)!;
         var temp=Path.Combine(dir,$".vanta-{Guid.NewGuid():N}.mp4");
         var common=new List<string>{"-hide_banner","-nostdin","-n","-xerror","-i",input,"-map","0:V:0","-c:v",plan.Codec,"-preset",plan.Preset,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-fps_mode","passthrough"};
@@ -22,11 +21,12 @@ public static class Encoder
             // x265 stats paths use encoder-specific escaping; keep two-pass disabled until tested.
             if(plan.TwoPass) throw new NotSupportedException("Two-pass encoding is pending Windows path and timing validation");
             var args=new List<string>(common);
-            args.AddRange(["-map","0:a?","-c:a","copy","-tag:v","hvc1","-movflags","+faststart",temp]);
+            args.AddRange(["-map","0:a?","-c:a","copy","-tag:v",plan.Codec=="libx265"?"hvc1":"avc1","-movflags","+faststart",temp]);
             await Checked(ffmpeg,args,ct);
             var actualDetails=await Probe.InspectAsync(ffprobe,temp,ct);
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
+            if(actual.Height!=plan.Height || actual.Codec!=(plan.Codec=="libx265"?"hevc":"h264")) throw new InvalidDataException("Output codec or height mismatch");
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
             await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct);
             if(source.AudioTracks>0) await ValidateAudioAsync(ffmpeg,input,temp,ct);

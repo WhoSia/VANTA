@@ -19,4 +19,15 @@ Check(rejected,"Relative start shift rejection");
 rejected=false;
 try {Timeline.Validate(a,[new("video",0,10),new("audio",.2,9.5)],30);} catch(InvalidDataException){rejected=true;}
 Check(rejected,"Relative end drift rejection");
+var target=900_000_000d;
+var solved=plans[0] with {VideoBitsPerSecond=PlanRules.TargetRate(source,target)};
+Check(solved.EstimateBytes(source)<=target && target-solved.EstimateBytes(source)<300,"Target size rounding");
+foreach(var p in plans)PlanRules.Validate(p,source);
+Check(Planner.Propose(source with {Codec="hevc"})[0].Savings(source)<plans[0].Savings(source),"Conservative efficient source");
+Check(Planner.Propose(new MediaInfo(100_000,10,320,180,30,"hevc",1,70000)).Count==0,"Audio-dominated source shortage");
+foreach(var bad in new[]{plans[0] with {Codec="invalid"},plans[0] with {Height=1081},plans[0] with {TwoPass=true},plans[0] with {Preset="invalid"}})
+{
+    rejected=false;try{PlanRules.Validate(bad,source);}catch(ArgumentException){rejected=true;}Check(rejected,"Unsupported plan rejected");
+}
+rejected=false;try{PlanRules.TargetRate(source,100);}catch(ArgumentException){rejected=true;}Check(rejected,"Impossible target rejected");
 Console.WriteLine("Smoke checks passed");
