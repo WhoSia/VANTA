@@ -30,3 +30,20 @@ Exact 81e4217 passed Windows CI 45478754330: 16 selectable matrix cells, 120-sec
 Local FFmpeg 7.1.5 marker trial: 121 CFR frames (160x96, 30 fps), each frame contains its frame index encoded as eight vertical luma stripes. Source encoded H.264; split 60/61 frames with early seek, trim, exact frame count, 90000 timescale and explicit concat durations. Decode to 8x2 gray, threshold 128, framemd5. All 121 input IDs distinct. At 180 kbps, six decoded marker hashes differed (first three frames and first three frames of second segment); at 2 Mbps all 121 matched in sequence. This is a decoded content error in the low-rate synthetic fixture, not proof of a seek/order defect: quantization/rate-control startup is a plausible cause, not isolated. Timestamp checks alone do not catch content damage. No general visual-quality claim from these markers.
 
 New cd99fbf adds Windows odd-count marker identity at 2 Mbps, a reverse-order negative control with preserved timestamps, delayed AAC split and active split cancellation. It adds a matched encoder-thread budget (4 continuous, 2+2 split), two repetitions in alternating order on the same 120s fixture, records wall time including all validation, output bytes and SSIM against source. Decoder/filter/process overhead is not bounded by encoder threads; this is not identical total CPU allocation. No speed or SSIM threshold as a correctness gate for the benchmark. CI pending. Default GUI remains opt-in, no new controls or version changes. If split cannot outperform continuous on representative sources at comparable quality and size, prefer continuous.
+
+## Local continuous encoder thread/preset trial — 2026-11-25
+
+Actually executed in Linux FFmpeg 7.1.5-0+deb13u1, 5 visible logical CPUs, cgroup quota 4 CPU equivalents. One 640x360 30fps 12s testsrc2 source, silent H.264 ultrafast with 4 encoder threads. Target 500000 bps, H.264 output, FPS passthrough. Each trial's wall time measured from FFmpeg process launch through encoding completion, excludes source creation, SSIM measurement, and VANTA integrity checks. Two repeats, second reverses configuration order. SSIM computed afterward against source with filter_complex_threads=2.
+
+| Repeat | Preset | Encoder threads | Seconds | Bytes | SSIM |
+|---:|---|---:|---:|---:|---:|
+| 0 | medium | 2 | 1.263 | 749557 | .988237 |
+| 0 | medium | 4 | .867 | 748216 | .988171 |
+| 0 | veryfast | 2 | .548 | 747146 | .986108 |
+| 0 | veryfast | 4 | .515 | 746428 | .985950 |
+| 1 | veryfast | 4 | .460 | 746428 | .985950 |
+| 1 | veryfast | 2 | .520 | 747146 | .986108 |
+| 1 | medium | 4 | .901 | 748216 | .988171 |
+| 1 | medium | 2 | 1.091 | 749557 | .988237 |
+
+Reproduce: ffmpeg -v error -f lavfi -i "testsrc2=s=640x360:r=30:d=12" -c:v libx264 -preset ultrafast -threads 4 -pix_fmt yuv420p source.mp4; ffmpeg -v error -i source.mp4 -map 0:v:0 -an -c:v libx264 -preset medium -b:v 500000 -threads 2 -fps_mode passthrough out.mp4; repeat with four thread/preset combinations; ffmpeg -i source.mp4 -i out.mp4 -filter_complex_threads 2 -filter_complex "[0:v][1:v]ssim" -an -f null -. Mean seconds 1.177/.884/.534/.4875. No representative corpus, CPU peak or memory measurements; no universal speed claim. Do not change default thread policy solely from this result.
