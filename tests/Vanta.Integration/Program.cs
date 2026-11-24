@@ -76,6 +76,24 @@ try
     var avc=await Probe.InspectAsync("ffprobe",avcOut,ct);
     Check(avc.Info.Codec=="h264","H.264 output mismatch");
     Console.WriteLine("H.264 fast preset and copied audio timeline passed.");
+    var flat=Path.Combine(root,"flat source.mp4");
+    await Run("-v","error","-nostdin","-n","-f","lavfi","-i","color=c=gray:s=320x180:r=30:d=6","-c:v","libx264","-pix_fmt","yuv420p",flat);
+    foreach(var (label,fixture) in new[]{("flat",flat),("motion",silent)})
+    {
+        var metadata=await Probe.ReadAsync(resolved.Ffprobe,fixture,ct);
+        foreach(var codec in PlanRules.Codecs)
+        foreach(var preset in PlanRules.Presets)
+        {
+            var candidate=plan with {Codec=codec,Preset=preset};
+            var destination=Path.Combine(root,$"matrix-{label}-{codec}-{preset}.mp4");
+            await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,fixture,destination,candidate,ct);
+            var estimate=candidate.EstimateBytes(metadata);
+            var size=new FileInfo(destination).Length;
+            Check(size>0&&double.IsFinite(estimate)&&estimate>0,"Invalid matrix result");
+            Console.WriteLine(FormattableString.Invariant($"ABR_MATRIX {label} {codec} {preset} predicted={estimate:F0} actual={size} error_pct={(size/estimate-1)*100:F2}"));
+        }
+    }
+    Console.WriteLine("All 12 codec/preset/fixture matrix encodes passed.");
     var vfr=Path.Combine(root,"vfr multiple audio.mp4");
     var vfrOut=Path.Combine(root,"vfr compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=12","-f","lavfi","-i","sine=frequency=440:sample_rate=48000:duration=12","-itsoffset","0.15","-f","lavfi","-i","sine=frequency=880:sample_rate=48000:duration=11.85","-map","0:v","-map","1:a","-map","2:a","-vf","select=not(mod(n\\,2))+not(mod(n\\,5))","-fps_mode","vfr","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",vfr);

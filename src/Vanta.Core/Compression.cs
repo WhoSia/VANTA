@@ -1,8 +1,12 @@
 namespace Vanta.Core;
-public sealed record MediaInfo(long Bytes, double Seconds, int Width, int Height, double Fps, string Codec, int AudioTracks, long AudioBitsPerSecond);
+public sealed record MediaInfo(long Bytes, double Seconds, int Width, int Height, double Fps, string Codec, int AudioTracks, long AudioBitsPerSecond, double? VideoDurationSeconds=null, double? AudioPayloadBytes=null, double? VideoStreamRate=null)
+{
+    public double VideoDuration => VideoDurationSeconds??Seconds;
+    public double CopiedAudioBytes => AudioPayloadBytes??(Seconds*AudioBitsPerSecond/8);
+}
 public sealed record Plan(string Name, string Codec, int Height, long VideoBitsPerSecond, long AudioBitsPerSecond, string Preset, bool TwoPass, bool CopyAudio = true)
 {
-    public double EstimateBytes(MediaInfo m) => m.Seconds * (VideoBitsPerSecond + (CopyAudio ? m.AudioBitsPerSecond : AudioBitsPerSecond * (double)m.AudioTracks)) / 8 * PlanRules.Overhead;
+    public double EstimateBytes(MediaInfo m) => (m.VideoDuration*VideoBitsPerSecond/8 + (CopyAudio ? m.CopiedAudioBytes : m.Seconds*AudioBitsPerSecond*m.AudioTracks/8))*PlanRules.Overhead;
     public double Savings(MediaInfo m) => 1 - EstimateBytes(m) / m.Bytes;
 }
 public static class PlanRules
@@ -14,7 +18,7 @@ public static class PlanRules
     public const double Overhead=1.005;
     public static void ValidateSource(MediaInfo m)
     {
-        if(m.Bytes<=0 || !double.IsFinite(m.Seconds) || m.Seconds<=0 || m.Width<2 || m.Height<2 || m.Width%2!=0 || m.Height%2!=0 || m.AudioTracks<0 || m.AudioBitsPerSecond<0 || (m.AudioTracks>0 && m.AudioBitsPerSecond==0) || (m.AudioTracks==0 && m.AudioBitsPerSecond!=0))
+        if(m.Bytes<=0 || !double.IsFinite(m.Seconds) || m.Seconds<=0 || m.Width<2 || m.Height<2 || m.Width%2!=0 || m.Height%2!=0 || m.AudioTracks<0 || m.AudioBitsPerSecond<0 || (m.AudioTracks>0 && m.AudioBitsPerSecond==0) || (m.AudioTracks==0 && m.AudioBitsPerSecond!=0) || !double.IsFinite(m.VideoDuration) || m.VideoDuration<=0 || !double.IsFinite(m.CopiedAudioBytes) || m.CopiedAudioBytes<0 || (m.AudioTracks==0 && m.CopiedAudioBytes!=0) || (m.VideoStreamRate is double vr && (!double.IsFinite(vr)||vr<=0)))
             throw new ArgumentException("Invalid source metadata");
     }
     public static void Validate(Plan p,MediaInfo m)
@@ -27,7 +31,7 @@ public static class PlanRules
     {
         ValidateSource(m);
         if(!double.IsFinite(targetBytes)||targetBytes<=0) throw new ArgumentException("Invalid target size");
-        double available=targetBytes/m.Seconds*8/Overhead-m.AudioBitsPerSecond;
+        double available=(targetBytes/Overhead-m.CopiedAudioBytes)*8/m.VideoDuration;
         if(!double.IsFinite(available)||available<MinimumVideoRate||available>MaximumVideoRate) throw new ArgumentException("Target outside supported bitrate budget (including copied audio)");
         return (long)Math.Floor(available);
     }
@@ -39,11 +43,11 @@ public static class Planner
     {
         PlanRules.ValidateSource(m);
         var result=new List<Plan>();
-        double sourceRate=m.Bytes/m.Seconds*8-m.AudioBitsPerSecond;
+        double sourceRate=m.VideoStreamRate??((m.Bytes-m.CopiedAudioBytes)*8/m.VideoDuration);
         if(!double.IsFinite(sourceRate)||sourceRate<=0) return result;
         bool efficient=m.Codec is "hevc" or "av1" or "vp9";
-        double fps=double.IsFinite(m.Fps)&&m.Fps>0?m.Fps:30;
-        double density=sourceRate/(m.Width*(double)m.Height*fps);
+        bool knownFps=double.IsFinite(m.Fps)&&m.Fps>0;
+        double density=knownFps?sourceRate/(m.Width*(double)m.Height*m.Fps):0;
         // Avoid aggressive recommendations for already compressed sources.
         double[] fractions=efficient||density<.035?[.95,.80,.65]:[.80,.55,.30];
         string[] names=["Quality","Balanced","Compact"];

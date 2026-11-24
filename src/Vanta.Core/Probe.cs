@@ -20,7 +20,12 @@ public static class Probe
         double fps=f.Length==2 && Num(f[1])>0 ? Num(f[0])/Num(f[1]):0;
         var seconds=Num(Str(doc.RootElement.GetProperty("format"),"duration"));
         if(!double.IsFinite(seconds)||seconds<=0) throw new InvalidOperationException("Unknown duration");
-        var info=new MediaInfo(file.Length,seconds,video.GetProperty("width").GetInt32(),video.GetProperty("height").GetInt32(),fps,Str(video,"codec_name"),audios.Length,audios.Sum(s=>(long)Math.Max(0,double.IsFinite(Num(Str(s,"bit_rate")))?Num(Str(s,"bit_rate")):0)));
+        double? Positive(double value)=>double.IsFinite(value)&&value>0?value:null;
+        var videoDuration=Positive(Num(Str(video,"duration")));
+        var videoRate=Positive(Num(Str(video,"bit_rate")));
+        var audioPayload=audios.Select(s=>Positive(Num(Str(s,"duration")))*Positive(Num(Str(s,"bit_rate")))/8).ToArray();
+        double? audioBytes=audioPayload.All(x=>x.HasValue)?audioPayload.Sum(x=>x.GetValueOrDefault()):null;
+        var info=new MediaInfo(file.Length,seconds,video.GetProperty("width").GetInt32(),video.GetProperty("height").GetInt32(),fps,Str(video,"codec_name"),audios.Length,audios.Sum(s=>(long)Math.Max(0,double.IsFinite(Num(Str(s,"bit_rate")))?Num(Str(s,"bit_rate")):0)),videoDuration,audioBytes,videoRate);
         var timing=new[]{video}.Concat(audios).Select(s=>new StreamTiming(Str(s,"codec_type"),Num(Str(s,"start_time")),Num(Str(s,"duration")))).ToArray();
         string reason="";
         if(streams.Length!=1+audios.Length||videos.Length!=1) reason="Additional video, subtitle or data streams are not supported yet";

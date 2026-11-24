@@ -54,7 +54,7 @@ public partial class MainWindow : Window
             Editor.IsEnabled=true;
             if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
             else Apply(new Plan("Custom",resolved.Codecs[0],m.Height,PlanRules.MinimumVideoRate,0,"medium",false));
-            Status.Text=rows.Length<3?"Fewer than three feasible savings estimates. Custom settings are available.":"Select or edit a plan. Actual output size may differ.";
+            Status.Text=rows.Length<3?"Fewer than three feasible savings estimates. Custom settings are available.":"Select or edit a plan. Actual output size may differ substantially.";
         }
         catch(OperationCanceledException){if(current==cts)Status.Text="Analysis canceled.";}
         catch(Exception ex){if(current==cts)Status.Text=ex.Message;}
@@ -83,8 +83,8 @@ public partial class MainWindow : Window
             var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,(long)(kb*1000),0,PresetBox.SelectedItem as string??"",false);
             var v=CandidateEvaluation.Evaluate(p,media);
             activePlan=p;
-            Estimate.Text=$"Estimated {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} saved";
-            Evidence.Text=$"Pixel retention {v.PixelRetention:P1} · quality not measured · size estimate, not a guarantee";
+            Estimate.Text=$"Bitrate budget {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} saved";
+            Evidence.Text=$"Pixel retention {v.PixelRetention:P1} · quality not measured · actual size may be much smaller or larger; not a limit";
             EncodeButton.IsEnabled=current is null&&!encoding;
         }
         catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";}

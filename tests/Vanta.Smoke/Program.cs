@@ -30,6 +30,14 @@ foreach(var bad in new[]{plans[0] with {Codec="invalid"},plans[0] with {Height=1
     rejected=false;try{PlanRules.Validate(bad,source);}catch(ArgumentException){rejected=true;}Check(rejected,"Unsupported plan rejected");
 }
 rejected=false;try{PlanRules.TargetRate(source,100);}catch(ArgumentException){rejected=true;}Check(rejected,"Impossible target rejected");
+var offset=source with {Seconds=100,VideoDurationSeconds=90,AudioPayloadBytes=640000,VideoStreamRate=1_000_000};
+var offsetPlan=plans[0] with {VideoBitsPerSecond=800000};
+Check(Math.Abs(offsetPlan.EstimateBytes(offset)-(90*800000d/8+640000)*PlanRules.Overhead)<.001,"Per-stream size budget");
+var offsetTarget=10_000_000d;
+var offsetSolved=offsetPlan with {VideoBitsPerSecond=PlanRules.TargetRate(offset,offsetTarget)};
+Check(offsetSolved.EstimateBytes(offset)<=offsetTarget && offsetTarget-offsetSolved.EstimateBytes(offset)<12,"Per-stream inverse budget");
+Check(Planner.Propose(offset)[0].VideoBitsPerSecond==950000,"Measured source video rate used");
+Check(Planner.Propose(source with {Fps=double.NaN})[0].VideoBitsPerSecond>=plans[0].VideoBitsPerSecond,"Unknown FPS is conservative");
 var observed=new List<EncodeProgress>();
 var parser=new ProgressParser(10,new ImmediateProgress(observed.Add));
 foreach(var line in new[]{"out_time_us=N/A","out_time_us=-5","out_time_us=3000000","out_time_us=2000000","out_time_us=10000000"})parser.Read(line);
