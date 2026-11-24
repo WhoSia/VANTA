@@ -13,13 +13,14 @@ public sealed record Toolchain(string Ffmpeg,string Ffprobe,IReadOnlyList<string
         }
         else
         {
+            candidates.Add(Path.Combine(AppContext.BaseDirectory,"tools","ffmpeg","bin"));
             candidates.AddRange((Environment.GetEnvironmentVariable("PATH")??"").Split(Path.PathSeparator,StringSplitOptions.RemoveEmptyEntries).Select(s=>s.Trim().Trim('"')).Where(Path.IsPathFullyQualified));
         }
         string suffix=OperatingSystem.IsWindows()?".exe":"";
         foreach(var dir in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             ct.ThrowIfCancellationRequested();
-            if(string.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(dir)),Path.TrimEndingDirectorySeparator(Environment.CurrentDirectory),StringComparison.OrdinalIgnoreCase)&&configured is null)continue;
+            if(string.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(dir)),Path.TrimEndingDirectorySeparator(Environment.CurrentDirectory),StringComparison.OrdinalIgnoreCase)&&string.IsNullOrWhiteSpace(configured))continue;
             var ff=Path.Combine(dir,"ffmpeg"+suffix);var fp=Path.Combine(dir,"ffprobe"+suffix);
             if(!File.Exists(ff)||!File.Exists(fp))continue;
             using var deadline=CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -37,6 +38,6 @@ public sealed record Toolchain(string Ffmpeg,string Ffprobe,IReadOnlyList<string
             catch(OperationCanceledException) when(!ct.IsCancellationRequested){}
             catch(System.ComponentModel.Win32Exception){}
         }
-        throw new InvalidOperationException("Compatible FFmpeg and FFprobe not found together. Install Gyan.FFmpeg with winget, reopen VANTA, or set VANTA_FFMPEG_DIR to the absolute bin directory.");
+        throw new InvalidOperationException("Compatible FFmpeg and FFprobe not found together. Run Start-VANTA.ps1 -InstallMissing from the preview folder, install Gyan.FFmpeg with winget, or place a trusted matching pair in tools/ffmpeg/bin beside Vanta.App.exe. Reopen VANTA after installation.");
     }
 }

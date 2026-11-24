@@ -15,6 +15,18 @@ try
 {
     var resolved=await Toolchain.DiscoverAsync(ct);
     Check(Path.IsPathFullyQualified(resolved.Ffmpeg)&&Path.IsPathFullyQualified(resolved.Ffprobe)&&resolved.Codecs.Contains("libx264")&&resolved.Codecs.Contains("libx265"),"Toolchain resolution");
+    var previousDir=Environment.GetEnvironmentVariable("VANTA_FFMPEG_DIR");
+    try
+    {
+        Environment.SetEnvironmentVariable("VANTA_FFMPEG_DIR",Path.GetDirectoryName(resolved.Ffmpeg));
+        var explicitPair=await Toolchain.DiscoverAsync(ct);
+        Check(explicitPair.Ffmpeg==resolved.Ffmpeg,"Explicit trusted toolchain");
+        Environment.SetEnvironmentVariable("VANTA_FFMPEG_DIR",root);
+        bool missing=false;
+        try{await Toolchain.DiscoverAsync(ct);}catch(InvalidOperationException){missing=true;}
+        Check(missing,"Explicit missing toolchain must not silently fall back");
+    }
+    finally{Environment.SetEnvironmentVariable("VANTA_FFMPEG_DIR",previousDir);}
     var input=Path.Combine(root,"input sample.mp4");
     var output=Path.Combine(root,"output sample.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=5","-itsoffset","0.2","-f","lavfi","-i","sine=frequency=440:sample_rate=48000:duration=4.8","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",input);

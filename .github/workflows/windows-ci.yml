@@ -49,6 +49,11 @@ jobs:
         run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release
       - name: Publish framework-dependent Windows x64 preview
         run: dotnet publish src/Vanta.App/Vanta.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/VANTA
+      - name: Include and check dependency launcher
+        shell: pwsh
+        run: |
+          Copy-Item scripts/Start-VANTA.ps1 artifacts/VANTA/Start-VANTA.ps1
+          & ./artifacts/VANTA/Start-VANTA.ps1 -CheckOnly
       - name: Measure preview
         shell: pwsh
         run: |
