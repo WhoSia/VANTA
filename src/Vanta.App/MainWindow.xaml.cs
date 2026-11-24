@@ -1,38 +1,119 @@
 using System.Windows;
+using System.Globalization;
+using System.ComponentModel;
 using Vanta.Core;
 using Microsoft.Win32;
 namespace Vanta.App;
 public partial class MainWindow : Window
 {
     private CancellationTokenSource? current;
-    public MainWindow()=>InitializeComponent();
+    private MediaInfo? media;
+    private string? sourcePath;
+    private Plan? activePlan;
+    private bool applying,encoding;
+    private sealed record PlanRow(Plan Plan,string Label);
+    public MainWindow()
+    {
+        InitializeComponent();
+        CodecBox.ItemsSource=PlanRules.Codecs;
+        PresetBox.ItemsSource=PlanRules.Presets;
+    }
+    private void OnClosing(object? sender,CancelEventArgs e)
+    {
+        if(current is not null){e.Cancel=true;current.Cancel();Status.Text="Canceling. Close after cleanup completes.";}
+    }
     private async void OnOpen(object sender,RoutedEventArgs e)
     {
+        if(encoding)return;
         var dlg=new OpenFileDialog{Filter="Video files|*.mp4;*.mkv;*.mov;*.webm;*.avi|All files|*.*"};
         if(dlg.ShowDialog()==true) await LoadAsync(dlg.FileName);
     }
     private async void OnDrop(object sender,DragEventArgs e)
     {
-        if(e.Data.GetData(DataFormats.FileDrop) is string[] {Length:1} paths) await LoadAsync(paths[0]);
+        if(!encoding && e.Data.GetData(DataFormats.FileDrop) is string[] {Length:1} paths)await LoadAsync(paths[0]);
     }
     private async Task LoadAsync(string path)
     {
         current?.Cancel();
-        using var cts=new CancellationTokenSource();
-        current=cts;
-        Plans.ItemsSource=null; Source.Text=""; Status.Text="Analyzing…";
+        using var cts=new CancellationTokenSource();current=cts;
+        media=null;sourcePath=null;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
+        CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;
         try
         {
             var details=await Probe.InspectAsync("ffprobe",path,cts.Token);
+            if(current!=cts)return;
             var m=details.Info;
-            if(current!=cts) return;
             Source.Text=$"{System.IO.Path.GetFileName(path)} · {m.Width}×{m.Height} · {m.Fps:F2} fps · {m.Codec} · {m.Bytes/1e6:F1} MB";
             if(!details.Supported){Status.Text=details.Reason;return;}
-            Plans.ItemsSource=Planner.Propose(m).Select(p=>new {Name=$"{p.Name} — {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} saved)"}).ToArray();
-            Status.Text="Bitrate estimates only. Encoding is not yet enabled.";
+            media=m;sourcePath=path;
+            var rows=Planner.Propose(m).Select(p=>new PlanRow(p,$"{p.Name} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} saved)")).ToArray();
+            Plans.ItemsSource=rows;
+            Editor.IsEnabled=true;
+            if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
+            else Apply(new Plan("Custom","libx265",m.Height,PlanRules.MinimumVideoRate,0,"medium",false));
+            Status.Text=rows.Length<3?"Fewer than three feasible savings estimates. Custom settings are available.":"Select or edit a plan. Actual output size may differ.";
         }
-        catch(OperationCanceledException){}
-        catch(Exception ex){if(current==cts) Status.Text=ex.Message;}
-        finally{if(current==cts) current=null;}
+        catch(OperationCanceledException){if(current==cts)Status.Text="Analysis canceled.";}
+        catch(Exception ex){if(current==cts)Status.Text=ex.Message;}
+        finally{if(current==cts){current=null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}}
+    }
+    private void OnPlan(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(Plans.SelectedItem is PlanRow row)Apply(row.Plan);
+    }
+    private void Apply(Plan p)
+    {
+        applying=true;
+        try{CodecBox.SelectedItem=p.Codec;PresetBox.SelectedItem=p.Preset;HeightBox.Text=p.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text=(p.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);}
+        finally{applying=false;}
+        RefreshEstimate();
+    }
+    private void OnSettings(object sender,RoutedEventArgs e){if(!applying)RefreshEstimate();}
+    private void RefreshEstimate()
+    {
+        activePlan=null;
+        if(EncodeButton is null||media is null)return;
+        EncodeButton.IsEnabled=false;
+        try
+        {
+            if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out int h)||!decimal.TryParse(RateBox.Text,NumberStyles.Number,CultureInfo.InvariantCulture,out decimal kb)||kb<64||kb>100000)throw new ArgumentException("Enter a valid height and bitrate.");
+            var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,(long)(kb*1000),0,PresetBox.SelectedItem as string??"",false);
+            var v=CandidateEvaluation.Evaluate(p,media);
+            activePlan=p;
+            Estimate.Text=$"Estimated {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} saved";
+            Evidence.Text=$"Pixel retention {v.PixelRetention:P1} · quality not measured · size estimate, not a guarantee";
+            EncodeButton.IsEnabled=current is null&&!encoding;
+        }
+        catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";}
+    }
+    private void OnTarget(object sender,RoutedEventArgs e)
+    {
+        if(media is null)return;
+        try
+        {
+            if(!double.TryParse(TargetBox.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out double mb))throw new ArgumentException("Enter target MB.");
+            RateBox.Text=(PlanRules.TargetRate(media,mb*1e6)/1000d).ToString("0.###",CultureInfo.InvariantCulture);
+            Status.Text="Target applied as bitrate budget, not exact file size.";
+        }
+        catch(Exception ex){Status.Text=ex.Message;}
+    }
+    private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
+    private async void OnEncode(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||activePlan is null||sourcePath is null)return;
+        var p=activePlan;var input=sourcePath;
+        var dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileNameWithoutExtension(input)+".vanta.mp4",OverwritePrompt=true};
+        if(dlg.ShowDialog()!=true)return;
+        using var cts=new CancellationTokenSource();current=cts;encoding=true;
+        OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;Status.Text="Encoding and validating…";
+        try
+        {
+            await Encoder.EncodeAsync("ffmpeg","ffprobe",input,dlg.FileName,p,cts.Token);
+            var bytes=new System.IO.FileInfo(dlg.FileName).Length;
+            Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)media!.Bytes:P1} actual savings";
+        }
+        catch(OperationCanceledException){Status.Text="Canceled; no new output published.";}
+        catch(Exception ex){Status.Text=ex.Message;}
+        finally{current=null;encoding=false;OpenButton.IsEnabled=true;Editor.IsEnabled=true;Plans.IsEnabled=true;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}
     }
 }
