@@ -1,19 +1,19 @@
 # Development assessment — 0.2.0
 
-Axes: value / implementation / evidence / integrity, each [0,1]. Subjective rubric, not measured probabilities. No weighted sum.
+Axes: value / implementation / evidence / integrity, [0,1], subjective engineering estimates, not probabilities. No weighted sum.
 
 | Area | Vector | Evidence / next gate |
 |---|---|---|
-| CI | (1,.97,.96,.93) | 8104a55 passed; launcher CI pending |
-| Continuous encoder | (1,.94,.90,.88) | previous real regressions; all preset matrix pending |
-| Temporal integrity | (1,.93,.91,.88) | prior VFR, multi-audio, 20ms rejection, 120s |
-| Plan rules | (1,.85,.70,.75) | bounded choices; matrix pending |
-| Size estimator | (1,.83,.75,.55) | 12 Linux ABR trials reveal -95.06% to +3.19% signed error; no guarantee |
-| Adaptive planner | (1,.55,.55,.50) | source heuristic; stream-specific budgets next |
-| Candidate vectors | (.95,.45,.35,.45) | measured quality remains unknown |
-| GUI | (.99,.82,.60,.60) | owner launch confirmed; compression not confirmed |
-| Toolchain | (1,.90,.80,.80) | owner ffmpeg/ffprobe 9.1 full launch; portable and bootstrap CI pending |
-| Progress | (.97,.80,.75,.70) | 8104a55 CI passed |
-| Distribution | (.98,.70,.55,.55) | launcher implemented; clean install not verified |
+| CI | (1,.97,.96,.93) | a2588f9 passed |
+| Continuous encoder | (1,.94,.94,.90) | 12 selectable combinations passed |
+| Temporal integrity | (1,.93,.93,.89) | prior VFR/multi-audio/120s/cross-stream tests |
+| Size budget | (1,.89,.85,.65) | stream duration smoke and matrix; real error remains wide |
+| Adaptive planner | (1,.65,.65,.55) | metadata heuristic; no measured quality |
+| Candidate vectors | (.95,.45,.35,.45) | quality unknown; no false Pareto elimination |
+| GUI single-file | (.99,.85,.60,.60) | owner launch; new naming and empty plan changes pending |
+| Batch queue | (.99,.72,.15,.45) | independent jobs, capped at two; new CI pending |
+| Output naming | (.98,.85,.15,.55) | collision reservation and test pending |
+| Toolchain | (1,.92,.85,.82) | launcher CI and owner dependency presence |
+| Distribution | (.98,.75,.65,.65) | 142539-byte preview, clean installation unverified |
 
-Priority: preserve running launcher CI; document counterexamples; implement stream-duration/bitrate-aware budget and Windows 2x3 codec/preset regression next. No calibration from two synthetic sources, no speculative quality scores, no version change.
+Prioritize new CI; then batch cancellation/duplicate review, UX acceptance, output paths and diagnostics. Sampling counterexample rejects default sample extrapolation. Keep FPS passthrough until separate conversion validation. No new version without owner approval.
