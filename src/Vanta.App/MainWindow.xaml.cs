@@ -10,6 +10,7 @@ public partial class MainWindow : Window
     private MediaInfo? media;
     private Toolchain? tools;
     private string? sourcePath;
+    private SourceStamp? sourceStamp;
     private Plan? activePlan;
     private bool applying,encoding;
     private sealed record PlanRow(Plan Plan,string Label);
@@ -66,17 +67,19 @@ public partial class MainWindow : Window
     {
         current?.Cancel();
         using var cts=new CancellationTokenSource();current=cts;
-        media=null;tools=null;sourcePath=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
+        media=null;tools=null;sourcePath=null;sourceStamp=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
         CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
         try
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
+            var stamp=SourceStamp.Capture(path);
             var details=await Probe.InspectAsync(resolved.Ffprobe,path,cts.Token);
+            stamp.RequireUnchanged(path);
             if(current!=cts)return;
             var m=details.Info;
             Source.Text=$"{System.IO.Path.GetFileName(path)} · {m.Width}×{m.Height} · {m.Fps:F2} fps · {m.Codec} · {m.Bytes/1e6:F1} MB";
             if(!details.Supported){Status.Text=details.Reason;return;}
-            tools=resolved;media=m;sourcePath=path;
+            tools=resolved;media=m;sourcePath=path;sourceStamp=stamp;
             CodecBox.ItemsSource=resolved.Codecs;
             RecommendationBox.ItemsSource=RecommendationChoices.Create(resolved.Codecs);
             RecommendationBox.SelectedIndex=0;
@@ -151,15 +154,23 @@ public partial class MainWindow : Window
     private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
     private async void OnEncode(object sender,RoutedEventArgs e)
     {
-        if(current is not null||activePlan is null||sourcePath is null||tools is null)return;
-        var p=activePlan;var input=sourcePath;var resolved=tools;
+        if(current is not null||activePlan is null||sourcePath is null||tools is null||sourceStamp is null)return;
+        var p=activePlan;var input=sourcePath;var resolved=tools;var stamp=sourceStamp;
+        try{stamp.RequireUnchanged(input);}catch(Exception ex){Status.Text=ex.Message;return;}
         bool split=SplitBox.IsChecked==true;
         var threads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
         try{ThreadBudget.ValidateEncoder(threads,split);}catch(ArgumentException ex){Status.Text=ex.Message;return;}
         if(split&&(p.Codec!="libx264"||media?.Height!=p.Height||media?.Codec!="h264"||!string.Equals(System.IO.Path.GetExtension(input),".mp4",StringComparison.OrdinalIgnoreCase)))
         {Status.Text="Experimental split requires H.264 MP4 input, H.264 output, original height and CFR. Uncheck it for normal encoding.";return;}
-        var dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileName(OutputNames.Suggest(input)),InitialDirectory=System.IO.Path.GetDirectoryName(input),OverwritePrompt=true};
-        if(dlg.ShowDialog()!=true)return;
+        SaveFileDialog dlg;
+        try
+        {
+            dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileName(OutputNames.Suggest(input)),InitialDirectory=System.IO.Path.GetDirectoryName(input),OverwritePrompt=false};
+            if(dlg.ShowDialog()!=true)return;
+            if(System.IO.File.Exists(dlg.FileName)||System.IO.Directory.Exists(dlg.FileName))
+            {Status.Text="Choose a new filename; VANTA does not overwrite existing files.";return;}
+        }
+        catch(Exception ex){Status.Text=ex.Message;return;}
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;Status.Text="Encoding and validating…";
         try
@@ -168,12 +179,12 @@ public partial class MainWindow : Window
             {
                 if(current!=cts||cts.IsCancellationRequested)return;
                 BusyBar.IsIndeterminate=x.Fraction is null;
-                BusyBar.Value=(x.Fraction??0)*100;
-                Status.Text=x.Fraction is double fraction?$"{x.Stage} · {fraction:P0}":x.Stage+"…";
+                BusyBar.Value=x.DisplayPercent??0;
+                Status.Text=x.DisplayPercent is int percent?$"{x.Stage} · {percent}%":x.Stage+"…";
             });
-            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads);
+            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
             var bytes=report.OutputBytes;
-            Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)media!.Bytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)";
+            Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)";
         }
         catch(OperationCanceledException){Status.Text="Canceled; no new output published.";}
         catch(Exception ex){Status.Text=ex.Message;}

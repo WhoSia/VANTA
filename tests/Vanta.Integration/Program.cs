@@ -47,7 +47,29 @@ try
     Check(source.Supported,source.Reason);
     var plan=new Plan("CI","libx265",180,180000,0,"medium",false,true);
     var events=new List<EncodeProgress>();
-    var firstReport=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,plan,ct,new ImmediateProgress(events.Add));
+    var expectedStamp=SourceStamp.Capture(input);
+    bool writeDenied=false;
+    var firstReport=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,plan,ct,new ImmediateProgress(e=>
+    {
+        events.Add(e);
+        if(OperatingSystem.IsWindows()&&e.Stage=="Encoding"&&e.Fraction==0)
+        {
+            try{using var writer=new FileStream(input,FileMode.Open,FileAccess.Write,FileShare.ReadWrite);}
+            catch(IOException){writeDenied=true;}
+        }
+    }),expectedSource:expectedStamp);
+    Check(!OperatingSystem.IsWindows()||writeDenied,"Source write lease not enforced");
+    Check(firstReport.InputBytes==expectedStamp.Bytes,"Source size report");
+    var stale=Path.Combine(root,"stale source.mp4");
+    var staleOut=Path.Combine(root,"stale output.mp4");
+    File.Copy(input,stale);
+    var staleStamp=SourceStamp.Capture(stale);
+    File.SetLastWriteTimeUtc(stale,staleStamp.LastWriteUtc.AddMinutes(-5));
+    bool staleRejected=false;
+    try{await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,stale,staleOut,plan,ct,expectedSource:staleStamp);}
+    catch(IOException ex) when(ex.Message.Contains("Source changed")){staleRejected=true;}
+    Check(staleRejected&&!File.Exists(staleOut)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Stale source must not publish");
+    Console.WriteLine("Source stamp, Windows write lease and stale plan rejection passed.");
     Check(firstReport.OutputBytes==new FileInfo(output).Length && firstReport.Total>TimeSpan.Zero && firstReport.Validation>TimeSpan.Zero && firstReport.AudioHashCheck>TimeSpan.Zero,"Encode report fields");
     Check(firstReport.Preparation+firstReport.Encoding+firstReport.Validation+firstReport.Publication==firstReport.Total,"Phase time accounting");
     Console.WriteLine("Encode report accounting passed.");

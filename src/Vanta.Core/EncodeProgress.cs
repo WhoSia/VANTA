@@ -1,6 +1,11 @@
 using System.Globalization;
 namespace Vanta.Core;
-public sealed record EncodeProgress(string Stage,double? Fraction);
+public sealed record EncodeProgress(string Stage,double? Fraction)
+{
+    public int? DisplayPercent=>Fraction is double f&&double.IsFinite(f)
+        ? Stage=="Complete"?100:(int)Math.Floor(Math.Clamp(f,0,.99)*100)
+        :null;
+}
 public sealed class ProgressParser(double duration,IProgress<EncodeProgress>? observer)
 {
     private double last;

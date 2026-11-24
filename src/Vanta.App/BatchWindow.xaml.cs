@@ -23,6 +23,7 @@ public partial class BatchWindow:Window
         public string State {get;set;}="Analyzing";
         public string Detail {get;set;}="";
         public MediaInfo? Media {get;set;}
+        public SourceStamp? Stamp {get;set;}
         public Plan? Plan {get;set;}
         public event PropertyChangedEventHandler? PropertyChanged;
         public void Refresh()=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(string.Empty));
@@ -73,6 +74,7 @@ public partial class BatchWindow:Window
         if(current is not null||Queue.SelectedItem is not Row r)return;
         if(r.State is not ("Failed" or "Canceled")){Summary.Text="Select a failed or canceled job.";return;}
         if(r.Media is null){Summary.Text="Source analysis failed or was canceled. Remove and add the file again.";return;}
+        try{r.Stamp?.RequireUnchanged(r.Input);}catch(Exception ex){Summary.Text=ex.Message;return;}
         r.State="Analyzing";Replan();
     }
     private void OnOpenResult(object sender,RoutedEventArgs e)
@@ -123,6 +125,7 @@ public partial class BatchWindow:Window
             try
             {
                 var m=r.Media!;
+                r.Stamp?.RequireUnchanged(r.Input);
                 var p=Planner.Propose(m,tools!.Codecs,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec).FirstOrDefault(p=>p.Name==(string)ProfileBox.SelectedItem);
                 if(p is null){r.State="Skipped";r.Detail="Selected codec or budget tier unavailable; choose another or use single-file settings.";r.Refresh();continue;}
                 r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
@@ -149,9 +152,11 @@ public partial class BatchWindow:Window
                 var row=new Row(path);rows.Add(row);
                 try
                 {
+                    var stamp=SourceStamp.Capture(path);
                     var m=await Probe.InspectAsync(tools.Ffprobe,path,cts.Token);
+                    stamp.RequireUnchanged(path);
                     if(!m.Supported){row.State="Skipped";row.Detail=m.Reason;}
-                    else row.Media=m.Info;
+                    else {row.Media=m.Info;row.Stamp=stamp;}
                 }
                 catch(OperationCanceledException){row.State="Canceled";row.Refresh();throw;}
                 catch(Exception ex){row.State="Failed";row.Detail=ex.Message;}
@@ -172,7 +177,7 @@ public partial class BatchWindow:Window
         int parallel=(int)ParallelBox.SelectedItem;
         var totalThreads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
         try{ThreadBudget.PerJob(totalThreads,parallel);}catch(ArgumentException ex){Summary.Text=ex.Message;return;}
-        var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!)).ToArray();
+        var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!,r.Stamp)).ToArray();
         using var cts=new CancellationTokenSource();current=cts;
         foreach(var r in ready){r.State="Queued";r.Detail="";r.Refresh();}
         SetBusy(true);
@@ -181,7 +186,7 @@ public partial class BatchWindow:Window
             // Synchronous dispatch preserves order and prevents stale callbacks after completion.
             var progress=new UiProgress(x=>Dispatcher.Invoke(()=>{
                 var r=ready[x.Index];
-                r.State=x.Stage=="Encoding"&&x.Fraction is double f?$"Encoding {f:P0}":x.Stage;
+                r.State=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercent is int percent?$"Encoding {percent}%":x.Stage;
                 r.Detail=x.Detail??"";r.Refresh();UpdateSummary();
             }));
             await BatchEncoder.RunAsync(tools,jobs,parallel,progress,cts.Token,totalEncoderThreads:totalThreads);

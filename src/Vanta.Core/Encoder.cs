@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace Vanta.Core;
 public static class Encoder
 {
-    public static async Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null)
+    public static async Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -11,11 +11,18 @@ public static class Encoder
         {
             var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
         }
+        ct.ThrowIfCancellationRequested();
         ThreadBudget.ValidateEncoder(encoderThreads,experimentalSplit);
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
         if(!string.Equals(Path.GetExtension(output),".mp4",StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Only MP4 is supported in this prototype");
+        // Hold a read-only handle across probing, encoding and validation.
+        // FileShare.Read denies ordinary write/delete opens on Windows.
+        using var sourceLease=new FileStream(input,FileMode.Open,FileAccess.Read,FileShare.Read);
+        var stamp=SourceStamp.Capture(input);
+        expectedSource?.RequireUnchanged(input);
         var details=await Probe.InspectAsync(ffprobe,input,ct);
+        stamp.RequireUnchanged(input);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
         var source=details.Info;
         PlanRules.Validate(plan,source);
@@ -66,9 +73,10 @@ public static class Encoder
             var decode=Lap();
             var bytes=new FileInfo(temp).Length;
             ct.ThrowIfCancellationRequested();
+            stamp.RequireUnchanged(input);
             File.Move(temp,output,false);
             var publication=Lap();
-            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes);
+            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes);
             // Publication is the commit point. A completion observer cannot turn
             // an already-published verified output into a failed encode.
             try { progress?.Report(new("Complete",1)); }

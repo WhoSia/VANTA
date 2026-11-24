@@ -20,7 +20,7 @@ public static class OutputNames
         throw new IOException("No available output filename.");
     }
 }
-public sealed record BatchJob(string Input,string Output,Plan Plan);
+public sealed record BatchJob(string Input,string Output,Plan Plan,SourceStamp? ExpectedSource=null);
 public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null);
 public static class BatchEncoder
 {
@@ -43,8 +43,8 @@ public static class BatchEncoder
                 var report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                 {
                     if(x.Stage!="Complete")progress.Report(new(i,x.Stage,x.Fraction));
-                }),encoderThreads:jobThreads);
-                progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)"));
+                }),encoderThreads:jobThreads,expectedSource:j.ExpectedSource);
+                progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)"));
             }
             catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));}
             catch(Exception ex){progress.Report(new(i,"Failed",null,ex.Message));}

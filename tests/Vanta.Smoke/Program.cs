@@ -51,6 +51,7 @@ var observed=new List<EncodeProgress>();
 var parser=new ProgressParser(10,new ImmediateProgress(observed.Add));
 foreach(var line in new[]{"out_time_us=N/A","out_time_us=-5","out_time_us=3000000","out_time_us=2000000","out_time_us=10000000"})parser.Read(line);
 Check(observed.Count==2 && observed[0].Fraction==.3 && observed[1].Fraction==.999,"Monotonic encoding progress capped before validation");
+Check(new EncodeProgress("Encoding",.999).DisplayPercent==99&&new EncodeProgress("Complete",1).DisplayPercent==100&&new EncodeProgress("Validating",null).DisplayPercent is null,"Progress display never rounds encoding to 100%");
 var namingRoot=Path.Combine(Path.GetTempPath(),"VANTA-names-"+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(namingRoot);
 try
@@ -66,6 +67,10 @@ try
     var sharedName=OutputNames.Suggest(first,destReserved,shared);
     Check(sharedName==Path.Combine(shared,"clip_vanta_2.mp4"),"Shared destination reservation");
     File.WriteAllText(one,"existing");
+    var stamp=SourceStamp.Capture(one);stamp.RequireUnchanged(one);
+    File.AppendAllText(one," changed");
+    rejected=false;try{stamp.RequireUnchanged(one);}catch(IOException){rejected=true;}
+    Check(rejected,"Stale source stamp rejected");
     Check(OutputNames.Suggest(first).EndsWith("clip_vanta_2.mp4"),"Existing file naming");
 }
 finally{Directory.Delete(namingRoot,true);}
