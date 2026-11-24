@@ -4,31 +4,28 @@
 
 A lightweight, FFmpeg-powered video compressor with adaptive compression planning, granular encoding controls, and audio-video synchronization integrity.
 
-## Status
+## Status and download
 
-0.2.0 — Adaptive Compression Planning & Granular Control (owner-approved, in development).
+0.2.0 — Adaptive Compression Planning & Granular Control (owner-approved, in development). No tagged release.
 
-0.1.0 core acceptance passed at `7815ef5` ([Windows CI #4](https://github.com/WhoSia/VANTA/actions/runs/45470160397)). No public release. GUI remains analysis-only until the desktop integration milestone.
+Latest fully verified preview at this documentation revision: [Windows x64 CI artifact (a2200f3)](https://github.com/WhoSia/VANTA/actions/runs/45506058355#artifacts), 176321 compressed bytes, excluding shared dependencies. Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions) and the exact build SHA. Extract the development ZIP into a new directory and launch Vanta.App.exe. Requires Windows x64 .NET 10 Desktop Runtime and a matching FFmpeg/FFprobe pair. See [distribution](docs/DISTRIBUTION.md). CI success does not establish interactive desktop acceptance.
 
-## Scope
+## Current preview
 
-Windows desktop application in C# and WPF. Intended final workflow: drag and drop video, inspect source streams, compare adaptive compression plans, customize supported encoding parameters, estimate output size, encode and validate locally.
-
-Current tested core: single continuous HEVC MP4 encode, compatible AAC audio stream copy (or no audio), 8-bit SDR yuv420p, frame timing preservation, guarded output publication and cancellation. Unsupported streams are rejected rather than silently lost.
+- Single video or independent multi-video batch, up to two concurrent encodes.
+- Source-aware bitrate-budget tiers, editable H.264/HEVC codec, preset, height, video bitrate and target-size budget. Quality is not measured by the recommendation heuristic and final size can differ substantially.
+- AAC mono/stereo audio copy (or silent), 8-bit SDR yuv420p, known stream timing; MP4 output. Unsupported streams or metadata are rejected. Not all MP4/MOV/MKV inputs meet these conditions.
+- Collision-safe _vanta.mp4 output names, common output directory in batch, cancellation, explicit retry, result folder and diagnostic copy.
+- Continuous encoding default. Optional bounded CFR H.264 video-only split experiment; not demonstrated faster in matched tests, no automatic selection. Original audio is mapped once.
+- Optional encoder thread request (not a CPU cap); explicit synthetic hardware encoder diagnostics only. GPU compression and FPS conversion are not enabled.
+- Per-job elapsed and validation time, full decode and relative A/V timestamp validation before publication. No overwrite, no telemetry.
 
 ## Invariants
 
-- Never overwrite the source.
-- No chunked final encoding or concatenation for speed.
-- Preserve relative stream timing; validate before publishing output.
-- Distinguish measured, estimated and unknown values.
-- Reject unsupported codec/encoder/container combinations.
-- Prefer shared FFmpeg and ffprobe binaries; do not silently download or execute unverified binaries.
-- Evaluate feasible plans as vectors, Pareto-filter them, and apply profile-specific nonlinear preferences only where justified.
-- Record upstream provenance and license obligations before incorporating third-party code.
+Never overwrite the source or existing output. Do not publish until validation passes. Preserve relative stream timing and copied audio; experimental segmentation never relaxes these gates. Distinguish measured, estimated and unknown values. Prefer shared trusted FFmpeg and FFprobe; no silent download or execution of unverified binaries. Record upstream provenance and license obligations before redistribution.
 
 ## Development
 
-Main-first, small auditable commits. Read-only Windows CI. No automated bot-authored commits. Documentation-only changes do not trigger Windows CI. Windows acceptance and regression tests are required before final release.
+Main-first, small auditable commits, read-only Windows CI, no bot-authored commits. Documentation-only changes do not trigger CI. Finite release scope; no version, tag or release advancement without owner approval.
 
-[Development loop](docs/DEVELOPMENT_LOOP.md) · [Validation](docs/VALIDATION.md) · [Assessment](docs/ASSESSMENT.md) · [Release scope](docs/RELEASE_SCOPE.md)
+[Development loop](docs/DEVELOPMENT_LOOP.md) · [Validation](docs/VALIDATION.md) · [Assessment](docs/ASSESSMENT.md) · [Release scope](docs/RELEASE_SCOPE.md) · [Acceleration](docs/ACCELERATION.md) · [Recommendation evidence](docs/RECOMMENDATION_EVIDENCE.md) · [Batch UX](docs/BATCH_UX.md) · [Source consistency](docs/SOURCE_INTEGRITY.md)
