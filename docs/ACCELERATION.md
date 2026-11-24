@@ -47,3 +47,16 @@ Actually executed in Linux FFmpeg 7.1.5-0+deb13u1, 5 visible logical CPUs, cgrou
 | 1 | medium | 2 | 1.091 | 749557 | .988237 |
 
 Reproduce: ffmpeg -v error -f lavfi -i "testsrc2=s=640x360:r=30:d=12" -c:v libx264 -preset ultrafast -threads 4 -pix_fmt yuv420p source.mp4; ffmpeg -v error -i source.mp4 -map 0:v:0 -an -c:v libx264 -preset medium -b:v 500000 -threads 2 -fps_mode passthrough out.mp4; repeat with four thread/preset combinations; ffmpeg -i source.mp4 -i out.mp4 -filter_complex_threads 2 -filter_complex "[0:v][1:v]ssim" -an -f null -. Mean seconds 1.177/.884/.534/.4875. No representative corpus, CPU peak or memory measurements; no universal speed claim. Do not change default thread policy solely from this result.
+
+## Matched Windows benchmark and 1080p follow-up
+
+Corrective SHA 123ce84 passed CI 45481255837. On the 120-second 320x180 NTSC fixture, H.264 medium, total 4 encoder threads, continuous 5.482/5.514s (3868999 bytes, SSIM .980908), split 6.709/6.649s (3871318 bytes, SSIM .980840). Mean 5.498 versus 6.679s; split 21.48% slower. Delayed AAC, all 121 odd-split marker IDs, negative reverse-order control and active split cancellation passed. Artifact 14961728104, 162690 bytes. No general speed or visual-quality guarantee.
+
+Additional actual local command-level trial: Linux FFmpeg 7.1.5-0+deb13u1, 5 logical CPUs visible, cgroup quota 4 equivalents. 1920x1080 testsrc2, 30fps, 4s (120 frames), source H.264 ultrafast, AAC sine delayed 0.2s, 7797721 source bytes. H.264 medium at 3000000bps, continuous 4 encoder threads versus two 60-frame workers at 2 threads each; early seek one second before split, copyts, midpoint trim, setpts, timescale 90000, explicit concat duration 2s, original audio mapped once. Each segment checked by decoded PTS grid. Both modes compare all decoded video timestamps and audio packet timestamps under a common shift, check copied audio SHA-256, and run full output decode. Unlike C# Encoder this standalone Python subprocess harness omits metadata probe/endpoint gate and publication overhead. One run per mode (continuous first); no quality metric or peak resource measurement.
+
+| Mode | Encode including split preparation/merge (s) | Timeline/audio checks (s) | Full decode (s) | Total (s) | Bytes | Max relative video/audio PTS drift |
+|---|---:|---:|---:|---:|---:|---:|
+| Continuous | 1.8994 | 1.0774 | .2797 | 3.2565 | 1529764 | 0 / 0 ms |
+| Split | 2.5875 | 1.0509 | .2157 | 3.8541 | 1061339 | 0 / 0 ms |
+
+Split components: input frame-grid .3129s, parallel workers including per-segment decode check 2.1769s, merge .0973s. Both audio hashes match. Split was 18.35% slower, and its output was 30.62% smaller; without quality evidence this is not a quality-matched comparison. Do not infer that split always loses. Prioritize phase timing and avoid duplicate work only where equivalent integrity is demonstrated; do not delete checks merely to improve benchmarks. Keep split opt-in.
