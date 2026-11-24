@@ -67,6 +67,22 @@ try
     try { await PacketTimeline.ValidateAsync("ffprobe",input,shifted,1,ct); } catch(InvalidDataException) { rejected=true; }
     Check(rejected,"Constant relative audio shift escaped timeline guard");
     Console.WriteLine("20 ms constant audio offset counterexample rejected.");
+    // Shadow mode only: the production Encoder still uses separate streamhash.
+    await PacketTimeline.ValidateAsync(resolved.Ffprobe,input,output,1,ct,compareAudioPayloads:true);
+    rejected=false;
+    try{await PacketTimeline.ValidateAsync(resolved.Ffprobe,input,shifted,1,ct,compareAudioPayloads:true);}
+    catch(InvalidDataException){rejected=true;}
+    Check(rejected,"Shadow payload comparator accepted shifted audio");
+    var otherAudio=Path.Combine(root,"changed audio source.mp4");
+    var changed=Path.Combine(root,"same PTS changed audio.mp4");
+    await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=5","-itsoffset","0.2","-f","lavfi","-i","sine=frequency=880:sample_rate=48000:duration=4.8","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",otherAudio);
+    await Run("-v","error","-nostdin","-n","-i",input,"-i",otherAudio,"-map","0:v:0","-map","1:a:0","-c","copy",changed);
+    await PacketTimeline.ValidateAsync(resolved.Ffprobe,input,changed,1,ct);
+    rejected=false;
+    try{await PacketTimeline.ValidateAsync(resolved.Ffprobe,input,changed,1,ct,compareAudioPayloads:true);}
+    catch(InvalidDataException ex) when(ex.Message.Contains("Audio packet payload changed")){rejected=true;}
+    Check(rejected,"Shadow comparator missed same-PTS changed audio");
+    Console.WriteLine("Shadow packet validation accepted copied AAC and rejected shifted and substituted audio.");
     var silent=Path.Combine(root,"silent source.mp4");
     var silentOut=Path.Combine(root,"silent compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=3","-c:v","libx264","-pix_fmt","yuv420p",silent);
@@ -113,12 +129,40 @@ try
     await Encoder.EncodeAsync("ffmpeg","ffprobe",vfr,vfrOut,plan,ct);
     Check(File.Exists(vfrOut),"VFR output absent");
     Console.WriteLine("VFR and two independently offset audio streams passed.");
+    await PacketTimeline.ValidateAsync(resolved.Ffprobe,vfr,vfrOut,2,ct,compareAudioPayloads:true);
+    var mov=Path.Combine(root,"copied MOV.mov");
+    var movOut=Path.Combine(root,"MOV compressed.mp4");
+    await Run("-v","error","-nostdin","-n","-i",input,"-map","0:v:0","-map","0:a:0","-c","copy",mov);
+    await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,mov,movOut,plan,ct);
+    await PacketTimeline.ValidateAsync(resolved.Ffprobe,mov,movOut,1,ct,compareAudioPayloads:true);
+    Console.WriteLine("Shadow packet validation passed VFR multi-audio and MOV input.");
     var longInput=Path.Combine(root,"long source.mp4");
     var longOutput=Path.Combine(root,"long compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=120","-f","lavfi","-i","sine=frequency=660:sample_rate=48000:duration=120","-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p","-c:a","aac",longInput);
     await Encoder.EncodeAsync("ffmpeg","ffprobe",longInput,longOutput,plan,ct);
     Check(File.Exists(longOutput),"Long output absent");
     Console.WriteLine("120-second NTSC-rate timeline passed.");
+    for(int repeat=0;repeat<2;repeat++)
+    {
+        foreach(bool fused in repeat==0?new[]{false,true}:new[]{true,false})
+        {
+            var clock=System.Diagnostics.Stopwatch.StartNew();
+            await PacketTimeline.ValidateAsync(resolved.Ffprobe,longInput,longOutput,1,ct,compareAudioPayloads:fused);
+            if(!fused)
+            {
+                async Task<string> AudioHash(string path)
+                {
+                    var result=await ProcessRunner.RunAsync(resolved.Ffmpeg,["-v","error","-nostdin","-i",path,"-map","0:a","-c:a","copy","-f","streamhash","-hash","sha256","-"],ct);
+                    Check(result.ExitCode==0&&!string.IsNullOrWhiteSpace(result.Output),"Reference hash failed");
+                    return result.Output.Trim();
+                }
+                var sourceHash=await AudioHash(longInput);
+                var outputHash=await AudioHash(longOutput);
+                Check(sourceHash==outputHash,"Reference audio hash mismatch");
+            }
+            Console.WriteLine(FormattableString.Invariant($"PACKET_SHADOW rep={repeat} fused={fused} seconds={clock.Elapsed.TotalSeconds:F4}"));
+        }
+    }
     var splitOut=Path.Combine(root,"experimental split.mp4");
     var splitPlan=plan with {Codec="libx264"};
     var splitWatch=System.Diagnostics.Stopwatch.StartNew();
