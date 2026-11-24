@@ -39,17 +39,22 @@ public static class PlanRules
 public static class Planner
 {
     // Conservative source-aware heuristic. No measured visual quality claims.
-    public static IReadOnlyList<Plan> Propose(MediaInfo m)
+    public static IReadOnlyList<Plan> Propose(MediaInfo m,IReadOnlyCollection<string>? availableCodecs=null)
     {
         PlanRules.ValidateSource(m);
         var result=new List<Plan>();
+        var available=availableCodecs??PlanRules.Codecs;
+        string? codec=available.Contains("libx265")?"libx265":available.Contains("libx264")?"libx264":null;
+        if(codec is null)return result;
         double sourceRate=m.VideoStreamRate??((m.Bytes-m.CopiedAudioBytes)*8/m.VideoDuration);
         if(!double.IsFinite(sourceRate)||sourceRate<=0) return result;
         bool efficient=m.Codec is "hevc" or "av1" or "vp9";
         bool knownFps=double.IsFinite(m.Fps)&&m.Fps>0;
         double density=knownFps?sourceRate/(m.Width*(double)m.Height*m.Fps):0;
         // Avoid aggressive recommendations for already compressed sources.
-        double[] fractions=efficient||density<.035?[.95,.80,.65]:[.80,.55,.30];
+        // AVC-only environments use a deliberately conservative budget heuristic.
+        // These fractions are not quality-matched measurements.
+        double[] fractions=codec=="libx264"?[.95,.85,.75]:efficient||density<.035?[.95,.80,.65]:[.80,.55,.30];
         string[] names=["Quality","Balanced","Compact"];
         for(int i=0;i<3;i++)
         {
@@ -57,7 +62,7 @@ public static class Planner
             height-=height%2;
             double rate=sourceRate*fractions[i];
             if(!double.IsFinite(rate)||rate<PlanRules.MinimumVideoRate)continue;
-            var p=new Plan(names[i],"libx265",height,(long)Math.Min(rate,PlanRules.MaximumVideoRate),0,"medium",false,true);
+            var p=new Plan(names[i],codec,height,(long)Math.Min(rate,PlanRules.MaximumVideoRate),0,"medium",false,true);
             if(p.Savings(m)>0 && !result.Any(q=>q.Height==p.Height&&q.VideoBitsPerSecond==p.VideoBitsPerSecond&&q.Codec==p.Codec))result.Add(p);
         }
         return result;

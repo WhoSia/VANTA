@@ -122,11 +122,10 @@ public partial class BatchWindow:Window
             try
             {
                 var m=r.Media!;
-                var p=Planner.Propose(m).FirstOrDefault(p=>p.Name==(string)ProfileBox.SelectedItem);
+                var p=Planner.Propose(m,tools!.Codecs).FirstOrDefault(p=>p.Name==(string)ProfileBox.SelectedItem);
                 if(p is null){r.State="Skipped";r.Detail="Selected profile unavailable; choose another profile or use single-file settings.";r.Refresh();continue;}
-                if(!tools!.Codecs.Contains(p.Codec))p=p with {Codec=tools.Codecs[0]};
                 r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
-                r.Budget=$"{p.Name} · {p.EstimateBytes(m)/1e6:F2} MB";
+                r.Budget=$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.EstimateBytes(m)/1e6:F2} MB";
                 r.State="Ready";r.Detail="Bitrate budget, not guaranteed size.";
             }
             catch(Exception ex){r.State="Failed";r.Detail=ex.Message;}

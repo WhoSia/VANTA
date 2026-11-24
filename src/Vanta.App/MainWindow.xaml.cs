@@ -56,7 +56,7 @@ public partial class MainWindow : Window
             if(!details.Supported){Status.Text=details.Reason;return;}
             tools=resolved;media=m;sourcePath=path;
             CodecBox.ItemsSource=resolved.Codecs;
-            var rows=Planner.Propose(m).Select(p=>resolved.Codecs.Contains(p.Codec)?p:p with {Codec=resolved.Codecs[0]}).Select(p=>new PlanRow(p,$"{p.Name} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} saved)")).ToArray();
+            var rows=Planner.Propose(m,resolved.Codecs).Select(p=>new PlanRow(p,$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} budget savings)")).ToArray();
             Plans.ItemsSource=rows;
             Editor.IsEnabled=true;
             if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
