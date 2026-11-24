@@ -146,12 +146,14 @@ try
     var ids=await MarkerHashes(marker);
     Check(ids.Length==121&&ids.Distinct().Count()==121,"Fixture frame IDs not unique");
     await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,markerOut,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:4);
-    Check(ids.SequenceEqual(await MarkerHashes(markerOut)),"Frame content identity changed at split");
+    var splitIds=await MarkerHashes(markerOut);
+    Check(Enumerable.SequenceEqual(ids,splitIds),"Frame content identity changed at split");
     Console.WriteLine("All 121 unique frame IDs preserved across odd split.");
     var reversed=Path.Combine(root,"reversed frame IDs.mp4");
     await Run("-v","error","-nostdin","-n","-i",marker,"-vf","reverse","-c:v","libx264","-crf","0","-pix_fmt","yuv420p",reversed);
     await PacketTimeline.ValidateAsync(resolved.Ffprobe,marker,reversed,0,ct);
-    Check(!ids.SequenceEqual(await MarkerHashes(reversed)),"Marker test failed to detect reordering");
+    var reversedIds=await MarkerHashes(reversed);
+    Check(!Enumerable.SequenceEqual(ids,reversedIds),"Marker test failed to detect reordering");
     Console.WriteLine("PTS-preserving reordered content counterexample detected by marker test.");
 
     // Compare same codec, source, preset and encoder-thread budget, with all
