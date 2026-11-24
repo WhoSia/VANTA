@@ -35,7 +35,10 @@ try
     Check(source.Supported,source.Reason);
     var plan=new Plan("CI","libx265",180,180000,0,"medium",false,true);
     var events=new List<EncodeProgress>();
-    await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,plan,ct,new ImmediateProgress(events.Add));
+    var firstReport=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,plan,ct,new ImmediateProgress(events.Add));
+    Check(firstReport.OutputBytes==new FileInfo(output).Length && firstReport.Total>TimeSpan.Zero && firstReport.Validation>TimeSpan.Zero && firstReport.AudioHashCheck>TimeSpan.Zero,"Encode report fields");
+    Check(firstReport.Preparation+firstReport.Encoding+firstReport.Validation+firstReport.Publication==firstReport.Total,"Phase time accounting");
+    Console.WriteLine("Encode report accounting passed.");
     Check(events.Any(x=>x.Stage=="Encoding"&&x.Fraction>0)&&events.Any(x=>x.Stage=="Validating")&&events.Last().Stage=="Complete","Actual progress stages");
     Check(File.Exists(output),"Output not published");
     Check(Hash(input)==before,"Source changed");
@@ -67,7 +70,8 @@ try
     var silent=Path.Combine(root,"silent source.mp4");
     var silentOut=Path.Combine(root,"silent compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=3","-c:v","libx264","-pix_fmt","yuv420p",silent);
-    await Encoder.EncodeAsync("ffmpeg","ffprobe",silent,silentOut,plan with { Height=90 },ct);
+    var silentReport=await Encoder.EncodeAsync("ffmpeg","ffprobe",silent,silentOut,plan with { Height=90 },ct);
+    Check(silentReport.AudioHashCheck==TimeSpan.Zero && silentReport.OutputBytes==new FileInfo(silentOut).Length,"Silent encode report");
     var silentInfo=await Probe.InspectAsync("ffprobe",silentOut,ct);
     Check(silentInfo.Info.AudioTracks==0 && silentInfo.Info.Height==90,"Silent scaled output incorrect");
     Console.WriteLine("Silent video and scaling passed.");
@@ -164,8 +168,10 @@ try
         {
             var destPath=Path.Combine(root,$"timed-{repeat}-{splitMode}.mp4");
             var watch=System.Diagnostics.Stopwatch.StartNew();
-            await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,longInput,destPath,splitPlan,ct,experimentalSplit:splitMode,encoderThreads:4);
+            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,longInput,destPath,splitPlan,ct,experimentalSplit:splitMode,encoderThreads:4);
             watch.Stop();
+            Check(report.Total<=watch.Elapsed && report.Preparation+report.Encoding+report.Validation+report.Publication==report.Total,"Benchmark phase accounting");
+            Console.WriteLine(FormattableString.Invariant($"ENCODE_PHASE rep={repeat} split={splitMode} prep={report.Preparation.TotalSeconds:F4} encode={report.Encoding.TotalSeconds:F4} output_probe={report.OutputProbe.TotalSeconds:F4} timeline={report.TimelineCheck.TotalSeconds:F4} audio_hash={report.AudioHashCheck.TotalSeconds:F4} decode={report.FullDecode.TotalSeconds:F4} publish={report.Publication.TotalSeconds:F4} total={report.Total.TotalSeconds:F4}"));
             var quality=await ProcessRunner.RunAsync(resolved.Ffmpeg,["-hide_banner","-nostdin","-i",longInput,"-i",destPath,"-filter_complex","[0:v][1:v]ssim","-an","-f","null","-"],ct);
             var match=System.Text.RegularExpressions.Regex.Match(quality.Error,@"All:([0-9.]+)");
             Check(quality.ExitCode==0&&match.Success,"SSIM measurement missing");

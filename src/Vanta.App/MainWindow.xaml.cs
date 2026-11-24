@@ -133,9 +133,9 @@ public partial class MainWindow : Window
                 BusyBar.Value=(x.Fraction??0)*100;
                 Status.Text=x.Fraction is double fraction?$"{x.Stage} · {fraction:P0}":x.Stage+"…";
             });
-            await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split);
-            var bytes=new System.IO.FileInfo(dlg.FileName).Length;
-            Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)media!.Bytes:P1} actual savings";
+            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split);
+            var bytes=report.OutputBytes;
+            Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)media!.Bytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)";
         }
         catch(OperationCanceledException){Status.Text="Canceled; no new output published.";}
         catch(Exception ex){Status.Text=ex.Message;}

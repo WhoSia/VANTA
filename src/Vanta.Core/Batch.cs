@@ -39,11 +39,11 @@ public static class BatchEncoder
             var j=jobs[i];
             try
             {
-                await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
+                var report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                 {
                     if(x.Stage!="Complete")progress.Report(new(i,x.Stage,x.Fraction));
                 }));
-                progress.Report(new(i,"Complete",1,$"{new FileInfo(j.Output).Length/1e6:F2} MB"));
+                progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)"));
             }
             catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));}
             catch(Exception ex){progress.Report(new(i,"Failed",null,ex.Message));}

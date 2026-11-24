@@ -1,9 +1,16 @@
 using System.Globalization;
+using System.Diagnostics;
 namespace Vanta.Core;
 public static class Encoder
 {
-    public static async Task EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null)
+    public static async Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null)
     {
+        var clock=Stopwatch.StartNew();
+        var mark=TimeSpan.Zero;
+        TimeSpan Lap()
+        {
+            var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
+        }
         if(encoderThreads is <2 or >64 || (experimentalSplit && encoderThreads is int n && n%2!=0)) throw new ArgumentOutOfRangeException(nameof(encoderThreads));
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
@@ -17,6 +24,7 @@ public static class Encoder
         var common=new List<string>{"-hide_banner","-nostdin","-n","-xerror","-i",input,"-map","0:V:0","-c:v",plan.Codec,"-preset",plan.Preset,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-fps_mode","passthrough"};
         if(encoderThreads is int threads)common.AddRange(["-threads",threads.ToString(CultureInfo.InvariantCulture)]);
         if(plan.Height!=source.Height) common.AddRange(["-vf",$"scale=-2:{plan.Height}"]);
+        var preparation=Lap();
         try
         {
             // Continuous encoding is the default. The explicit experimental path shares every final validation gate.
@@ -37,19 +45,35 @@ public static class Encoder
             var encoded=await ProcessRunner.RunAsync(ffmpeg,args,ct,parser.Read);
             if(encoded.ExitCode!=0)throw new InvalidOperationException(encoded.Error);
             }
+            var encoding=Lap();
             progress?.Report(new("Validating",null));
             var actualDetails=await Probe.InspectAsync(ffprobe,temp,ct);
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
             if(actual.Height!=plan.Height || actual.Codec!=(plan.Codec=="libx265"?"hevc":"h264")) throw new InvalidDataException("Output codec or height mismatch");
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
-            await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct);
-            if(source.AudioTracks>0) await ValidateAudioAsync(ffmpeg,input,temp,ct);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
+            var outputProbe=Lap();
+            await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct);
+            var timeline=Lap();
+            var audioHash=TimeSpan.Zero;
+            if(source.AudioTracks>0)
+            {
+                await ValidateAudioAsync(ffmpeg,input,temp,ct);
+                audioHash=Lap();
+            }
             await Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);
+            var decode=Lap();
+            var bytes=new FileInfo(temp).Length;
             ct.ThrowIfCancellationRequested();
             File.Move(temp,output,false);
-            progress?.Report(new("Complete",1));
+            var publication=Lap();
+            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes);
+            // Publication is the commit point. A completion observer cannot turn
+            // an already-published verified output into a failed encode.
+            try { progress?.Report(new("Complete",1)); }
+            catch(Exception) { }
+            return report;
         }
         finally { if(File.Exists(temp)) File.Delete(temp); }
     }
