@@ -6,7 +6,7 @@ internal static class ExperimentalSplit
 {
     private static string Num(double x)=>x.ToString("0.000000000",CultureInfo.InvariantCulture);
 
-    public static async Task EncodeVideoAndMuxAsync(string ffmpeg,string ffprobe,string input,string destination,MediaDetails details,Plan plan,CancellationToken ct)
+    public static async Task EncodeVideoAndMuxAsync(string ffmpeg,string ffprobe,string input,string destination,MediaDetails details,Plan plan,CancellationToken ct,int? encoderThreads=null)
     {
         var m=details.Info;
         if(plan.Codec!="libx264"||plan.Height!=m.Height||m.Codec!="h264"||
@@ -32,7 +32,7 @@ internal static class ExperimentalSplit
                     "-ss",Num(seek),"-copyts","-i",input,"-map","0:V:0","-an",
                     "-vf",$"trim=start={Num(boundary)},setpts=PTS-STARTPTS",
                     "-frames:v",count.ToString(CultureInfo.InvariantCulture),"-c:v","libx264","-preset",plan.Preset,
-                    "-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-threads",Math.Clamp(Environment.ProcessorCount/2,1,4).ToString(CultureInfo.InvariantCulture),
+                    "-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-threads",(encoderThreads is int budget?budget/2:Math.Clamp(Environment.ProcessorCount/2,1,4)).ToString(CultureInfo.InvariantCulture),
                     "-fps_mode","passthrough","-video_track_timescale","90000",part};
                 await Checked(ffmpeg,args,token);
                 if(await ReadGridAsync(ffprobe,part,m.Fps,token)!=count)

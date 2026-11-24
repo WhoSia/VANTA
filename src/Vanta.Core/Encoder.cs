@@ -2,8 +2,9 @@ using System.Globalization;
 namespace Vanta.Core;
 public static class Encoder
 {
-    public static async Task EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false)
+    public static async Task EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null)
     {
+        if(encoderThreads is <2 or >64 || (experimentalSplit && encoderThreads is int n && n%2!=0)) throw new ArgumentOutOfRangeException(nameof(encoderThreads));
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
         if(!string.Equals(Path.GetExtension(output),".mp4",StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Only MP4 is supported in this prototype");
@@ -14,6 +15,7 @@ public static class Encoder
         var dir=Path.GetDirectoryName(output)!;
         var temp=Path.Combine(dir,$".vanta-{Guid.NewGuid():N}.mp4");
         var common=new List<string>{"-hide_banner","-nostdin","-n","-xerror","-i",input,"-map","0:V:0","-c:v",plan.Codec,"-preset",plan.Preset,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-fps_mode","passthrough"};
+        if(encoderThreads is int threads)common.AddRange(["-threads",threads.ToString(CultureInfo.InvariantCulture)]);
         if(plan.Height!=source.Height) common.AddRange(["-vf",$"scale=-2:{plan.Height}"]);
         try
         {
@@ -23,7 +25,7 @@ public static class Encoder
             if(experimentalSplit)
             {
                 progress?.Report(new("Experimental split",null));
-                await ExperimentalSplit.EncodeVideoAndMuxAsync(ffmpeg,ffprobe,input,temp,details,plan,ct);
+                await ExperimentalSplit.EncodeVideoAndMuxAsync(ffmpeg,ffprobe,input,temp,details,plan,ct,encoderThreads);
             }
             else
             {

@@ -127,6 +127,64 @@ try
     catch(NotSupportedException){rejected=true;}
     Check(rejected&&!File.Exists(rejectedSplit)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"VFR split failed closed");
     Console.WriteLine("Experimental VFR split rejected; no leaked output or segments.");
+    var delayedSplit=Path.Combine(root,"delayed split.mp4");
+    await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,delayedSplit,splitPlan,ct,experimentalSplit:true);
+    Check(File.Exists(delayedSplit)&&Hash(input)==before,"Delayed audio split");
+    Console.WriteLine("Experimental delayed AAC split passed.");
+
+    // Each of 121 frames carries a unique 8-bit spatial ID; odd count exercises
+    // the asymmetric split. High bitrate isolates ordering from marker loss.
+    var marker=Path.Combine(root,"frame IDs.mp4");
+    var markerOut=Path.Combine(root,"frame IDs split.mp4");
+    await Run("-v","error","-nostdin","-n","-f","lavfi","-i","nullsrc=s=160x96:r=30","-vf","geq=lum='if(bitand(N,pow(2,floor(X/20))),235,16)':cb=128:cr=128","-frames:v","121","-c:v","libx264","-threads","2","-pix_fmt","yuv420p",marker);
+    async Task<string[]> MarkerHashes(string path)
+    {
+        var rr=await ProcessRunner.RunAsync(resolved.Ffmpeg,["-v","error","-xerror","-nostdin","-i",path,"-map","0:v:0","-vf","scale=8:2:flags=area,format=gray,lut=y='if(gte(val,128),255,0)'","-an","-f","framemd5","-"],ct);
+        Check(rr.ExitCode==0&&string.IsNullOrWhiteSpace(rr.Error),"Marker extraction failed");
+        return rr.Output.Split('\n',StringSplitOptions.RemoveEmptyEntries).Where(s=>!s.StartsWith('#')&&s.Contains(',')).Select(s=>s.Split(',').Last().Trim()).ToArray();
+    }
+    var ids=await MarkerHashes(marker);
+    Check(ids.Length==121&&ids.Distinct().Count()==121,"Fixture frame IDs not unique");
+    await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,markerOut,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:4);
+    Check(ids.SequenceEqual(await MarkerHashes(markerOut)),"Frame content identity changed at split");
+    Console.WriteLine("All 121 unique frame IDs preserved across odd split.");
+    var reversed=Path.Combine(root,"reversed frame IDs.mp4");
+    await Run("-v","error","-nostdin","-n","-i",marker,"-vf","reverse","-c:v","libx264","-crf","0","-pix_fmt","yuv420p",reversed);
+    await PacketTimeline.ValidateAsync(resolved.Ffprobe,marker,reversed,0,ct);
+    Check(!ids.SequenceEqual(await MarkerHashes(reversed)),"Marker test failed to detect reordering");
+    Console.WriteLine("PTS-preserving reordered content counterexample detected by marker test.");
+
+    // Compare same codec, source, preset and encoder-thread budget, with all
+    // validation included. Two repetitions in alternating order; no speed gate.
+    for(int repeat=0;repeat<2;repeat++)
+    {
+        foreach(bool splitMode in repeat==0?new[]{false,true}:new[]{true,false})
+        {
+            var destPath=Path.Combine(root,$"timed-{repeat}-{splitMode}.mp4");
+            var watch=System.Diagnostics.Stopwatch.StartNew();
+            await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,longInput,destPath,splitPlan,ct,experimentalSplit:splitMode,encoderThreads:4);
+            watch.Stop();
+            var quality=await ProcessRunner.RunAsync(resolved.Ffmpeg,["-hide_banner","-nostdin","-i",longInput,"-i",destPath,"-filter_complex","[0:v][1:v]ssim","-an","-f","null","-"],ct);
+            var match=System.Text.RegularExpressions.Regex.Match(quality.Error,@"All:([0-9.]+)");
+            Check(quality.ExitCode==0&&match.Success,"SSIM measurement missing");
+            Console.WriteLine(FormattableString.Invariant($"SPLIT_BENCH rep={repeat} split={splitMode} encoder_threads=4 seconds={watch.Elapsed.TotalSeconds:F3} bytes={new FileInfo(destPath).Length} ssim={match.Groups[1].Value}"));
+        }
+    }
+    var canceledSplit=Path.Combine(root,"active split cancellation.mp4");
+    using(var splitCancel=CancellationTokenSource.CreateLinkedTokenSource(ct))
+    {
+        var splitTask=Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,longInput,canceledSplit,splitPlan,splitCancel.Token,experimentalSplit:true);
+        bool sawWork=false;
+        while(!splitTask.IsCompleted)
+        {
+            if(Directory.EnumerateDirectories(root,".vanta-split-*").Any()){sawWork=true;splitCancel.Cancel();break;}
+            await Task.Delay(10,ct);
+        }
+        rejected=false;
+        try{await splitTask;}catch(OperationCanceledException){rejected=true;}
+        Check(sawWork&&rejected&&!File.Exists(canceledSplit)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Active split cancellation cleanup");
+    }
+    Console.WriteLine("Active split cancellation passed.");
     var activeOutput=Path.Combine(root,"active cancellation.mp4");
     using var active=CancellationTokenSource.CreateLinkedTokenSource(ct);
     var task=Encoder.EncodeAsync("ffmpeg","ffprobe",longInput,activeOutput,plan,active.Token);
