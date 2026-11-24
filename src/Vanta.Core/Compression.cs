@@ -1,22 +1,22 @@
 namespace Vanta.Core;
 public sealed record MediaInfo(long Bytes, double Seconds, int Width, int Height, double Fps, string Codec, int AudioTracks, long AudioBitsPerSecond);
-public sealed record Plan(string Name, string Codec, int Height, long VideoBitsPerSecond, long AudioBitsPerSecond, string Preset, bool TwoPass)
+public sealed record Plan(string Name, string Codec, int Height, long VideoBitsPerSecond, long AudioBitsPerSecond, string Preset, bool TwoPass, bool CopyAudio = true)
 {
-    public double EstimateBytes(MediaInfo m) => m.Seconds * (VideoBitsPerSecond + AudioBitsPerSecond * (double)m.AudioTracks) / 8 * 1.005;
+    public double EstimateBytes(MediaInfo m) => m.Seconds * (VideoBitsPerSecond + (CopyAudio ? m.AudioBitsPerSecond : AudioBitsPerSecond * (double)m.AudioTracks)) / 8 * 1.005;
     public double Savings(MediaInfo m) => 1 - EstimateBytes(m) / m.Bytes;
 }
 public static class Planner
 {
     public static IReadOnlyList<Plan> Propose(MediaInfo m)
     {
-        if (m.Bytes <= 0 || !double.IsFinite(m.Seconds) || m.Seconds <= 0 || m.Height <= 0 || m.Width <= 0) throw new ArgumentException("Invalid source metadata");
+        if (m.Bytes <= 0 || !double.IsFinite(m.Seconds) || m.Seconds <= 0 || m.Height <= 0 || m.Width <= 0 || m.AudioBitsPerSecond < 0 || (m.AudioTracks > 0 && m.AudioBitsPerSecond == 0)) throw new ArgumentException("Invalid source metadata");
         var total = m.Bytes * 8.0 / m.Seconds;
         var result = new List<Plan>();
         foreach (var (name, fraction, height, audio) in new[] { ("Quality", .80, m.Height, 192000L), ("Balanced", .55, m.Height, 128000L), ("Compact", .30, Math.Min(720,m.Height), 96000L) })
         {
-            var available = total * fraction / 1.005 - audio * (double)m.AudioTracks;
+            var available = total * fraction / 1.005 - m.AudioBitsPerSecond;
             if (height<2 || available < 64000 || available > long.MaxValue) continue;
-            var p = new Plan(name,"libx265",height-height%2,(long)available,audio,"medium",false);
+            var p = new Plan(name,"libx265",height-height%2,(long)available,0,"medium",false,true);
             if (p.Savings(m)>0) result.Add(p);
         }
         return result;

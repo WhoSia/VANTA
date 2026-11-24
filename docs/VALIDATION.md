@@ -1,6 +1,6 @@
 # Validation status
 
-GUI analysis-only; encoding deliberately disabled pending regression and Windows acceptance. Planner and encoder now agree on single pass. Encoder restricts input to a single 8-bit SDR video and mono/stereo audio with known timing; refuses extra streams rather than dropping them. Relative stream endpoint comparison and full decoding are preliminary checks, not proof of perceptual sync. No C# tests run yet.
+GUI analysis-only; encoding deliberately disabled pending regression and Windows acceptance. Planner and encoder now agree on single pass. Encoder restricts input to a single 8-bit SDR video and mono/stereo AAC audio with known bitrate and timing (or no audio); refuses extra streams rather than dropping them. Audio is copied, not re-encoded. Relative stream endpoint comparison and full decoding are preliminary checks, not proof of perceptual sync. No C# tests run yet.
 
 Run on Windows with .NET 10 SDK:
 

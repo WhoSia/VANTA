@@ -7,7 +7,7 @@ public static class Encoder
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
         if(!string.Equals(Path.GetExtension(output),".mp4",StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Only MP4 is supported in this prototype");
-        if(plan.Codec!="libx265" || plan.Height<2 || plan.Height%2!=0 || plan.VideoBitsPerSecond<64000 || plan.AudioBitsPerSecond<16000 || plan.Preset!="medium") throw new ArgumentException("Unsupported plan");
+        if(plan.Codec!="libx265" || plan.Height<2 || plan.Height%2!=0 || plan.VideoBitsPerSecond<64000 || !plan.CopyAudio || plan.Preset!="medium") throw new ArgumentException("Unsupported plan");
         var details=await Probe.InspectAsync(ffprobe,input,ct);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
         var source=details.Info;
@@ -22,7 +22,7 @@ public static class Encoder
             // x265 stats paths use encoder-specific escaping; keep two-pass disabled until tested.
             if(plan.TwoPass) throw new NotSupportedException("Two-pass encoding is pending Windows path and timing validation");
             var args=new List<string>(common);
-            args.AddRange(["-map","0:a?","-c:a","aac","-b:a",plan.AudioBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-tag:v","hvc1","-movflags","+faststart",temp]);
+            args.AddRange(["-map","0:a?","-c:a","copy","-tag:v","hvc1","-movflags","+faststart",temp]);
             await Checked(ffmpeg,args,ct);
             var actualDetails=await Probe.InspectAsync(ffprobe,temp,ct);
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
