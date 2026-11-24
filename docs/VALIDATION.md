@@ -1,6 +1,6 @@
-# Validation status — 0.1.0
+# Validation status — 0.2.0
 
-**Core acceptance: PASS; owner version approval pending.** Exact tested source SHA: `7815ef54b7579599f3b8f419a3fd615be5f2ced1`. [Windows CI #4](https://github.com/WhoSia/VANTA/actions/runs/45470160397) succeeded on 2026-11-25 KST.
+**0.1.0 core acceptance: PASS; 0.2.0 approved and in development.** Exact tested source SHA: `7815ef54b7579599f3b8f419a3fd615be5f2ced1`. [Windows CI #4](https://github.com/WhoSia/VANTA/actions/runs/45470160397) succeeded on 2026-11-25 KST.
 
 | Gate | Evidence |
 |---|---|
@@ -21,3 +21,7 @@ Earlier baseline `df3161e` passed [CI #3](https://github.com/WhoSia/VANTA/action
 Supported core domain: one 8-bit SDR yuv420p video, even dimensions, mono/stereo AAC with known timing and bitrate or no audio, no extra streams, HEVC MP4 output, audio copy, frame-rate passthrough, single pass. No guarantee of perceptual sync, hour-scale behavior, every format or interactive desktop acceptance. GUI remains analysis-only. This is a core milestone, not a finished application.
 
 Subsequent documentation-only changes do not change tested source bytes; CI policy changes require separate operational verification. No new version, release or tag without owner approval.
+
+## 0.2.0 current evidence
+
+CI policy change `6ca2b55` passed [CI #5](https://github.com/WhoSia/VANTA/actions/runs/45471166925). The 0.2.0 source revision `ee4623eb9ab81e9510951bddf1c9538430704750` changes the plan validator, target bitrate budget, source-aware heuristic and H.264/HEVC encoding options; [Windows CI](https://github.com/WhoSia/VANTA/actions/runs/45472107616) is pending. The version-only run was superseded and is not evidence. Documentation commits do not modify those build inputs. No measured quality score, exact size guarantee or FPS conversion support yet.
