@@ -6,9 +6,9 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 ## Status
 
-0.1.0 — Lightweight Compression Core & Temporal Integrity.
+0.2.0 — Adaptive Compression Planning & Granular Control (owner-approved, in development).
 
-Core acceptance passed at `7815ef5` ([Windows CI #4](https://github.com/WhoSia/VANTA/actions/runs/45470160397)). Awaiting owner approval for the next version. Not a public release. The GUI is an analysis-only prototype; compression is verified through integration tests, not yet enabled in the GUI.
+0.1.0 core acceptance passed at `7815ef5` ([Windows CI #4](https://github.com/WhoSia/VANTA/actions/runs/45470160397)). No public release. GUI remains analysis-only until the desktop integration milestone.
 
 ## Scope
 

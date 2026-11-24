@@ -1,7 +1,7 @@
 # Development loop and approval gates
 
-Current approved version: 0.1.0 — Lightweight Compression Core & Temporal Integrity.
-Status: core acceptance passed at 7815ef5 (CI #4); awaiting owner approval before any next-version implementation. No new version/tag/release without approval.
+Current approved version: 0.2.0 — Adaptive Compression Planning & Granular Control.
+Status: owner approved 0.2.0 on 2026-11-25 KST; active development. 0.1.0 core accepted at 7815ef5. No new version/tag/release without approval.
 
 Repeat Evaluate → Prioritize → Implement → Verify → Reassess. Use vectors (user value, implementation coverage, evidence coverage, integrity confidence) in [0,1]; label subjective judgments. No linear sum. Failed hard gates outrank enhancements; prioritize blockers and dependencies, then Pareto tradeoffs and smallest useful changes. Record evidence against the exact SHA. No claims of verification from inspection alone.
 
@@ -17,4 +17,4 @@ Repeat Evaluate → Prioritize → Implement → Verify → Reassess. Use vector
 
 Stop only when user intervention is genuinely required or the currently approved version's gate is met. Report evidence, limitations, minimal requested action and next proposed numeric version/subtitle. Normal numeric versions only; no P/R sub-lineages. No implementation of the next version until explicit approval. Scheduled automation must pause at this gate; no background promises outside scheduled runs.
 
-0.1.0 gate: Windows build; core and real FFmpeg integration; guarded output publication; continuous encoding; relative endpoints and decoded timeline checks; active cancellation; extended/VFR and multiple-audio regression; documented input domain. GUI activation and richer plan controls remain subsequent scope. Release scope stays finite.
+0.2.0 gate: executable H.264/HEVC MP4 configurations, source-aware feasible distinct plans or explicit shortage, target-size budget solver, bounded editable codec/height/preset/bitrate controls, honest size estimates and vector evidence labels, core/GUI build and integration regressions including preserved A/V timeline. Explicit FPS reduction requires separate timeline validation and is not exposed until verified. GUI compression activation, dependency acquisition and final desktop acceptance remain subsequent scope. No new version without owner approval.
