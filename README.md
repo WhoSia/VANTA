@@ -6,11 +6,15 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 ## Status
 
-0.1.0 — Lightweight Compression Core & Temporal Integrity (development; not released).
+0.1.0 — Lightweight Compression Core & Temporal Integrity.
+
+Core acceptance passed at `7815ef5` ([Windows CI #4](https://github.com/WhoSia/VANTA/actions/runs/45470160397)). Awaiting owner approval for the next version. Not a public release. The GUI is an analysis-only prototype; compression is verified through integration tests, not yet enabled in the GUI.
 
 ## Scope
 
-Windows desktop application in C# and WPF. Drag and drop video, inspect source streams, compare three adaptive compression plans, customize encoding parameters, estimate output size, encode and validate locally.
+Windows desktop application in C# and WPF. Intended final workflow: drag and drop video, inspect source streams, compare adaptive compression plans, customize supported encoding parameters, estimate output size, encode and validate locally.
+
+Current tested core: single continuous HEVC MP4 encode, compatible AAC audio stream copy (or no audio), 8-bit SDR yuv420p, frame timing preservation, guarded output publication and cancellation. Unsupported streams are rejected rather than silently lost.
 
 ## Invariants
 
@@ -25,4 +29,6 @@ Windows desktop application in C# and WPF. Drag and drop video, inspect source s
 
 ## Development
 
-Main-first development; small auditable commits. No automated bot-authored commits. Windows acceptance and regression tests are required before release.
+Main-first, small auditable commits. Read-only Windows CI. No automated bot-authored commits. Documentation-only changes do not trigger Windows CI. Windows acceptance and regression tests are required before final release.
+
+[Development loop](docs/DEVELOPMENT_LOOP.md) · [Validation](docs/VALIDATION.md) · [Assessment](docs/ASSESSMENT.md) · [Release scope](docs/RELEASE_SCOPE.md)
