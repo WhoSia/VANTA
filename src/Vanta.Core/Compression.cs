@@ -15,8 +15,8 @@ public static class Planner
         foreach (var (name, fraction, height, audio) in new[] { ("Quality", .80, m.Height, 192000L), ("Balanced", .55, m.Height, 128000L), ("Compact", .30, Math.Min(720,m.Height), 96000L) })
         {
             var available = total * fraction / 1.005 - audio * (double)m.AudioTracks;
-            if (available < 64000 || available > long.MaxValue) continue;
-            var p = new Plan(name,"libx265",height,(long)available,audio,"medium",true);
+            if (height<2 || available < 64000 || available > long.MaxValue) continue;
+            var p = new Plan(name,"libx265",height-height%2,(long)available,audio,"medium",false);
             if (p.Savings(m)>0) result.Add(p);
         }
         return result;

@@ -1,6 +1,6 @@
 # Validation status
 
-The GUI is an analysis-only prototype. Encoding is intentionally not exposed in it. Encoder draft supports a single pass only; planner currently proposes two-pass targets and these cannot yet be executed. Duration and decode checks do not establish A/V synchronization. Full timeline and signal-based regression fixtures are required before enabling encoding. No Windows build or .NET tests executed yet.
+GUI analysis-only; encoding deliberately disabled pending regression and Windows acceptance. Planner and encoder now agree on single pass. Encoder restricts input to a single 8-bit SDR video and mono/stereo audio with known timing; refuses extra streams rather than dropping them. Relative stream endpoint comparison and full decoding are preliminary checks, not proof of perceptual sync. No C# tests run yet.
 
 Run on Windows with .NET 10 SDK:
 

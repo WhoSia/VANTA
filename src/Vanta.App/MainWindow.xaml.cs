@@ -23,9 +23,11 @@ public partial class MainWindow : Window
         Plans.ItemsSource=null; Source.Text=""; Status.Text="Analyzing…";
         try
         {
-            var m=await Probe.ReadAsync("ffprobe",path,cts.Token);
+            var details=await Probe.InspectAsync("ffprobe",path,cts.Token);
+            var m=details.Info;
             if(current!=cts) return;
             Source.Text=$"{System.IO.Path.GetFileName(path)} · {m.Width}×{m.Height} · {m.Fps:F2} fps · {m.Codec} · {m.Bytes/1e6:F1} MB";
+            if(!details.Supported){Status.Text=details.Reason;return;}
             Plans.ItemsSource=Planner.Propose(m).Select(p=>new {Name=$"{p.Name} — {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} saved)"}).ToArray();
             Status.Text="Bitrate estimates only. Encoding is not yet enabled.";
         }
