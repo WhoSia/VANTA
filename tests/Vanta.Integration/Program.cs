@@ -40,6 +40,21 @@ try
     Check(rejected && !File.Exists(canceledPath),"Pre-canceled encode published a file");
     Check(!Directory.EnumerateFiles(root,".vanta-*").Any(),"Temporary output leaked");
     Console.WriteLine("Delayed AAC, Unicode paths, source preservation, no overwrite, pre-cancel passed.");
+    var shifted=Path.Combine(root,"shifted audio.mp4");
+    await Run("-v","error","-nostdin","-n","-itsoffset","0.02","-i",input,"-i",input,"-map","1:v:0","-map","0:a:0","-c","copy",shifted);
+    var shiftedInfo=await Probe.InspectAsync("ffprobe",shifted,ct);
+    Timeline.Validate(source.Timing,shiftedInfo.Timing,source.Info.Fps); // Old endpoint tolerance accepts a 20 ms shift.
+    rejected=false;
+    try { await PacketTimeline.ValidateAsync("ffprobe",input,shifted,1,ct); } catch(InvalidDataException) { rejected=true; }
+    Check(rejected,"Constant relative audio shift escaped timeline guard");
+    Console.WriteLine("20 ms constant audio offset counterexample rejected.");
+    var silent=Path.Combine(root,"silent source.mp4");
+    var silentOut=Path.Combine(root,"silent compressed.mp4");
+    await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=3","-c:v","libx264","-pix_fmt","yuv420p",silent);
+    await Encoder.EncodeAsync("ffmpeg","ffprobe",silent,silentOut,plan with { Height=90 },ct);
+    var silentInfo=await Probe.InspectAsync("ffprobe",silentOut,ct);
+    Check(silentInfo.Info.AudioTracks==0 && silentInfo.Info.Height==90,"Silent scaled output incorrect");
+    Console.WriteLine("Silent video and scaling passed.");
     var vfr=Path.Combine(root,"vfr multiple audio.mp4");
     var vfrOut=Path.Combine(root,"vfr compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=12","-f","lavfi","-i","sine=frequency=440:sample_rate=48000:duration=12","-itsoffset","0.15","-f","lavfi","-i","sine=frequency=880:sample_rate=48000:duration=11.85","-map","0:v","-map","1:a","-map","2:a","-vf","select=not(mod(n\\,2))+not(mod(n\\,5))","-fps_mode","vfr","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",vfr);

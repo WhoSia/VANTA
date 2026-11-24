@@ -1,12 +1,7 @@
-# Validation status
+# Validation status — 0.1.0
 
-Baseline 9a123e7: [Windows CI #1](https://github.com/WhoSia/VANTA/actions/runs/45468218339) succeeded. WPF build, smoke checks, delayed AAC integration, Unicode paths, SHA-256 source preservation, overwrite protection, pre-cancel, preview publish and upload all passed. FFmpeg 9.1 essentials (Gyan) was used. This evidence applies to that exact SHA only.
+Exact baseline df3161e: [Windows CI #3](https://github.com/WhoSia/VANTA/actions/runs/45468987261) passed with zero compiler warnings/errors. FFmpeg 9.1 essentials. Delayed AAC, Unicode paths, source SHA-256, no overwrite, pre-cancel, VFR with two independently offset audio streams, 120-second NTSC timeline, active cancellation/cleanup and artifact publish all passed. Compressed preview artifact: 124699 bytes; excludes external .NET Desktop Runtime and FFmpeg.
 
-Current revision adds a streaming per-frame/packet timestamp comparison to existing metadata endpoint checks. It permits a constant stream shift subject to the endpoint guard but rejects changing offsets and count mismatch; it is not proof of perceptual sync or identical video content. New code is pending CI. GUI remains analysis-only. Supported input remains one 8-bit SDR yuv420p video, mono/stereo AAC or no audio, known stream timing, no extra streams. No chunk assembly. No release.
+Counterexample found after baseline: the old packet comparison independently normalized every stream. A 20 ms constant audio shift can pass both the 50 ms endpoint floor and the independent packet comparison. Reproduced with FFmpeg 7.1.5 on Linux using 29.97 fps H.264/AAC fixture; video start 0, audio start .178 -> .198, unchanged duration. The new guard uses video first-frame shift as a common reference for all audio packets and rejects ffprobe error diagnostics. Added negative regression and no-audio/scaling fixture; pending exact-SHA CI.
 
-Run on Windows:
-```powershell
-dotnet run --project tests/Vanta.Smoke
-dotnet run --project tests/Vanta.Integration
-dotnet build src/Vanta.App
-```
+This verifies timestamp/payload invariants, not perceptual synchronization, all possible formats or hour-scale performance. GUI still analysis-only. No release/version change without approval.

@@ -7,9 +7,10 @@ public static class PacketTimeline
 {
     public static async Task ValidateAsync(string ffprobe,string source,string output,int audioTracks,CancellationToken ct=default)
     {
-        await CompareAsync(ffprobe,source,output,"v:0",true,.002,ct);
+        const double tolerance=.002;
+        double origin=await CompareAsync(ffprobe,source,output,"v:0",true,tolerance,null,ct);
         for(int i=0;i<audioTracks;i++)
-            await CompareAsync(ffprobe,source,output,$"a:{i}",false,.002,ct);
+            await CompareAsync(ffprobe,source,output,$"a:{i}",false,tolerance,origin,ct);
     }
     private static Process Open(string exe,string path,string selector,bool video)
     {
@@ -28,7 +29,7 @@ public static class PacketTimeline
         }
         return null;
     }
-    private static async Task CompareAsync(string exe,string source,string output,string selector,bool video,double tolerance,CancellationToken ct)
+    private static async Task<double> CompareAsync(string exe,string source,string output,string selector,bool video,double tolerance,double? sharedOrigin,CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         using var a=Open(exe,source,selector,video);
@@ -38,7 +39,7 @@ public static class PacketTimeline
         {
             b=Open(exe,output,selector,video);
             be=b.StandardError.ReadToEndAsync();
-            double? origin=null; long count=0;
+            double? origin=sharedOrigin; long count=0;
             var key=video?"best_effort_timestamp_time":"pts_time";
             while(true)
             {
@@ -52,7 +53,8 @@ public static class PacketTimeline
                 count++;
             }
             await a.WaitForExitAsync(ct); await b.WaitForExitAsync(ct);
-            if(a.ExitCode!=0 || b.ExitCode!=0 || count==0) throw new InvalidDataException($"Timeline probe failed: {selector}");
+            if(a.ExitCode!=0 || b.ExitCode!=0 || count==0 || !string.IsNullOrWhiteSpace(await ae) || !string.IsNullOrWhiteSpace(await be)) throw new InvalidDataException($"Timeline probe failed: {selector}");
+            return origin!.Value;
         }
         finally
         {
