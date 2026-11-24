@@ -25,6 +25,7 @@ public partial class BatchWindow:Window
         public MediaInfo? Media {get;set;}
         public SourceStamp? Stamp {get;set;}
         public Plan? Plan {get;set;}
+        public Plan? ManualPlan {get;set;}
         public event PropertyChangedEventHandler? PropertyChanged;
         public void Refresh()=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(string.Empty));
     }
@@ -69,6 +70,25 @@ public partial class BatchWindow:Window
         if(current is not null)return;
         destinationDirectory=null;DestinationText.Text="Output: beside each source";Replan();
     }
+    private void OnEditPlan(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||tools is null||Queue.SelectedItem is not Row r||r.Media is null||r.State is not ("Ready" or "Skipped"))
+        {Summary.Text="Select a ready or supported skipped video.";return;}
+        try
+        {
+            r.Stamp?.RequireUnchanged(r.Input);
+            var dialog=new BatchPlanDialog(r.Media,tools.Codecs,r.ManualPlan??r.Plan){Owner=this};
+            if(dialog.ShowDialog()!=true||dialog.Result is null)return;
+            r.ManualPlan=dialog.Result;Replan();
+        }
+        catch(Exception ex){Summary.Text=ex.Message;}
+    }
+    private void OnResetPlan(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||Queue.SelectedItem is not Row r||r.State is not ("Ready" or "Skipped"))
+        {Summary.Text="Select a ready or supported skipped video.";return;}
+        r.ManualPlan=null;Replan();
+    }
     private void OnRetry(object sender,RoutedEventArgs e)
     {
         if(current is not null||Queue.SelectedItem is not Row r)return;
@@ -94,7 +114,7 @@ public partial class BatchWindow:Window
     private void SetBusy(bool busy)
     {
         AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=RecommendationBox.IsEnabled=!busy;
-        FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=!busy;
+        FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=EditPlanButton.IsEnabled=ResetPlanButton.IsEnabled=!busy;
         CancelButton.IsEnabled=busy;UpdateSummary();
     }
     private void UpdateSummary()
@@ -126,11 +146,11 @@ public partial class BatchWindow:Window
             {
                 var m=r.Media!;
                 r.Stamp?.RequireUnchanged(r.Input);
-                var p=Planner.Propose(m,tools!.Codecs,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec).FirstOrDefault(p=>p.Name==(string)ProfileBox.SelectedItem);
+                var p=BatchPlanSelection.Resolve(m,tools!.Codecs,(string)ProfileBox.SelectedItem,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,r.ManualPlan);
                 if(p is null){r.State="Skipped";r.Detail="Selected codec or budget tier unavailable; choose another or use single-file settings.";r.Refresh();continue;}
                 r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
-                r.Budget=$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.EstimateBytes(m)/1e6:F2} MB";
-                r.State="Ready";r.Detail="Bitrate budget, not guaranteed size.";
+                r.Budget=$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB";
+                r.State="Ready";r.Detail=r.ManualPlan is null?"Shared profile; size not guaranteed.":"Individual override; size not guaranteed.";
             }
             catch(Exception ex){r.State="Failed";r.Detail=ex.Message;}
             r.Refresh();

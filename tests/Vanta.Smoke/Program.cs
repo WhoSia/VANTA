@@ -13,6 +13,14 @@ Check(Planner.Propose(source,["libx264","libx265"],"libx264").All(p=>p.Codec=="l
 Check(Planner.Propose(source,["libx264"],"libx265").Count==0,"No fallback for unavailable preferred codec");
 bool badPreference=false;try{Planner.Propose(source,null,"invalid");}catch(ArgumentException){badPreference=true;}
 Check(badPreference,"Invalid recommendation preference rejected");
+var manual=avcPlans[1] with {Name="Custom",Preset="veryfast",Height=720};
+Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Compact","libx265",manual)==manual,"Individual settings override shared policy");
+Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Quality","libx265",null)==plans[0],"Reset individual settings to shared policy");
+Check(BatchPlanSelection.Resolve(source,["libx264"],"Balanced","libx265",null) is null,"Unavailable shared tier stays unavailable");
+bool overrideRejected=false;try{BatchPlanSelection.Resolve(source,["libx265"],"Quality",null,manual);}catch(ArgumentException){overrideRejected=true;}
+Check(overrideRejected,"Unavailable manual codec rejected");
+overrideRejected=false;try{BatchPlanSelection.Resolve(source,["libx264"],"Quality",null,manual with {Height=1081});}catch(ArgumentException){overrideRejected=true;}
+Check(overrideRejected,"Invalid manual plan rejected");
 Check(plans.Zip(plans.Skip(1)).All(x=>x.First.EstimateBytes(source)>x.Second.EstimateBytes(source)),"Ordered sizes");
 Check(Decisions.Dominates([.8,.9],[.7,.9]),"Dominance");
 Check(!Decisions.Dominates([.8,.7],[.7,.9]),"Trade-off");

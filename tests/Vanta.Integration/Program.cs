@@ -151,7 +151,12 @@ try
     var batchA=OutputNames.Suggest(input);
     var batchB=OutputNames.Suggest(silent);
     var updates=new System.Collections.Concurrent.ConcurrentQueue<BatchUpdate>();
-    await BatchEncoder.RunAsync(resolved,[new(input,batchA,plan),new(silent,batchB,plan),new(input,output,plan)],2,new BatchProgress(updates.Enqueue),ct,totalEncoderThreads:4);
+    var perFile=BatchPlanSelection.Resolve(await Probe.ReadAsync(resolved.Ffprobe,silent,ct),resolved.Codecs,"Balanced","libx265",plan with {Name="Custom",Codec="libx264",Height=90,Preset="veryfast"})!;
+    await BatchEncoder.RunAsync(resolved,[new(input,batchA,plan),new(silent,batchB,perFile),new(input,output,plan)],2,new BatchProgress(updates.Enqueue),ct,totalEncoderThreads:4);
+    var batchInfoA=await Probe.ReadAsync(resolved.Ffprobe,batchA,ct);
+    var batchInfoB=await Probe.ReadAsync(resolved.Ffprobe,batchB,ct);
+    Check(batchInfoA.Codec=="hevc"&&batchInfoA.Height==180&&batchInfoB.Codec=="h264"&&batchInfoB.Height==90,"Independent batch settings");
+    Console.WriteLine("Mixed-codec and mixed-height per-file batch passed.");
     Check(File.Exists(batchA)&&File.Exists(batchB)&&Hash(input)==before&&Hash(output)==priorOutput,"Parallel output safety");
     Check(updates.Count(x=>x.Stage=="Complete")==2&&updates.Count(x=>x.Stage=="Failed")==1,"Batch failure isolation");
     Console.WriteLine("Parallel batch, collision refusal and per-job failure isolation passed (4 requested encoder threads shared).");
