@@ -29,12 +29,23 @@ public static class Encoder
             var actual=actualDetails.Info;
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
             await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct);
+            if(source.AudioTracks>0) await ValidateAudioAsync(ffmpeg,input,temp,ct);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
             await Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);
             ct.ThrowIfCancellationRequested();
             File.Move(temp,output,false);
         }
         finally { if(File.Exists(temp)) File.Delete(temp); }
+    }
+    private static async Task ValidateAudioAsync(string exe,string source,string output,CancellationToken ct)
+    {
+        async Task<string> Hash(string path)
+        {
+            var r=await ProcessRunner.RunAsync(exe,["-v","error","-nostdin","-i",path,"-map","0:a","-c:a","copy","-f","streamhash","-hash","sha256","-"],ct);
+            if(r.ExitCode!=0 || string.IsNullOrWhiteSpace(r.Output)) throw new InvalidDataException("Audio payload hash unavailable");
+            return r.Output.Trim();
+        }
+        if(await Hash(source)!=await Hash(output)) throw new InvalidDataException("Copied audio payload changed");
     }
     private static async Task Checked(string exe,IEnumerable<string> args,CancellationToken ct)
     {
