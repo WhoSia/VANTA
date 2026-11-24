@@ -18,6 +18,9 @@
 <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Video codec"/><ComboBox x:Name="CodecBox" SelectionChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="Preset"/><ComboBox x:Name="PresetBox" SelectionChanged="OnSettings"/></StackPanel></Grid>
 <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Height (pixels, even)"/><TextBox x:Name="HeightBox" TextChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="Video bitrate (kbps)"/><TextBox x:Name="RateBox" TextChanged="OnSettings"/></StackPanel></Grid>
 <TextBlock Text="Target size (MB, approximate)"/><DockPanel><Button DockPanel.Dock="Right" Content="Apply target" Click="OnTarget"/><TextBox x:Name="TargetBox" Margin="0,4,12,4"/></DockPanel>
+<TextBlock Text="Encoder thread budget (optional)"/>
+<ComboBox x:Name="ThreadsBox" MaxWidth="230" HorizontalAlignment="Left" MinWidth="180"/>
+<TextBlock Text="Auto is the default. This is an encoder thread request, not a CPU usage limit; decoding and codec worker pools may use additional threads." Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,6"/>
 <CheckBox x:Name="SplitBox" Content="Experimental: split video into two parallel parts" Margin="0,10,0,4"/>
 <TextBlock Text="Optional, H.264 MP4 CFR only, original dimensions. May be slower or change quality; strict validation, no output on failure." Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,6"/>
 <TextBlock Text="MP4 · source frame timing · AAC copy · single pass" Foreground="#526071" Margin="0,8,0,0" TextWrapping="Wrap"/>

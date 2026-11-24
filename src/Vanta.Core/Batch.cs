@@ -24,9 +24,10 @@ public sealed record BatchJob(string Input,string Output,Plan Plan);
 public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null);
 public static class BatchEncoder
 {
-    public static async Task RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default)
+    public static async Task RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default,int? totalEncoderThreads=null)
     {
         if(parallelism is <1 or >2)throw new ArgumentOutOfRangeException(nameof(parallelism));
+        var jobThreads=ThreadBudget.PerJob(totalEncoderThreads,parallelism);
         var inputs=jobs.Select(j=>Path.GetFullPath(j.Input)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var outputs=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach(var j in jobs)
@@ -42,7 +43,7 @@ public static class BatchEncoder
                 var report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                 {
                     if(x.Stage!="Complete")progress.Report(new(i,x.Stage,x.Fraction));
-                }));
+                }),encoderThreads:jobThreads);
                 progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)"));
             }
             catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));}

@@ -35,6 +35,7 @@ public partial class BatchWindow:Window
         ProfileBox.ItemsSource=new[]{"Quality","Balanced","Compact"};
         ProfileBox.SelectedIndex=1;
         ParallelBox.ItemsSource=new[]{1,2};ParallelBox.SelectedIndex=1;
+        ThreadsBox.ItemsSource=ThreadChoices.Create();ThreadsBox.SelectedIndex=0;
         initialized=true;
         Loaded+=async (_,_)=>{if(initial.Length>0)await AddAsync(initial);};
     }
@@ -86,9 +87,10 @@ public partial class BatchWindow:Window
         catch(Exception ex){Summary.Text=ex.Message;}
     }
     private void OnProfile(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)Replan();}
+    private void OnResourceSettings(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)UpdateSummary();}
     private void SetBusy(bool busy)
     {
-        AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=!busy;
+        AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=!busy;
         FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=!busy;
         CancelButton.IsEnabled=busy;UpdateSummary();
     }
@@ -100,6 +102,15 @@ public partial class BatchWindow:Window
         double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
         Summary.Text=$"{rows.Count} videos · {ready} ready · {rows.Count(r=>r.State=="Complete")} complete · {rows.Count(r=>r.State=="Failed")} failed · {rows.Count(r=>r.State=="Canceled")} canceled · {rows.Count(r=>r.State=="Skipped")} skipped";
         if(pending.Length>0)Summary.Text+=$" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)";
+        if(current is null&&ParallelBox.SelectedItem is int parallel)
+        {
+            try
+            {
+                var count=ThreadBudget.PerJob((ThreadsBox.SelectedItem as ThreadChoice)?.Count,parallel);
+                Summary.Text+=count is int n?$" | {n} requested encoder threads/job (not a CPU cap)":" | Automatic encoder threads";
+            }
+            catch(ArgumentException ex){Summary.Text+=" | "+ex.Message;StartButton.IsEnabled=false;}
+        }
     }
     private void Replan()
     {
@@ -158,6 +169,9 @@ public partial class BatchWindow:Window
         if(current is not null||tools is null)return;
         var ready=rows.Where(r=>r.State=="Ready"&&r.Plan is not null).ToArray();
         if(ready.Length==0)return;
+        int parallel=(int)ParallelBox.SelectedItem;
+        var totalThreads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
+        try{ThreadBudget.PerJob(totalThreads,parallel);}catch(ArgumentException ex){Summary.Text=ex.Message;return;}
         var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!)).ToArray();
         using var cts=new CancellationTokenSource();current=cts;
         foreach(var r in ready){r.State="Queued";r.Detail="";r.Refresh();}
@@ -170,7 +184,7 @@ public partial class BatchWindow:Window
                 r.State=x.Stage=="Encoding"&&x.Fraction is double f?$"Encoding {f:P0}":x.Stage;
                 r.Detail=x.Detail??"";r.Refresh();UpdateSummary();
             }));
-            await BatchEncoder.RunAsync(tools,jobs,(int)ParallelBox.SelectedItem,progress,cts.Token);
+            await BatchEncoder.RunAsync(tools,jobs,parallel,progress,cts.Token,totalEncoderThreads:totalThreads);
         }
         catch(OperationCanceledException){}
         catch(Exception ex){MessageBox.Show(this,ex.Message,"VANTA");}

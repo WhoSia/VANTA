@@ -60,5 +60,17 @@ try
     Check(OutputNames.Suggest(first).EndsWith("clip_vanta_2.mp4"),"Existing file naming");
 }
 finally{Directory.Delete(namingRoot,true);}
+Check(ThreadBudget.PerJob(null,2) is null,"Auto leaves encoder settings unchanged");
+Check(ThreadBudget.PerJob(8,2)==4&&ThreadBudget.PerJob(5,2)==2&&ThreadBudget.PerJob(1,1)==1,"Shared thread allocation");
+Check(ThreadBudget.Choices(1).SequenceEqual(new[]{1})&&ThreadBudget.Choices(9).Last()==9&&ThreadBudget.Choices(128).Last()==64,"Bounded thread choices");
+ThreadBudget.ValidateEncoder(1,false);ThreadBudget.ValidateEncoder(4,true);
+foreach(int badThreads in new[]{0,1,3,65})
+{
+    rejected=false;try{ThreadBudget.ValidateEncoder(badThreads,true);}catch(ArgumentException){rejected=true;}
+    Check(rejected,"Invalid split thread budget");
+}
+rejected=false;try{ThreadBudget.PerJob(1,2);}catch(ArgumentException){rejected=true;}
+Check(rejected,"Insufficient batch thread budget");
+Console.WriteLine("Thread budget allocation passed.");
 Console.WriteLine("Smoke checks passed");
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}

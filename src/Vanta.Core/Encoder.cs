@@ -11,7 +11,7 @@ public static class Encoder
         {
             var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
         }
-        if(encoderThreads is <2 or >64 || (experimentalSplit && encoderThreads is int n && n%2!=0)) throw new ArgumentOutOfRangeException(nameof(encoderThreads));
+        ThreadBudget.ValidateEncoder(encoderThreads,experimentalSplit);
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
         if(!string.Equals(Path.GetExtension(output),".mp4",StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Only MP4 is supported in this prototype");

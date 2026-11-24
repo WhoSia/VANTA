@@ -18,6 +18,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         CodecBox.ItemsSource=PlanRules.Codecs;
         PresetBox.ItemsSource=PlanRules.Presets;
+        ThreadsBox.ItemsSource=ThreadChoices.Create();ThreadsBox.SelectedIndex=0;
     }
     private void OnClosing(object? sender,CancelEventArgs e)
     {
@@ -118,6 +119,8 @@ public partial class MainWindow : Window
         if(current is not null||activePlan is null||sourcePath is null||tools is null)return;
         var p=activePlan;var input=sourcePath;var resolved=tools;
         bool split=SplitBox.IsChecked==true;
+        var threads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
+        try{ThreadBudget.ValidateEncoder(threads,split);}catch(ArgumentException ex){Status.Text=ex.Message;return;}
         if(split&&(p.Codec!="libx264"||media?.Height!=p.Height||media?.Codec!="h264"||!string.Equals(System.IO.Path.GetExtension(input),".mp4",StringComparison.OrdinalIgnoreCase)))
         {Status.Text="Experimental split requires H.264 MP4 input, H.264 output, original height and CFR. Uncheck it for normal encoding.";return;}
         var dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileName(OutputNames.Suggest(input)),InitialDirectory=System.IO.Path.GetDirectoryName(input),OverwritePrompt=true};
@@ -133,7 +136,7 @@ public partial class MainWindow : Window
                 BusyBar.Value=(x.Fraction??0)*100;
                 Status.Text=x.Fraction is double fraction?$"{x.Stage} · {fraction:P0}":x.Stage+"…";
             });
-            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split);
+            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads);
             var bytes=report.OutputBytes;
             Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)media!.Bytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)";
         }

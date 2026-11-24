@@ -92,7 +92,7 @@ try
     Check(silentInfo.Info.AudioTracks==0 && silentInfo.Info.Height==90,"Silent scaled output incorrect");
     Console.WriteLine("Silent video and scaling passed.");
     var avcOut=Path.Combine(root,"avc fast.mp4");
-    await Encoder.EncodeAsync("ffmpeg","ffprobe",input,avcOut,plan with {Codec="libx264",Preset="fast"},ct);
+    await Encoder.EncodeAsync("ffmpeg","ffprobe",input,avcOut,plan with {Codec="libx264",Preset="fast"},ct,encoderThreads:1);
     var avc=await Probe.InspectAsync("ffprobe",avcOut,ct);
     Check(avc.Info.Codec=="h264","H.264 output mismatch");
     Console.WriteLine("H.264 fast preset and copied audio timeline passed.");
@@ -117,10 +117,10 @@ try
     var batchA=OutputNames.Suggest(input);
     var batchB=OutputNames.Suggest(silent);
     var updates=new System.Collections.Concurrent.ConcurrentQueue<BatchUpdate>();
-    await BatchEncoder.RunAsync(resolved,[new(input,batchA,plan),new(silent,batchB,plan),new(input,output,plan)],2,new BatchProgress(updates.Enqueue),ct);
+    await BatchEncoder.RunAsync(resolved,[new(input,batchA,plan),new(silent,batchB,plan),new(input,output,plan)],2,new BatchProgress(updates.Enqueue),ct,totalEncoderThreads:4);
     Check(File.Exists(batchA)&&File.Exists(batchB)&&Hash(input)==before&&Hash(output)==priorOutput,"Parallel output safety");
     Check(updates.Count(x=>x.Stage=="Complete")==2&&updates.Count(x=>x.Stage=="Failed")==1,"Batch failure isolation");
-    Console.WriteLine("Parallel batch, collision refusal and per-job failure isolation passed.");
+    Console.WriteLine("Parallel batch, collision refusal and per-job failure isolation passed (4 requested encoder threads shared).");
     var vfr=Path.Combine(root,"vfr multiple audio.mp4");
     var vfrOut=Path.Combine(root,"vfr compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=12","-f","lavfi","-i","sine=frequency=440:sample_rate=48000:duration=12","-itsoffset","0.15","-f","lavfi","-i","sine=frequency=880:sample_rate=48000:duration=11.85","-map","0:v","-map","1:a","-map","2:a","-vf","select=not(mod(n\\,2))+not(mod(n\\,5))","-fps_mode","vfr","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",vfr);
