@@ -42,5 +42,19 @@ var observed=new List<EncodeProgress>();
 var parser=new ProgressParser(10,new ImmediateProgress(observed.Add));
 foreach(var line in new[]{"out_time_us=N/A","out_time_us=-5","out_time_us=3000000","out_time_us=2000000","out_time_us=10000000"})parser.Read(line);
 Check(observed.Count==2 && observed[0].Fraction==.3 && observed[1].Fraction==.999,"Monotonic encoding progress capped before validation");
+var namingRoot=Path.Combine(Path.GetTempPath(),"VANTA-names-"+Guid.NewGuid().ToString("N"));
+Directory.CreateDirectory(namingRoot);
+try
+{
+    var first=Path.Combine(namingRoot,"clip.mp4");
+    var other=Path.Combine(namingRoot,"clip.mov");
+    var reserved=new HashSet<string>(StringComparer.OrdinalIgnoreCase){first,other};
+    var one=OutputNames.Suggest(first,reserved);
+    var two=OutputNames.Suggest(other,reserved);
+    Check(Path.GetFileName(one)=="clip_vanta.mp4"&&Path.GetFileName(two)=="clip_vanta_2.mp4","Batch unique names");
+    File.WriteAllText(one,"existing");
+    Check(OutputNames.Suggest(first).EndsWith("clip_vanta_2.mp4"),"Existing file naming");
+}
+finally{Directory.Delete(namingRoot,true);}
 Console.WriteLine("Smoke checks passed");
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}

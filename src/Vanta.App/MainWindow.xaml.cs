@@ -31,7 +31,13 @@ public partial class MainWindow : Window
     }
     private async void OnDrop(object sender,DragEventArgs e)
     {
-        if(!encoding && e.Data.GetData(DataFormats.FileDrop) is string[] {Length:1} paths)await LoadAsync(paths[0]);
+        if(encoding||e.Data.GetData(DataFormats.FileDrop) is not string[] paths)return;
+        if(paths.Length==1)await LoadAsync(paths[0]);
+        else if(paths.Length>1&&current is null)new BatchWindow(paths){Owner=this}.ShowDialog();
+    }
+    private void OnBatch(object sender,RoutedEventArgs e)
+    {
+        if(current is null)new BatchWindow{Owner=this}.ShowDialog();
     }
     private async Task LoadAsync(string path)
     {
@@ -53,7 +59,13 @@ public partial class MainWindow : Window
             Plans.ItemsSource=rows;
             Editor.IsEnabled=true;
             if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
-            else Apply(new Plan("Custom",resolved.Codecs[0],m.Height,PlanRules.MinimumVideoRate,0,"medium",false));
+            else
+            {
+                applying=true;
+                try{CodecBox.SelectedIndex=0;PresetBox.SelectedItem="medium";HeightBox.Text=m.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text="";}
+                finally{applying=false;}
+                RefreshEstimate();
+            }
             Status.Text=rows.Length<3?"Fewer than three feasible savings estimates. Custom settings are available.":"Select or edit a plan. Actual output size may differ substantially.";
         }
         catch(OperationCanceledException){if(current==cts)Status.Text="Analysis canceled.";}
@@ -105,7 +117,7 @@ public partial class MainWindow : Window
     {
         if(current is not null||activePlan is null||sourcePath is null||tools is null)return;
         var p=activePlan;var input=sourcePath;var resolved=tools;
-        var dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileNameWithoutExtension(input)+".vanta.mp4",OverwritePrompt=true};
+        var dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileName(OutputNames.Suggest(input)),InitialDirectory=System.IO.Path.GetDirectoryName(input),OverwritePrompt=true};
         if(dlg.ShowDialog()!=true)return;
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;Status.Text="Encoding and validating…";

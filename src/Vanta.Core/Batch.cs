@@ -1,0 +1,55 @@
+namespace Vanta.Core;
+
+public static class OutputNames
+{
+    public static string Suggest(string input,ISet<string>? reserved=null)
+    {
+        input=Path.GetFullPath(input);
+        var dir=Path.GetDirectoryName(input)!;
+        var stem=Path.GetFileNameWithoutExtension(input)+"_vanta";
+        for(int i=1;i<=10000;i++)
+        {
+            var path=Path.Combine(dir,stem+(i==1?"":$"_{i}")+".mp4");
+            if(!File.Exists(path)&&!Directory.Exists(path)&&(reserved is null||!reserved.Contains(path))&&!string.Equals(path,input,StringComparison.OrdinalIgnoreCase))
+            {
+                reserved?.Add(path);
+                return path;
+            }
+        }
+        throw new IOException("No available output filename.");
+    }
+}
+public sealed record BatchJob(string Input,string Output,Plan Plan);
+public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null);
+public static class BatchEncoder
+{
+    public static async Task RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default)
+    {
+        if(parallelism is <1 or >2)throw new ArgumentOutOfRangeException(nameof(parallelism));
+        var inputs=jobs.Select(j=>Path.GetFullPath(j.Input)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var outputs=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach(var j in jobs)
+        {
+            var path=Path.GetFullPath(j.Output);
+            if(inputs.Contains(path)||!outputs.Add(path))throw new ArgumentException("Batch output overlaps an input or another output.");
+        }
+        await Parallel.ForEachAsync(Enumerable.Range(0,jobs.Count),new ParallelOptions{MaxDegreeOfParallelism=parallelism,CancellationToken=ct},async (i,token)=>
+        {
+            var j=jobs[i];
+            try
+            {
+                await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
+                {
+                    if(x.Stage!="Complete")progress.Report(new(i,x.Stage,x.Fraction));
+                }));
+                progress.Report(new(i,"Complete",1,$"{new FileInfo(j.Output).Length/1e6:F2} MB"));
+            }
+            catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));}
+            catch(Exception ex){progress.Report(new(i,"Failed",null,ex.Message));}
+        });
+    }
+    private sealed class InlineProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>
+    {
+        public void Report(EncodeProgress value)=>report(value);
+    }
+}

@@ -94,6 +94,13 @@ try
         }
     }
     Console.WriteLine("All 12 codec/preset/fixture matrix encodes passed.");
+    var batchA=OutputNames.Suggest(input);
+    var batchB=OutputNames.Suggest(silent);
+    var updates=new System.Collections.Concurrent.ConcurrentQueue<BatchUpdate>();
+    await BatchEncoder.RunAsync(resolved,[new(input,batchA,plan),new(silent,batchB,plan),new(input,output,plan)],2,new BatchProgress(updates.Enqueue),ct);
+    Check(File.Exists(batchA)&&File.Exists(batchB)&&Hash(input)==before&&Hash(output)==priorOutput,"Parallel output safety");
+    Check(updates.Count(x=>x.Stage=="Complete")==2&&updates.Count(x=>x.Stage=="Failed")==1,"Batch failure isolation");
+    Console.WriteLine("Parallel batch, collision refusal and per-job failure isolation passed.");
     var vfr=Path.Combine(root,"vfr multiple audio.mp4");
     var vfrOut=Path.Combine(root,"vfr compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=12","-f","lavfi","-i","sine=frequency=440:sample_rate=48000:duration=12","-itsoffset","0.15","-f","lavfi","-i","sine=frequency=880:sample_rate=48000:duration=11.85","-map","0:v","-map","1:a","-map","2:a","-vf","select=not(mod(n\\,2))+not(mod(n\\,5))","-fps_mode","vfr","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",vfr);
@@ -125,4 +132,5 @@ try
     Console.WriteLine("Windows FFmpeg integration checks passed.");
 }
 finally { Directory.Delete(root,true); }
+sealed class BatchProgress(Action<BatchUpdate> report):IProgress<BatchUpdate>{public void Report(BatchUpdate value)=>report(value);}
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}
