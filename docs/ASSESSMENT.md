@@ -1,21 +1,21 @@
 # Development assessment — 0.2.0
 
-Axes: value / implementation / evidence / integrity, [0,1]. Subjective rubric, not measured reliability. No linear aggregate.
+Axes: value / implementation / evidence / integrity, each [0,1]; subjective rubric, not measured reliability. No linear sum.
 
 | Area | Vector | Evidence / next gate |
 |---|---|---|
-| CI | (1,.97,.96,.93) | 14eebd0 passed; new acceleration CI pending |
-| Continuous encoder | (1,.94,.94,.90) | 12 prior combinations; veryfast extension pending |
-| Temporal integrity | (1,.93,.93,.89) | VFR, multi-audio, 120s, relative timing and payload checks |
+| CI | (1,.97,.96,.93) | 81e4217 passed; cd99fbf pending |
+| Continuous encoder | (1,.94,.95,.90) | 16 matrix cells passed |
+| Temporal integrity | (1,.93,.94,.89) | existing timeline and payload tests, 120s split passed |
 | Size budget | (1,.89,.85,.65) | ABR uncertainty remains |
 | Adaptive planner | (1,.65,.65,.55) | metadata heuristic; no measured quality |
-| Batch queue | (.99,.75,.70,.70) | failure isolation passed; GUI and active cancellation open |
+| Batch queue | (.99,.75,.70,.70) | failure isolation passed; active batch cancel/UX open |
 | Output naming | (.98,.88,.80,.80) | collision tests passed |
-| GUI | (.99,.85,.60,.60) | owner launch; actual encode acceptance open |
-| Veryfast preset | (.97,.90,.20,.55) | extended matrix pending |
-| Experimental split | (.94,.55,.20,.35) | one Linux benchmark and local trim trial; C# CI pending |
-| Hardware acceleration | (.95,.05,.05,.15) | no device-specific validation |
-| Toolchain | (1,.92,.85,.82) | previous launcher CI and owner dependency availability |
-| Distribution | (.98,.75,.70,.65) | 157582-byte batch preview |
+| GUI | (.99,.85,.60,.60) | owner launch; encoding acceptance open |
+| Veryfast | (.97,.95,.90,.85) | 16-cell matrix passed |
+| Experimental split | (.94,.72,.58,.55) | Windows 120s and VFR rejection passed; frame ID/cancel/paired benchmark pending |
+| Hardware acceleration | (.95,.05,.05,.15) | device-specific tests needed |
+| Toolchain | (1,.92,.85,.82) | launcher and dependency presence |
+| Distribution | (.98,.75,.75,.65) | 162477-byte preview |
 
-Priority: preserve current CI; verify split and veryfast, add boundary/cancel and comparable benchmark evidence, evaluate internal thread allocation before GPU changes. Experimental option never defaults on. Do not trade integrity for speed. If split cannot demonstrate benefit, keep disabled or remove from stable scope. No version change.
+Priority: verify cd99fbf (marker negative control, delayed AAC, split cancel, matched benchmark). Evaluate end-to-end time, bytes and SSIM separately; no speed claim without comparable evidence. Then prioritize bounded batch UX, capability-driven recommendation, and CPU thread budget; avoid scope creep and keep split opt-in. No new version without approval.
