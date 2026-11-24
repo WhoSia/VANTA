@@ -28,6 +28,7 @@ public static class Encoder
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
+            await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
             await Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);
             ct.ThrowIfCancellationRequested();

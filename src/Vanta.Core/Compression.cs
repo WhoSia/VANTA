@@ -12,7 +12,7 @@ public static class Planner
         if (m.Bytes <= 0 || !double.IsFinite(m.Seconds) || m.Seconds <= 0 || m.Height <= 0 || m.Width <= 0 || m.AudioBitsPerSecond < 0 || (m.AudioTracks > 0 && m.AudioBitsPerSecond == 0)) throw new ArgumentException("Invalid source metadata");
         var total = m.Bytes * 8.0 / m.Seconds;
         var result = new List<Plan>();
-        foreach (var (name, fraction, height, audio) in new[] { ("Quality", .80, m.Height, 192000L), ("Balanced", .55, m.Height, 128000L), ("Compact", .30, Math.Min(720,m.Height), 96000L) })
+        foreach (var (name, fraction, height) in new[] { ("Quality", .80, m.Height), ("Balanced", .55, m.Height), ("Compact", .30, Math.Min(720,m.Height)) })
         {
             var available = total * fraction / 1.005 - m.AudioBitsPerSecond;
             if (height<2 || available < 64000 || available > long.MaxValue) continue;
