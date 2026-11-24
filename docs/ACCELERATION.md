@@ -79,3 +79,22 @@ Reproduction: generate fixture with ffmpeg -f lavfi -i "testsrc2=s=160x90:r=3000
 ## Production phase evidence and shadow comparator
 
 CI 45487124583 (bc0554e) succeeded. Continuous total 7.3521/7.3919s; split 8.4264/9.3955s. Continuous average output probe/timeline/audio hash/full decode = .096/1.21875/.26815/.68385 seconds. Audio aggregate hash is only about 3.64% of total; eliminating its entire measured wall time alone would reduce total to approximately 7.104 seconds, before any extra packet-hash cost. Do not promise a 12% end-to-end improvement from earlier audio-only test. Local parser format check performed this turn with an actual 0.2s 48kHz AAC sample: ffprobe compact=p=1:nk=0 emits explicit packet rows with pts_time and SHA256:<64 hex> data_hash, including first packet skip-samples side data. This verifies the local output syntax, not Windows 9.1 compatibility. 8961056 adds test-only shadow comparison with streaming packet records, common video origin and 2ms tolerance. Fail closed on absent, duplicate or malformed fields. Legacy aggregate hash and final decode remain mandatory in product. Packet hashes do not establish equivalence of AAC codec extradata or priming side data; inspect those separately before changing validation. Paired Windows test measures full timeline plus old hash vs fused packet hashes; not a full encode benchmark. See CI 45488083106.
+
+## Shadow validation CI and optional encoder thread budgets
+
+CI 45488083106 at 8961056 passed. Timeline + aggregate hash: 1.5660/1.5510s, fused packet validation: 1.3598/1.3661s. Mean 1.5585 vs 1.36295s (12.55% reduction for this validation stage). Positive delayed AAC, multi-audio VFR and MOV, negative shifted/substituted audio passed. No production replacement: AAC extradata/priming and other supported-domain equivalence remain open. Artifact 14964738250, 169354 bytes.
+
+9a5f038 adds explicit optional encoder-thread requests, default null (existing automatic behavior). Single continuous 1..64, explicit split even 2..64; batch floor(total / requested concurrency) per job, reject total below concurrency. UI choices bounded by Environment.ProcessorCount and 64. Unused remainder and unused slot capacity are intentionally not redistributed in this first static policy. FFmpeg -threads is an encoder request, NOT a process CPU or memory cap; libx265 internal pools/decoder/filter workers are not controlled. No automatic change to defaults. Smoke tests cover validation/allocation; integration uses one-thread AVC and two concurrent jobs sharing four requested encoder threads. CI pending.
+
+Actual local trial 2026-11-25: Linux FFmpeg 7.1.5-0+deb13u1, 5 visible CPUs, cgroup quota 4 CPU equivalents, 2 silent 960x540 30fps 4s sources generated with lavfi testsrc2=s=960x540:r=30:d=4 and testsrc2=s=960x540:r=30:d=4,noise=alls=8:allf=t+u:all_seed=42, source H.264 ultrafast -threads 2 -pix_fmt yuv420p. Outputs H.264 medium, 1000000bps, passthrough, no audio. Serial 4 encoder threads per job, parallel 2+2, parallel auto (omit -threads). Alternating order, two repetitions. Wall time for pair excludes input generation and VANTA validation. Per-process max RSS from /usr/bin/time, NOT simultaneous aggregate peak; summed CPU time user+system.
+
+| Rep | Mode | Pair wall s | Per-job CPU s | Per-job max RSS KiB | Output bytes |
+|---:|---|---:|---|---|---|
+| 0 | Serial 4 | 1.3678 | 1.86/1.94 | 209236/210952 | 497909/484883 |
+| 0 | Parallel 2+2 | 1.1081 | 1.77/1.90 | 196888/196352 | 498465/484747 |
+| 0 | Parallel auto | 1.0328 | 1.73/2.00 | 236868/236384 | 498975/484034 |
+| 1 | Parallel auto | .9450 | 1.68/1.82 | 236732/236232 | 498975/484034 |
+| 1 | Parallel 2+2 | 1.0484 | 1.60/1.82 | 196424/196488 | 498465/484736 |
+| 1 | Serial 4 | 1.3003 | 1.67/1.90 | 209140/208928 | 497909/484883 |
+
+Means 1.33405/1.07825/.98890s. Bounded 2+2 was about 19% faster than serial here, auto about 26% faster than serial; bounded was about 9% slower than auto, with about 17% lower mean per-process peak RSS. No perceptual-quality check, no throughput generalization, no GPU testing. Retain auto and explicit budget as choices. Reproduce output command: ffmpeg -v error -nostdin -i source.mp4 -map 0:v:0 -an -c:v libx264 -preset medium -b:v 1000000 -fps_mode passthrough -threads 2 output.mp4 (replace thread setting; run two subprocesses concurrently or sequentially).
