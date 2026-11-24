@@ -12,6 +12,9 @@
 <TextBlock x:Name="Source" TextWrapping="Wrap" Margin="0,10,0,0"/>
 </StackPanel></Border>
 <TextBlock Text="Suggested plans" FontWeight="SemiBold" Margin="0,16,0,6"/>
+<TextBlock Text="Recommendation codec (changing this rebuilds the plans and resets manual settings)" TextWrapping="Wrap" Foreground="#526071"/>
+<ComboBox x:Name="RecommendationBox" MinWidth="180" MaxWidth="260" HorizontalAlignment="Left" IsEnabled="False" SelectionChanged="OnRecommendation"/>
+<TextBlock Text="Profiles are bitrate-budget tiers, not measured quality guarantees." TextWrapping="Wrap" Foreground="#526071" Margin="0,0,0,6"/>
 <ListBox x:Name="Plans" DisplayMemberPath="Label" SelectionChanged="OnPlan" MinHeight="72" MaxHeight="140"/>
 <TextBlock Text="Encoding settings" FontWeight="SemiBold" Margin="0,16,0,8"/>
 <Border Background="White" CornerRadius="8" Padding="16"><StackPanel x:Name="Editor" IsEnabled="False">

@@ -34,6 +34,7 @@ public partial class BatchWindow:Window
         Queue.ItemsSource=rows;
         ProfileBox.ItemsSource=new[]{"Quality","Balanced","Compact"};
         ProfileBox.SelectedIndex=1;
+        RecommendationBox.ItemsSource=RecommendationChoices.Create();RecommendationBox.SelectedIndex=0;
         ParallelBox.ItemsSource=new[]{1,2};ParallelBox.SelectedIndex=1;
         ThreadsBox.ItemsSource=ThreadChoices.Create();ThreadsBox.SelectedIndex=0;
         initialized=true;
@@ -90,7 +91,7 @@ public partial class BatchWindow:Window
     private void OnResourceSettings(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)UpdateSummary();}
     private void SetBusy(bool busy)
     {
-        AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=!busy;
+        AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=RecommendationBox.IsEnabled=!busy;
         FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=!busy;
         CancelButton.IsEnabled=busy;UpdateSummary();
     }
@@ -122,8 +123,8 @@ public partial class BatchWindow:Window
             try
             {
                 var m=r.Media!;
-                var p=Planner.Propose(m,tools!.Codecs).FirstOrDefault(p=>p.Name==(string)ProfileBox.SelectedItem);
-                if(p is null){r.State="Skipped";r.Detail="Selected profile unavailable; choose another profile or use single-file settings.";r.Refresh();continue;}
+                var p=Planner.Propose(m,tools!.Codecs,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec).FirstOrDefault(p=>p.Name==(string)ProfileBox.SelectedItem);
+                if(p is null){r.State="Skipped";r.Detail="Selected codec or budget tier unavailable; choose another or use single-file settings.";r.Refresh();continue;}
                 r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
                 r.Budget=$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.EstimateBytes(m)/1e6:F2} MB";
                 r.State="Ready";r.Detail="Bitrate budget, not guaranteed size.";

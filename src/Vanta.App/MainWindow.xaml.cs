@@ -45,7 +45,7 @@ public partial class MainWindow : Window
         if(current is not null)return;
         using var cts=new CancellationTokenSource();current=cts;
         encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
-        Editor.IsEnabled=Plans.IsEnabled=false;CancelButton.IsEnabled=true;
+        Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
         BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
         Status.Text="Testing listed hardware encoders on synthetic frames…";
         try
@@ -59,14 +59,14 @@ public partial class MainWindow : Window
         finally
         {
             current=null;encoding=false;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=Plans.IsEnabled=true;
-            Editor.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();
+            Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();
         }
     }
     private async Task LoadAsync(string path)
     {
         current?.Cancel();
         using var cts=new CancellationTokenSource();current=cts;
-        media=null;tools=null;sourcePath=null;SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
+        media=null;tools=null;sourcePath=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
         CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
         try
         {
@@ -78,22 +78,35 @@ public partial class MainWindow : Window
             if(!details.Supported){Status.Text=details.Reason;return;}
             tools=resolved;media=m;sourcePath=path;
             CodecBox.ItemsSource=resolved.Codecs;
-            var rows=Planner.Propose(m,resolved.Codecs).Select(p=>new PlanRow(p,$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} budget savings)")).ToArray();
-            Plans.ItemsSource=rows;
+            RecommendationBox.ItemsSource=RecommendationChoices.Create(resolved.Codecs);
+            RecommendationBox.SelectedIndex=0;
             Editor.IsEnabled=true;
-            if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
-            else
-            {
-                applying=true;
-                try{CodecBox.SelectedIndex=0;PresetBox.SelectedItem="medium";HeightBox.Text=m.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text="";}
-                finally{applying=false;}
-                RefreshEstimate();
-            }
-            Status.Text=rows.Length<3?"Fewer than three feasible savings estimates. Custom settings are available.":"Select or edit a plan. Actual output size may differ substantially.";
+            RebuildPlans();
         }
         catch(OperationCanceledException){if(current==cts)Status.Text="Analysis canceled.";}
         catch(Exception ex){if(current==cts)Status.Text=ex.Message;}
-        finally{if(current==cts){current=null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}}
+        finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}}
+    }
+    private void OnRecommendation(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(current is null&&media is not null&&tools is not null)RebuildPlans();
+    }
+    private void RebuildPlans()
+    {
+        if(media is not MediaInfo m||tools is not Toolchain resolved)return;
+        var preferred=(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec;
+        TargetBox.Clear();SplitBox.IsChecked=false;
+        var rows=Planner.Propose(m,resolved.Codecs,preferred).Select(p=>new PlanRow(p,$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} budget savings)")).ToArray();
+        Plans.ItemsSource=rows;
+        if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
+        else
+        {
+            applying=true;
+            try{CodecBox.SelectedItem=preferred??resolved.Codecs[0];PresetBox.SelectedItem="medium";HeightBox.Text=m.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text="";}
+            finally{applying=false;}
+            RefreshEstimate();
+        }
+        Status.Text=rows.Length<3?"Fewer than three positive bitrate-budget savings estimates. Custom settings are available.":"Select or edit a budget tier. Actual size and quality are not guaranteed.";
     }
     private void OnPlan(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {
@@ -118,7 +131,7 @@ public partial class MainWindow : Window
             var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,(long)(kb*1000),0,PresetBox.SelectedItem as string??"",false);
             var v=CandidateEvaluation.Evaluate(p,media);
             activePlan=p;
-            Estimate.Text=$"Bitrate budget {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} saved";
+            Estimate.Text=$"Bitrate budget {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} budget savings";
             Evidence.Text=$"Pixel retention {v.PixelRetention:P1} · quality not measured · actual size may be much smaller or larger; not a limit";
             EncodeButton.IsEnabled=current is null&&!encoding;
         }
@@ -148,7 +161,7 @@ public partial class MainWindow : Window
         var dlg=new SaveFileDialog{Filter="MP4 video|*.mp4",DefaultExt=".mp4",FileName=System.IO.Path.GetFileName(OutputNames.Suggest(input)),InitialDirectory=System.IO.Path.GetDirectoryName(input),OverwritePrompt=true};
         if(dlg.ShowDialog()!=true)return;
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
-        OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;Status.Text="Encoding and validating…";
+        OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;Status.Text="Encoding and validating…";
         try
         {
             var progress=new Progress<EncodeProgress>(x=>
@@ -164,6 +177,6 @@ public partial class MainWindow : Window
         }
         catch(OperationCanceledException){Status.Text="Canceled; no new output published.";}
         catch(Exception ex){Status.Text=ex.Message;}
-        finally{current=null;encoding=false;OpenButton.IsEnabled=true;Editor.IsEnabled=true;Plans.IsEnabled=true;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}
+        finally{current=null;encoding=false;OpenButton.IsEnabled=true;Editor.IsEnabled=true;Plans.IsEnabled=true;RecommendationBox.IsEnabled=true;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}
     }
 }

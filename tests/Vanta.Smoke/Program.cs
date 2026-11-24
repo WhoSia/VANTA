@@ -9,6 +9,10 @@ Check(avcPlans.Count==3&&avcPlans.All(p=>p.Codec=="libx264"&&p.Savings(source)>0
 Check(avcPlans[0].VideoBitsPerSecond>=plans[0].VideoBitsPerSecond,"Conservative AVC-only budget");
 Check(Planner.Propose(source,["libx265"]).All(p=>p.Codec=="libx265"),"Capability aware HEVC planning");
 Check(Planner.Propose(source,[]).Count==0&&Planner.Propose(source,["unsupported"]).Count==0,"No executable codec means no recommendation");
+Check(Planner.Propose(source,["libx264","libx265"],"libx264").All(p=>p.Codec=="libx264")&&Planner.Propose(source,["libx264","libx265"],"libx264").Count==3,"Explicit AVC recommendation");
+Check(Planner.Propose(source,["libx264"],"libx265").Count==0,"No fallback for unavailable preferred codec");
+bool badPreference=false;try{Planner.Propose(source,null,"invalid");}catch(ArgumentException){badPreference=true;}
+Check(badPreference,"Invalid recommendation preference rejected");
 Check(plans.Zip(plans.Skip(1)).All(x=>x.First.EstimateBytes(source)>x.Second.EstimateBytes(source)),"Ordered sizes");
 Check(Decisions.Dominates([.8,.9],[.7,.9]),"Dominance");
 Check(!Decisions.Dominates([.8,.7],[.7,.9]),"Trade-off");
