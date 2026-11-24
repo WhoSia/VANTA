@@ -2,10 +2,11 @@ namespace Vanta.Core;
 
 public static class OutputNames
 {
-    public static string Suggest(string input,ISet<string>? reserved=null)
+    public static string Suggest(string input,ISet<string>? reserved=null,string? destinationDirectory=null)
     {
         input=Path.GetFullPath(input);
-        var dir=Path.GetDirectoryName(input)!;
+        var dir=destinationDirectory is null?Path.GetDirectoryName(input)!:Path.GetFullPath(destinationDirectory);
+        if(!Directory.Exists(dir))throw new DirectoryNotFoundException(dir);
         var stem=Path.GetFileNameWithoutExtension(input)+"_vanta";
         for(int i=1;i<=10000;i++)
         {

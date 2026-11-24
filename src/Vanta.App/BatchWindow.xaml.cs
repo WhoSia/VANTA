@@ -11,10 +11,14 @@ public partial class BatchWindow:Window
     private CancellationTokenSource? current;
     private Toolchain? tools;
     private bool initialized;
+    private string? destinationDirectory;
     private sealed class Row(string input):INotifyPropertyChanged
     {
         public string Input {get;}=input;
         public string Output {get;set;}="";
+        public string InputName=>System.IO.Path.GetFileName(Input);
+        public string OutputName=>System.IO.Path.GetFileName(Output);
+        public string Paths=>$"Source: {Input}\nOutput: {Output}";
         public string Budget {get;set;}="";
         public string State {get;set;}="Analyzing";
         public string Detail {get;set;}="";
@@ -50,23 +54,58 @@ public partial class BatchWindow:Window
     }
     private void OnClear(object sender,RoutedEventArgs e){if(current is null){rows.Clear();UpdateSummary();}}
     private void OnRemove(object sender,RoutedEventArgs e){if(current is null&&Queue.SelectedItem is Row r){rows.Remove(r);UpdateSummary();}}
+    private void OnFolder(object sender,RoutedEventArgs e)
+    {
+        if(current is not null)return;
+        var dialog=new OpenFolderDialog{Title="Choose output folder",Multiselect=false};
+        if(dialog.ShowDialog(this)!=true)return;
+        destinationDirectory=dialog.FolderName;DestinationText.Text="Output: "+destinationDirectory;Replan();
+    }
+    private void OnSourceFolder(object sender,RoutedEventArgs e)
+    {
+        if(current is not null)return;
+        destinationDirectory=null;DestinationText.Text="Output: beside each source";Replan();
+    }
+    private void OnRetry(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||Queue.SelectedItem is not Row r)return;
+        if(r.State is not ("Failed" or "Canceled")){Summary.Text="Select a failed or canceled job.";return;}
+        if(r.Media is null){Summary.Text="Source analysis failed or was canceled. Remove and add the file again.";return;}
+        r.State="Analyzing";Replan();
+    }
+    private void OnOpenResult(object sender,RoutedEventArgs e)
+    {
+        if(Queue.SelectedItem is not Row r||r.State!="Complete"||!System.IO.File.Exists(r.Output)){Summary.Text="Select an existing completed output.";return;}
+        try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(System.IO.Path.GetDirectoryName(r.Output)!){UseShellExecute=true});}
+        catch(Exception ex){Summary.Text=ex.Message;}
+    }
+    private void OnCopy(object sender,RoutedEventArgs e)
+    {
+        if(Queue.SelectedItem is not Row r)return;
+        try{Clipboard.SetText($"{r.Paths}\n{r.State}\n{r.Detail}");Summary.Text="Selected job details copied.";}
+        catch(Exception ex){Summary.Text=ex.Message;}
+    }
     private void OnProfile(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)Replan();}
     private void SetBusy(bool busy)
     {
         AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=!busy;
+        FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=!busy;
         CancelButton.IsEnabled=busy;UpdateSummary();
     }
     private void UpdateSummary()
     {
         int ready=rows.Count(r=>r.State=="Ready");
         StartButton.IsEnabled=current is null&&ready>0;
-        Summary.Text=$"{rows.Count} videos · {ready} ready · {rows.Count(r=>r.State=="Complete")} complete · {rows.Count(r=>r.State=="Failed")} failed · {rows.Count(r=>r.State=="Canceled")} canceled";
+        var pending=rows.Where(r=>r.State=="Ready"&&r.Plan is not null&&r.Media is not null).ToArray();
+        double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
+        Summary.Text=$"{rows.Count} videos · {ready} ready · {rows.Count(r=>r.State=="Complete")} complete · {rows.Count(r=>r.State=="Failed")} failed · {rows.Count(r=>r.State=="Canceled")} canceled · {rows.Count(r=>r.State=="Skipped")} skipped";
+        if(pending.Length>0)Summary.Text+=$" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)";
     }
     private void Replan()
     {
         var reserved=rows.Select(r=>r.Input).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach(var r in rows.Where(r=>r.State=="Complete"))reserved.Add(r.Output);
-        foreach(var r in rows.Where(r=>r.Media is not null&&r.State!="Complete"))
+        foreach(var r in rows.Where(r=>r.Media is not null&&(r.State is "Ready" or "Skipped" or "Analyzing")))
         {
             r.Plan=null;r.Budget="";r.Output="";
             try
@@ -75,7 +114,7 @@ public partial class BatchWindow:Window
                 var p=Planner.Propose(m).FirstOrDefault(p=>p.Name==(string)ProfileBox.SelectedItem);
                 if(p is null){r.State="Skipped";r.Detail="Selected profile unavailable; choose another profile or use single-file settings.";r.Refresh();continue;}
                 if(!tools!.Codecs.Contains(p.Codec))p=p with {Codec=tools.Codecs[0]};
-                r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved);
+                r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
                 r.Budget=$"{p.Name} · {p.EstimateBytes(m)/1e6:F2} MB";
                 r.State="Ready";r.Detail="Bitrate budget, not guaranteed size.";
             }

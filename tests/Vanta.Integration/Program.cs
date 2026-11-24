@@ -201,6 +201,23 @@ try
     Check(observed && rejected && !File.Exists(activeOutput),"Active cancellation failed");
     Check(!Directory.EnumerateFiles(root,".vanta-*").Any(),"Active cancellation leaked temporary output");
     Console.WriteLine("Active cancellation and cleanup passed.");
+    var batchCancelA=Path.Combine(root,"batch canceled A.mp4");
+    var batchCancelB=Path.Combine(root,"batch canceled B.mp4");
+    using(var batchCancel=CancellationTokenSource.CreateLinkedTokenSource(ct))
+    {
+        var batchEvents=new System.Collections.Concurrent.ConcurrentQueue<BatchUpdate>();
+        var batchTask=BatchEncoder.RunAsync(resolved,[new(longInput,batchCancelA,plan),new(longInput,batchCancelB,plan)],1,new BatchProgress(batchEvents.Enqueue),batchCancel.Token);
+        bool started=false;
+        while(!batchTask.IsCompleted)
+        {
+            if(Directory.EnumerateFiles(root,".vanta-*.mp4").Any()){started=true;batchCancel.Cancel();break;}
+            await Task.Delay(10,ct);
+        }
+        try{await batchTask;}catch(OperationCanceledException){}
+        Check(started&&!File.Exists(batchCancelA)&&!File.Exists(batchCancelB)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Batch active/queued cancellation cleanup");
+        Check(batchEvents.Any(x=>x.Index==0&&x.Stage=="Canceled")&&!batchEvents.Any(x=>x.Index==1&&x.Stage=="Encoding"),"Queued job started after cancel");
+    }
+    Console.WriteLine("Batch active and queued cancellation passed.");
     Console.WriteLine("Windows FFmpeg integration checks passed.");
 }
 finally { Directory.Delete(root,true); }

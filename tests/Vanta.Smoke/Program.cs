@@ -52,6 +52,10 @@ try
     var one=OutputNames.Suggest(first,reserved);
     var two=OutputNames.Suggest(other,reserved);
     Check(Path.GetFileName(one)=="clip_vanta.mp4"&&Path.GetFileName(two)=="clip_vanta_2.mp4","Batch unique names");
+    var shared=Path.Combine(namingRoot,"shared");Directory.CreateDirectory(shared);
+    var destReserved=new HashSet<string>(StringComparer.OrdinalIgnoreCase){Path.Combine(shared,"clip_vanta.mp4")};
+    var sharedName=OutputNames.Suggest(first,destReserved,shared);
+    Check(sharedName==Path.Combine(shared,"clip_vanta_2.mp4"),"Shared destination reservation");
     File.WriteAllText(one,"existing");
     Check(OutputNames.Suggest(first).EndsWith("clip_vanta_2.mp4"),"Existing file naming");
 }
