@@ -98,3 +98,18 @@ Actual local trial 2026-11-25: Linux FFmpeg 7.1.5-0+deb13u1, 5 visible CPUs, cgr
 | 1 | Serial 4 | 1.3003 | 1.67/1.90 | 209140/208928 | 497909/484883 |
 
 Means 1.33405/1.07825/.98890s. Bounded 2+2 was about 19% faster than serial here, auto about 26% faster than serial; bounded was about 9% slower than auto, with about 17% lower mean per-process peak RSS. No perceptual-quality check, no throughput generalization, no GPU testing. Retain auto and explicit budget as choices. Reproduce output command: ffmpeg -v error -nostdin -i source.mp4 -map 0:v:0 -an -c:v libx264 -preset medium -b:v 1000000 -fps_mode passthrough -threads 2 output.mp4 (replace thread setting; run two subprocesses concurrently or sequentially).
+
+## Actual hardware encoder presence counterexample
+
+Local Linux development container, FFmpeg 7.1.5 (no dotnet, no /dev/dri). Listing contains h264_nvenc, hevc_nvenc, h264_qsv, hevc_qsv and VAAPI; AMF absent from the queried list. Executed six separate FFmpeg commands: ffmpeg -hide_banner -nostdin -v error -xerror -n -f lavfi -i testsrc2=s=320x180:r=30:d=0.4 -an -c:v ENCODER -pix_fmt yuv420p -threads 2 -b:v 250000 OUTPUT.mp4. On success ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=codec_name,nb_read_frames -of compact=p=0 OUTPUT.mp4. Temporary directory removed.
+
+| Encoder | Exit | Observation |
+|---|---:|---|
+| libx264 | 0 | 12 frames H.264, 9383 bytes |
+| libx265 | 0 | 12 frames HEVC, 10702 bytes |
+| h264_nvenc | 255 | Cannot load libcuda.so.1 |
+| hevc_nvenc | 255 | Cannot load libcuda.so.1 |
+| h264_qsv | 171 | Error creating MFX session: -9 |
+| hevc_qsv | 171 | Error creating MFX session: -9 |
+
+This is a local command-level negative control, not a Windows or user GPU assessment. No throughput comparison; sample success would not establish support at other resolutions/settings. Candidate 57718c449c6dbd1f43f44f3e0c2c1c4ad818155a, parent c38deefea4db6502d1645298570db0c473f1e111, adds explicitly invoked hardware diagnostics (NVENC/QSV/AMF for H.264/HEVC), list check, bounded 10s per listed encoder including probe/decode, 12-frame codec/count check, cancellation and temporary cleanup. UI only reports sample passed/failed/not listed/timed out; no hardware plan or encoding route enabled. Tests use actual software positive controls, hardware state classification without requiring a GPU, pre-cancel. Candidate not on main while planner CI runs. After planner success compare affected base blobs (MainWindow.xaml, MainWindow.xaml.cs, tests/Vanta.Integration/Program.cs) against current main and confirm EncoderDiagnostics.cs does not already exist; rebase with lease preserving docs. If failure fix first. Diagnostic sample is intentionally limited and may fail on otherwise usable hardware with different settings. No automatic hardware recommendation.
