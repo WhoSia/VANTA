@@ -1,0 +1,9 @@
+# Distribution strategy — 0.2.0 preview
+
+Use the exact successful Windows CI artifact for development previews, not a source archive. CI stays read-only (no release publishing or bot commits). Artifacts require GitHub sign-in and expire after seven days. A preview is not a tagged release.
+
+For a successful preview run: open Actions, download VANTA-win-x64-development, extract to a new user-owned directory, and launch Vanta.App.exe. Do not overwrite an existing installation. Windows x64 .NET 10 Desktop Runtime and FFmpeg/ffprobe are external shared dependencies. Check existing installations first. If missing, use winget official community manifests: Microsoft.DotNet.DesktopRuntime.10 and Gyan.FFmpeg. Reopen PowerShell after PATH changes. Do not bypass installer hash checks. No SDK needed on the user PC. Preview is unsigned; no instructions to bypass Windows security warnings.
+
+Stable distribution proposal: owner-approved GitHub Release with versioned framework-dependent win-x64 ZIP, SHA-256, release notes and dependency instructions. Optionally provide a reviewed PowerShell installer downloading the exact version and checking the checksum, then installing per-user; later consider a WinGet portable package if justified. No one-line remote script execution, no global dependency duplication, no automatic release/tag until approved. CI builds and measures artifacts; release asset upload is a separate owner-authorized action. Do not store FFmpeg binaries in git.
+
+Preview baseline ee4623e produced 126203 compressed bytes (application only). New GUI build 93531cbd is pending CI; do not advertise it as tested until the run succeeds. Real GUI interaction and installation still need Windows acceptance. Current support: 8-bit SDR, H.264/HEVC MP4 output, AAC audio copy or no audio, original frame timing. Single-pass size is an estimate. A busy indicator is not a percentage progress meter.
