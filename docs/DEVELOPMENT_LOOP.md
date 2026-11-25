@@ -1,7 +1,7 @@
 # Development loop and approval gates
 
-Current approved version: 0.2.0 — Adaptive Compression Planning & Granular Control.
-Status: owner approved 0.2.0 on 2026-11-25 KST; core/development-preview gate accepted at 5a7f687 (CI 45521060956). Awaiting owner approval of next version. 0.1.0 core accepted at 7815ef5. No new version/tag/release without approval.
+Current approved version: 0.3.0 — Desktop Reliability & Distribution Readiness.
+Status: owner explicitly approved 0.3.0 on 2026-11-25 KST and requested the automatic loop resume. 0.2.0 core/development-preview gate accepted at 5a7f687 (CI 45521060956); 0.1.0 core accepted at 7815ef5. No new version/tag/release without approval.
 
 Repeat Evaluate → Prioritize → Implement → Verify → Reassess. Use vectors (user value, implementation coverage, evidence coverage, integrity confidence) in [0,1]; label subjective judgments. No linear sum. Failed hard gates outrank enhancements; prioritize blockers and dependencies, then Pareto tradeoffs and smallest useful changes. Record evidence against the exact SHA. No claims of verification from inspection alone.
 
@@ -24,3 +24,7 @@ Owner requested a usable installable preview during 0.2.0. Permit guarded deskto
 Owner explicitly requested multi-video parallel processing and detailed UX convenience within 0.2.0. Permit bounded independent batch preview, per-video plan review, safe output naming and cancellation; require tests and do not relax temporal integrity. Replace single-video-only product restriction with single-file and bounded batch modes. No chunk concatenation. No version advancement or release/tag without approval.
 
 Owner requested optional single-video acceleration on 2026-11-25. Allow a separately labeled opt-in, strictly validated two-part CFR experiment; default continuous encoding and continuous batch jobs remain unchanged. This supersedes the blanket exclusion of experimental chunk concatenation, not the integrity gate. No auto selection or default enablement; reject unsupported input and do not publish failed validation. A speedup must be measured end-to-end with quality, size and resource costs; no version/tag/release change without approval.
+
+## Current 0.3.0 gate
+
+See ACCEPTANCE_0.3.0.md. Develop a finite desktop-reliability and distribution-readiness increment, keeping all 0.2.0 regressions. Prefer verified local archive installation, dependency diagnostics, desktop workflow tests, and real usability fixes. No new release/tag, GPU encoding, FPS conversion or rotation normalization implied by approval. A genuine owner-PC acceptance requirement stops the loop with a minimal checklist; no fabricated manual test. Historical 0.2.0 instructions above describe prior approved scope.

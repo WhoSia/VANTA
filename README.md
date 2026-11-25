@@ -6,9 +6,9 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 ## Status and download
 
-0.2.0 — Adaptive Compression Planning & Granular Control (core/development preview accepted; next version awaiting approval). No tagged release.
+0.3.0 — Desktop Reliability & Distribution Readiness (owner-approved, in development). No tagged release.
 
-Latest fully verified preview at this documentation revision: [Windows x64 CI artifact (5a7f687)](https://github.com/WhoSia/VANTA/actions/runs/45521060956#artifacts), 193397 compressed bytes, excluding shared dependencies. Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions) and the exact build SHA. Extract the development ZIP into a new directory and launch Vanta.App.exe. Requires Windows x64 .NET 10 Desktop Runtime and a matching FFmpeg/FFprobe pair. See [distribution](docs/DISTRIBUTION.md). CI success does not establish interactive desktop acceptance.
+Accepted 0.2.0 baseline preview (not the new 0.3.0 build): [Windows x64 CI artifact (5a7f687)](https://github.com/WhoSia/VANTA/actions/runs/45521060956#artifacts), 193397 compressed bytes, excluding shared dependencies. Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions) and the exact build SHA. Extract the development ZIP into a new directory and launch Vanta.App.exe. Requires Windows x64 .NET 10 Desktop Runtime and a matching FFmpeg/FFprobe pair. See [distribution](docs/DISTRIBUTION.md). CI success does not establish interactive desktop acceptance.
 
 ## Current preview
 
@@ -28,4 +28,4 @@ Never overwrite the source or existing output. Do not publish until validation p
 
 Main-first, small auditable commits, read-only Windows CI, no bot-authored commits. Documentation-only changes do not trigger CI. Finite release scope; no version, tag or release advancement without owner approval.
 
-[0.2.0 acceptance](docs/ACCEPTANCE_0.2.0.md) · [Development loop](docs/DEVELOPMENT_LOOP.md) · [Validation](docs/VALIDATION.md) · [Assessment](docs/ASSESSMENT.md) · [Release scope](docs/RELEASE_SCOPE.md) · [Acceleration](docs/ACCELERATION.md) · [Recommendation evidence](docs/RECOMMENDATION_EVIDENCE.md) · [Batch UX](docs/BATCH_UX.md) · [Source consistency](docs/SOURCE_INTEGRITY.md)
+[0.3.0 acceptance plan](docs/ACCEPTANCE_0.3.0.md) · [0.2.0 acceptance](docs/ACCEPTANCE_0.2.0.md) · [Development loop](docs/DEVELOPMENT_LOOP.md) · [Validation](docs/VALIDATION.md) · [Assessment](docs/ASSESSMENT.md) · [Release scope](docs/RELEASE_SCOPE.md) · [Acceleration](docs/ACCELERATION.md) · [Recommendation evidence](docs/RECOMMENDATION_EVIDENCE.md) · [Batch UX](docs/BATCH_UX.md) · [Source consistency](docs/SOURCE_INTEGRITY.md)
