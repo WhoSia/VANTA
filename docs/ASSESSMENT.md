@@ -79,3 +79,7 @@ Subjective (user value, implementation, evidence, integrity): indexed seek (.98,
 ## AVC random access checkpoint
 
 Exact 4f985a8 Windows CI success, longest-first no speed gain in 1080p screen; no promotion. Subjective (value, implementation, evidence, integrity): longest-first (.91,.80,.80,.85), IDR candidate classification (.98,.55,.45,.55), safe indexed seek (.98,.25,.45,.50), full-workflow speed (1,.35,.55,.55), global resource admission (.99,.20,.25,.45). 46d7a7f C# classifier and reference tests pending Windows. Open GOP 2/3 direct keyframe failures, preceding IDR 3/3 matches in local proxy. Prioritize closed-GOP independent reference, indexing cost and continuous fallback; no default change.
+
+## Public corpus expansion
+
+Subjective (value, implementation, evidence, integrity): public media coverage (1,.65,.15,.45), native compatibility (.99,.45,.20,.45), per-frame quality screening (.98,.60,.25,.55), AVC IDR classifier (.98,.75,.80,.80), adaptive resource admission (.99,.20,.25,.45), representative speed gate (1,.35,.35,.50). 46d7a7f verified, no production routing. 44a0a5d introduces separate corpus CI, pending both workflows. Highest priority: seal actual acquired bytes and verify normalization CFR; local negative evidence shows explicit -r and -fps_mode cfr are needed in FFmpeg 7.1.5. No default speed claim. Future content additions should include high-motion live footage, low-light/noise, long native audio, VFR phone and gaming; avoid counting resolution variants as independent content.
