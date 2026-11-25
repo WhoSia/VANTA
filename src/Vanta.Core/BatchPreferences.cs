@@ -2,13 +2,13 @@ using System.Text.Json;
 namespace Vanta.Core;
 
 // Explicitly saved defaults only. No media paths, history, or experimental switches.
-public sealed record BatchPreferences(string Tier="Balanced",string? Codec=null,int ParallelJobs=2,int? EncoderThreads=null)
+public sealed record BatchPreferences(string Tier="Balanced",string? Codec=null,int ParallelJobs=2,int? EncoderThreads=null,string Preset="medium")
 {
     public void Validate()
     {
         if(Tier is not ("Quality" or "Balanced" or "Compact")||
-           (Codec is not null&&!PlanRules.Codecs.Contains(Codec)))
-            throw new ArgumentException("Invalid saved profile or codec.");
+           (Codec is not null&&!PlanRules.Codecs.Contains(Codec))||!PlanRules.Presets.Contains(Preset))
+            throw new ArgumentException("Invalid saved profile, codec or preset.");
         ThreadBudget.PerJob(EncoderThreads,ParallelJobs);
     }
     public static BatchPreferences Load(string path)

@@ -3,7 +3,7 @@
 <TextBlock Text="{DynamicResource Ui062}" FontSize="22" FontWeight="SemiBold"/>
 <TextBlock x:Name="SourceInfo" TextWrapping="Wrap" Margin="0,6,0,14" Foreground="#526071"/>
 <TextBlock Text="{DynamicResource Ui063}"/><ComboBox x:Name="CodecBox" SelectionChanged="OnChanged" Margin="0,3,0,10"/>
-<TextBlock Text="{DynamicResource Ui011}"/><ComboBox x:Name="PresetBox" SelectionChanged="OnChanged" Margin="0,3,0,10"/>
+<TextBlock Text="{DynamicResource Ui011}"/><ComboBox x:Name="PresetBox" SelectionChanged="OnChanged" Margin="0,3,0,6"/><TextBlock Text="{DynamicResource Ui068}" Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,10"/>
 <TextBlock Text="{DynamicResource Ui064}"/><ComboBox x:Name="HeightChoicesBox" ToolTip="{DynamicResource Ui014}" SelectionChanged="OnQuickHeight"/><TextBox x:Name="HeightBox" TextChanged="OnChanged" Margin="0,3,0,10"/>
 <TextBlock Text="{DynamicResource Ui016}"/><ComboBox x:Name="RateChoicesBox" ToolTip="{DynamicResource Ui017}" SelectionChanged="OnQuickRate"/><TextBox x:Name="RateBox" TextChanged="OnChanged" Margin="0,3,0,10"/>
 <Button x:Name="MoreCompressionButton" Content="{DynamicResource Ui019}" IsEnabled="False" Click="OnMoreCompression" HorizontalAlignment="Left" Margin="0,0,0,8"/><TextBlock Text="{DynamicResource Ui065}"/><DockPanel Margin="0,3,0,10"><Button DockPanel.Dock="Right" Content="{DynamicResource Ui022}" Click="OnTarget" Padding="8,5" Margin="8,0,0,0"/><TextBox x:Name="TargetBox"/></DockPanel>

@@ -34,7 +34,7 @@ internal static class UiLanguage
         ("Ui025","Experimental: split video into two parallel parts","실험 기능: 영상을 두 부분으로 분할해 병렬 압축"),
         ("Ui026","Optional, H.264 MP4 CFR only, original dimensions. May be slower or change quality; strict validation, no output on failure.","H.264 MP4 고정 프레임률 및 원본 해상도에서만 사용 가능합니다. 더 느리거나 화질이 달라질 수 있으며 검증 실패 시 출력하지 않습니다."),
         ("Ui027","MP4 · source frame timing · AAC copy · single pass","MP4 · 원본 프레임 시간 유지 · AAC 복사 · 단일 패스"),
-        ("Ui028","Compress to new file","새 파일로 압축"),
+        ("Ui028","Save compressed video…","압축 파일 저장…"),
         ("Ui029","Cancel","취소"),
         ("Ui030","Open result folder","결과 폴더 열기"),
         ("Ui031","Copy result","결과 복사"),
@@ -64,7 +64,7 @@ internal static class UiLanguage
         ("Ui055","Remove","목록에서 제거"),
         ("Ui056","Copy details","상세 정보 복사"),
         ("Ui057","Add or drop videos to review the queue.","영상을 추가하거나 끌어 놓아 대기열을 확인하세요."),
-        ("Ui058","Compress ready videos","준비된 영상 압축"),
+        ("Ui058","Start batch compression","일괄 압축 시작"),
         ("Ui059","Save defaults","기본값 저장"),
         ("Ui060","Reset defaults","기본값 초기화"),
         ("Ui061","VANTA · Individual video settings","VANTA · 개별 영상 설정"),
@@ -74,6 +74,10 @@ internal static class UiLanguage
         ("Ui065","Optional target size budget (MB)","목표 용량 예산 (MB, 선택)"),
         ("Ui066","Original audio and frame timing are preserved. Size and quality are not guaranteed. This override is kept when the shared profile or codec changes.","원본 오디오와 프레임 시간을 유지합니다. 용량과 화질은 보장되지 않습니다. 공통 플랜이나 코덱을 바꿔도 개별 설정이 유지됩니다."),
         ("Ui067","Use these settings","설정 적용"),
+        ("Ui068","veryfast / fast prioritize speed; medium balances speed and compression efficiency; slow may improve efficiency. Size and quality vary.","veryfast / fast는 속도 우선, medium은 균형, slow는 압축 효율 우선입니다. 실제 용량과 화질은 달라질 수 있습니다."),
+        ("Ui069","Saves a separate MP4. Original remains unchanged.","별도 MP4 파일로 저장하며 원본은 변경하지 않습니다."),
+        ("Ui070","Shared preset","공통 프리셋"),
+        ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
     public static string Tier(bool korean,string tier)=>!korean?tier:tier switch {"Quality"=>"화질 우선","Balanced"=>"균형","Compact"=>"용량 우선","Custom"=>"직접 설정",_=>tier};

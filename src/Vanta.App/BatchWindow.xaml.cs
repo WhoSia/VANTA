@@ -42,6 +42,7 @@ public partial class BatchWindow:Window
         Queue.ItemsSource=rows;
         ProfileBox.ItemsSource=new[]{"Quality","Balanced","Compact"}.Select(p=>new ProfileChoice(p,UiLanguage.Tier(korean,p))).ToArray();
         ProfileBox.SelectedIndex=1;
+        SharedPresetBox.ItemsSource=PlanRules.Presets;SharedPresetBox.SelectedItem="medium";
         RecommendationBox.ItemsSource=RecommendationChoices.Create(korean:korean);RecommendationBox.SelectedIndex=0;
         ParallelBox.ItemsSource=new[]{1,2};ParallelBox.SelectedIndex=1;
         ThreadsBox.ItemsSource=ThreadChoices.Create(korean);ThreadsBox.SelectedIndex=0;
@@ -52,6 +53,7 @@ public partial class BatchWindow:Window
             ProfileBox.SelectedItem=ProfileBox.Items.Cast<ProfileChoice>().First(p=>p.Key==saved.Tier);
             // Bind to existing item instances rather than relying on record equality in WPF.
             RecommendationBox.SelectedItem=RecommendationBox.Items.Cast<RecommendationChoice>().First(c=>c.Codec==saved.Codec);
+            SharedPresetBox.SelectedItem=saved.Preset;
             ParallelBox.SelectedItem=saved.ParallelJobs;
             var choice=ThreadsBox.Items.Cast<ThreadChoice>().FirstOrDefault(c=>c.Count==saved.EncoderThreads);
             ThreadsBox.SelectedItem=choice??ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count is null);
@@ -134,7 +136,7 @@ public partial class BatchWindow:Window
         if(current is not null)return;
         try
         {
-            new BatchPreferences(((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,(int)ParallelBox.SelectedItem,(ThreadsBox.SelectedItem as ThreadChoice)?.Count).Save(PreferencesPath);
+            new BatchPreferences(((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,(int)ParallelBox.SelectedItem,(ThreadsBox.SelectedItem as ThreadChoice)?.Count,(string)SharedPresetBox.SelectedItem).Save(PreferencesPath);
             Summary.Text=T("Batch defaults saved locally. No video paths or individual overrides were stored.","공통 기본값을 저장했습니다. 영상 경로와 개별 설정은 저장하지 않았습니다.");
         }
         catch(Exception ex){Summary.Text="Could not save defaults: "+ex.Message;}
@@ -146,7 +148,7 @@ public partial class BatchWindow:Window
         {
             new BatchPreferences().Save(PreferencesPath);
             initialized=false;
-            try{ProfileBox.SelectedIndex=1;RecommendationBox.SelectedIndex=0;ParallelBox.SelectedItem=2;ThreadsBox.SelectedIndex=0;}
+            try{ProfileBox.SelectedIndex=1;RecommendationBox.SelectedIndex=0;ParallelBox.SelectedItem=2;ThreadsBox.SelectedIndex=0;SharedPresetBox.SelectedItem="medium";}
             finally{initialized=true;}
             Replan();Summary.Text+=" | Defaults reset.";
         }
@@ -156,7 +158,7 @@ public partial class BatchWindow:Window
     private void OnResourceSettings(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)UpdateSummary();}
     private void SetBusy(bool busy)
     {
-        AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=RecommendationBox.IsEnabled=!busy;
+        AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=SharedPresetBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=RecommendationBox.IsEnabled=!busy;
         FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=EditPlanButton.IsEnabled=ResetPlanButton.IsEnabled=SaveDefaultsButton.IsEnabled=ResetDefaultsButton.IsEnabled=!busy;
         CancelButton.IsEnabled=busy;UpdateSummary();
     }
@@ -181,11 +183,12 @@ public partial class BatchWindow:Window
         UpdateSelection();
         int ready=rows.Count(r=>r.State=="Ready");
         StartButton.IsEnabled=current is null&&ready>0;
-        StartButton.Content=ready>0?T($"Compress {ready} ready video(s)",$"준비된 영상 {ready}개 압축"):T("Compress ready videos","준비된 영상 압축");
+        StartButton.Content=current is not null?T("Processing…","작업 중…"):ready>0?T($"Start compression · {ready} video(s)",$"영상 {ready}개 압축 시작"):T("Start batch compression","일괄 압축 시작");
         var pending=rows.Where(r=>r.State=="Ready"&&r.Plan is not null&&r.Media is not null).ToArray();
         double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
+        int running=rows.Count(r=>r.State.StartsWith("Encoding")||r.State=="Validating"), queued=rows.Count(r=>r.State=="Queued"), analyzing=rows.Count(r=>r.State=="Analyzing");
         int complete=rows.Count(r=>r.State=="Complete"), failed=rows.Count(r=>r.State=="Failed"), canceled=rows.Count(r=>r.State=="Canceled"), skipped=rows.Count(r=>r.State=="Skipped");
-        Summary.Text=T($"{rows.Count} videos · {ready} ready · {complete} complete · {failed} failed · {canceled} canceled · {skipped} skipped",$"영상 {rows.Count}개 · 준비 {ready} · 완료 {complete} · 실패 {failed} · 취소 {canceled} · 건너뜀 {skipped}");
+        Summary.Text=T($"{rows.Count} videos · {ready} ready · {complete} complete · {running} running · {queued} queued · {analyzing} analyzing · {failed} failed · {canceled} canceled · {skipped} skipped",$"영상 {rows.Count}개 · 준비 {ready} · 완료 {complete} · 진행 {running} · 대기 {queued} · 분석 {analyzing} · 실패 {failed} · 취소 {canceled} · 건너뜀 {skipped}");
         if(pending.Length>0)Summary.Text+=T($" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)",$" | 대기: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB 용량 예산 (보장 없음)");
         var totals=BatchTotals.From(rows.Where(r=>r.State=="Complete"&&r.Report is not null).Select(r=>r.Report!));
         if(totals.Completed>0)Summary.Text+=T($" | Completed: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB ({totals.Savings:P1} actual savings); {totals.JobTime.TotalSeconds:F1}s summed job time",$" | 완료: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB (실제 절감률 {totals.Savings:P1}); 작업 시간 합계 {totals.JobTime.TotalSeconds:F1}초");
@@ -210,10 +213,10 @@ public partial class BatchWindow:Window
             {
                 var m=r.Media!;
                 r.Stamp?.RequireUnchanged(r.Input);
-                var p=BatchPlanSelection.Resolve(m,tools!.Codecs,((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,r.ManualPlan);
+                var p=BatchPlanSelection.Resolve(m,tools!.Codecs,((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,r.ManualPlan,(string)SharedPresetBox.SelectedItem);
                 if(p is null){r.State="Skipped";r.Detail=T("Selected codec or budget tier unavailable; choose another or use single-file settings.","선택한 코덱 또는 플랜을 사용할 수 없습니다. 다른 플랜을 선택하거나 개별 설정을 수정하세요.");r.Refresh();continue;}
                 r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
-                r.Budget=$"{UiLanguage.Tier(korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB";
+                r.Budget=$"{UiLanguage.Tier(korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.Preset} · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB";
                 r.State="Ready";r.Detail=r.ManualPlan is null?T("Shared profile; size not guaranteed.","공통 플랜 · 용량 보장 없음"):T("Individual override; size not guaranteed.","개별 설정 · 용량 보장 없음");
             }
             catch(Exception ex){r.State="Failed";r.Detail=ex.Message;}
@@ -221,7 +224,7 @@ public partial class BatchWindow:Window
         }
         UpdateSummary();
     }
-    private async Task AddAsync(string[] paths)
+    internal async Task AddAsync(string[] paths)
     {
         if(current is not null)return;
         using var cts=new CancellationTokenSource();current=cts;SetBusy(true);
@@ -253,7 +256,8 @@ public partial class BatchWindow:Window
         finally{current=null;Replan();SetBusy(false);}
     }
     private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
-    private async void OnStart(object sender,RoutedEventArgs e)
+    private async void OnStart(object sender,RoutedEventArgs e)=>await StartAsync();
+    internal async Task StartAsync()
     {
         if(current is not null||tools is null)return;
         var ready=rows.Where(r=>r.State=="Ready"&&r.Plan is not null).ToArray();

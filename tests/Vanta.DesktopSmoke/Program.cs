@@ -58,6 +58,8 @@ internal static class DesktopSmoke
         Check((string)Get<Button>(main,"OpenButton").Content=="Open videos… (one or many)","English main captions restored");
         var koreanBatch=new BatchWindow(korean:true);
         Check(Get<TextBlock>(koreanBatch,"Summary").Text.Contains("영상 0개 · 준비 0"),"Korean queue summary");
+        Check((string)Get<Button>(koreanBatch,"StartButton").Content=="일괄 압축 시작","Batch has distinct primary action");
+        Check((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedItem=="medium"||PlanRules.Presets.Contains((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedItem),"Shared speed is valid");
         Check((string)Get<Button>(koreanBatch,"AddButton").Content=="영상 추가…"&&!Get<Button>(koreanBatch,"StartButton").IsEnabled,"Korean batch labels and idle gate");
         var koreanDialog=new BatchPlanDialog(media,["libx264"],new Plan("Custom","libx264",720,300_000,0,"fast",false),true);
         Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
@@ -118,6 +120,22 @@ internal static class DesktopSmoke
             Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Desktop workflow leaves no temporary files");
             language.SelectedIndex=1;
             Check(Get<TextBlock>(main,"ResultPath").Text==output&&Get<Button>(main,"ResultFolderButton").IsEnabled,"Completed result survives localization");
+            Check((string)encode.Content=="압축 파일 저장…","Single action is a save command");
+            var second=Path.Combine(root,"second source.mp4");File.Copy(source,second);
+            var batch=new BatchWindow(korean:true);
+            try
+            {
+                Get<ComboBox>(batch,"SharedPresetBox").SelectedItem="veryfast";
+                Get<ComboBox>(batch,"ParallelBox").SelectedItem=2;
+                Get<ComboBox>(batch,"ThreadsBox").SelectedIndex=0;
+                await batch.AddAsync([source,second]);
+                var start=Get<Button>(batch,"StartButton");
+                Check(start.IsEnabled&&(string)start.Content=="영상 2개 압축 시작","Batch action counts ready files");
+                await batch.StartAsync();
+                Check(File.Exists(Path.Combine(root,"source clip_vanta.mp4"))&&File.Exists(Path.Combine(root,"second source_vanta.mp4")),"Batch produces separate validated outputs");
+                Check(!start.IsEnabled&&Get<TextBlock>(batch,"Summary").Text.Contains("완료 2"),"Batch completion reflected in command bar");
+            }
+            finally{batch.Close();}
         }
         finally {main.Close();Directory.Delete(root,true);}
     }

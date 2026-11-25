@@ -16,6 +16,8 @@ Check(badPreference,"Invalid recommendation preference rejected");
 var manual=avcPlans[1] with {Name="Custom",Preset="veryfast",Height=720};
 Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Compact","libx265",manual)==manual,"Individual settings override shared policy");
 Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Quality","libx265",null)==plans[0],"Reset individual settings to shared policy");
+Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Quality","libx265",null,"veryfast")==plans[0] with {Preset="veryfast"},"Shared speed preset only changes preset");
+Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Compact","libx265",manual,"veryfast")==manual,"Individual preset overrides shared speed");
 Check(BatchPlanSelection.Resolve(source,["libx264"],"Balanced","libx265",null) is null,"Unavailable shared tier stays unavailable");
 bool overrideRejected=false;try{BatchPlanSelection.Resolve(source,["libx265"],"Quality",null,manual);}catch(ArgumentException){overrideRejected=true;}
 Check(overrideRejected,"Unavailable manual codec rejected");
@@ -76,8 +78,10 @@ try
     Check(sharedName==Path.Combine(shared,"clip_vanta_2.mp4"),"Shared destination reservation");
     var settings=Path.Combine(namingRoot,"prefs.json");
     Check(BatchPreferences.Load(settings)==new BatchPreferences(),"Missing preferences default");
-    var prefs=new BatchPreferences("Compact","libx264",1,2);prefs.Save(settings);
+    var prefs=new BatchPreferences("Compact","libx264",1,2,"veryfast");prefs.Save(settings);
     Check(BatchPreferences.Load(settings)==prefs,"Preferences roundtrip");
+    File.WriteAllText(settings,"{\"Tier\":\"Balanced\",\"ParallelJobs\":2}");
+    Check(BatchPreferences.Load(settings).Preset=="medium","Older saved defaults preserve medium preset");
     new BatchPreferences().Save(settings);Check(BatchPreferences.Load(settings)==new BatchPreferences(),"Preferences atomic replacement");
     rejected=false;try{new BatchPreferences("invalid").Save(settings);}catch(ArgumentException){rejected=true;}
     Check(rejected&&BatchPreferences.Load(settings)==new BatchPreferences(),"Invalid settings do not overwrite defaults");

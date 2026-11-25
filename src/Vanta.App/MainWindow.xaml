@@ -4,7 +4,13 @@
 <Style TargetType="ComboBox"><Setter Property="Margin" Value="0,4,12,12"/><Setter Property="Padding" Value="6"/></Style>
 <Style TargetType="TextBox"><Setter Property="Margin" Value="0,4,12,12"/><Setter Property="Padding" Value="6"/></Style>
 </Window.Resources>
-<ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24">
+<DockPanel LastChildFill="True"><Border DockPanel.Dock="Bottom" Background="White" BorderBrush="#D8DFE7" BorderThickness="0,1,0,0" Padding="20,12"><StackPanel>
+<TextBlock Text="{DynamicResource Ui069}" Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,4"/>
+<WrapPanel Margin="0,4,0,0"><Button x:Name="EncodeButton" Content="{DynamicResource Ui028}" IsEnabled="False" Click="OnEncode" FontWeight="SemiBold" MinHeight="32"/><Button x:Name="CancelButton" Content="{DynamicResource Ui029}" IsEnabled="False" Click="OnCancel"/><Button x:Name="ResultFolderButton" Content="{DynamicResource Ui030}" IsEnabled="False" Click="OnResultFolder"/><Button x:Name="CopyResultButton" Content="{DynamicResource Ui031}" IsEnabled="False" Click="OnCopyResult"/></WrapPanel>
+<TextBlock x:Name="ResultPath" TextWrapping="Wrap" Foreground="#526071" Margin="0,6,0,0"/><ProgressBar x:Name="BusyBar" Height="5" Margin="0,12,0,0" Visibility="Collapsed" IsIndeterminate="True"/>
+<TextBlock x:Name="Status" Text="{DynamicResource Ui032}" TextWrapping="Wrap" Foreground="#526071" Margin="0,10,0,0"/>
+
+</StackPanel></Border><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24">
 <DockPanel LastChildFill="True"><ComboBox x:Name="LanguageBox" DockPanel.Dock="Right" Width="104" SelectionChanged="OnLanguage" AutomationProperties.Name="Language / 언어" Margin="0,0,0,0"><ComboBoxItem Content="English"/><ComboBoxItem Content="한국어"/></ComboBox><TextBlock Text="VANTA" FontSize="30" FontWeight="SemiBold"/></DockPanel>
 <TextBlock Text="{DynamicResource Ui002}" Foreground="#526071" Margin="0,2,0,16"/>
 <Border Background="White" CornerRadius="8" Padding="16"><StackPanel>
@@ -27,7 +33,8 @@
 </ListBox>
 <TextBlock Text="{DynamicResource Ui009}" FontWeight="SemiBold" Margin="0,16,0,8"/>
 <Border Background="White" CornerRadius="8" Padding="16"><StackPanel x:Name="Editor" IsEnabled="False">
-<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{DynamicResource Ui010}"/><ComboBox x:Name="CodecBox" SelectionChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="{DynamicResource Ui011}"/><ComboBox x:Name="PresetBox" SelectionChanged="OnSettings"/></StackPanel></Grid>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{DynamicResource Ui010}"/><ComboBox x:Name="CodecBox" SelectionChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="{DynamicResource Ui011}"/><ComboBox x:Name="PresetBox" SelectionChanged="OnSettings" ToolTip="{DynamicResource Ui068}"/></StackPanel></Grid>
+<TextBlock Text="{DynamicResource Ui068}" Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,10"/>
 <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{DynamicResource Ui012}"/><TextBlock Text="{DynamicResource Ui013}" FontSize="12" Foreground="#526071"/><ComboBox x:Name="HeightChoicesBox" ToolTip="{DynamicResource Ui014}" SelectionChanged="OnQuickHeight" Margin="0,4,12,6"/><TextBlock Text="{DynamicResource Ui015}" FontSize="12" Foreground="#526071"/><TextBox x:Name="HeightBox" TextChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="{DynamicResource Ui016}"/><TextBlock Text="{DynamicResource Ui013}" FontSize="12" Foreground="#526071"/><ComboBox x:Name="RateChoicesBox" ToolTip="{DynamicResource Ui017}" SelectionChanged="OnQuickRate" Margin="0,4,12,6"/><TextBlock Text="{DynamicResource Ui018}" FontSize="12" Foreground="#526071"/><TextBox x:Name="RateBox" TextChanged="OnSettings"/></StackPanel></Grid>
 <Button x:Name="MoreCompressionButton" Content="{DynamicResource Ui019}" IsEnabled="False" Click="OnMoreCompression" HorizontalAlignment="Left" Margin="0,0,0,8" ToolTip="{DynamicResource Ui020}"/><TextBlock Text="{DynamicResource Ui021}"/><DockPanel><Button DockPanel.Dock="Right" Content="{DynamicResource Ui022}" Click="OnTarget"/><TextBox x:Name="TargetBox" Margin="0,4,12,4"/></DockPanel>
 <TextBlock Text="{DynamicResource Ui023}"/>
@@ -39,7 +46,4 @@
 <TextBlock x:Name="Estimate" FontSize="18" FontWeight="SemiBold" Margin="0,12,0,0" TextWrapping="Wrap"/>
 <TextBlock x:Name="Evidence" Foreground="#526071" Margin="0,4,0,0" TextWrapping="Wrap"/>
 </StackPanel></Border>
-<WrapPanel Margin="0,16,0,0"><Button x:Name="EncodeButton" Content="{DynamicResource Ui028}" IsEnabled="False" Click="OnEncode"/><Button x:Name="CancelButton" Content="{DynamicResource Ui029}" IsEnabled="False" Click="OnCancel"/><Button x:Name="ResultFolderButton" Content="{DynamicResource Ui030}" IsEnabled="False" Click="OnResultFolder"/><Button x:Name="CopyResultButton" Content="{DynamicResource Ui031}" IsEnabled="False" Click="OnCopyResult"/></WrapPanel>
-<TextBlock x:Name="ResultPath" TextWrapping="Wrap" Foreground="#526071" Margin="0,6,0,0"/><ProgressBar x:Name="BusyBar" Height="5" Margin="0,12,0,0" Visibility="Collapsed" IsIndeterminate="True"/>
-<TextBlock x:Name="Status" Text="{DynamicResource Ui032}" TextWrapping="Wrap" Foreground="#526071" Margin="0,10,0,0"/>
-</StackPanel></ScrollViewer></Window>
+</StackPanel></ScrollViewer></DockPanel></Window>
