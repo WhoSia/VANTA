@@ -47,6 +47,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
           ffprobe -version
           if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: WPF real media workflow
+        run: dotnet run --project tests/Vanta.DesktopSmoke/Vanta.DesktopSmoke.csproj -c Release -- --media
       - name: FFmpeg integration
         run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release
       - name: Publish framework-dependent Windows x64 preview

@@ -114,7 +114,7 @@ public partial class MainWindow : Window
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
             var results=await EncoderDiagnostics.CheckAsync(resolved,EncoderDiagnostics.HardwareCandidates,cts.Token);
-            Status.Text=string.Join(Environment.NewLine,results.Select(r=>$"{r.Encoder}: {r.State} — {r.Detail}"))+Environment.NewLine+"Diagnostic only. Hardware encoding is not enabled.";
+            var detail=string.Join(Environment.NewLine,results.Select(r=>$"{r.Encoder}: {r.State} — {r.Detail}"));SetStatus(detail+Environment.NewLine+"Diagnostic only. Hardware encoding is not enabled.",detail+Environment.NewLine+"진단 전용입니다. 하드웨어 압축은 활성화되지 않았습니다.");
         }
         catch(OperationCanceledException){SetStatus("Diagnostics canceled or timed out.","진단이 취소되었거나 제한 시간을 초과했습니다.");}
         catch(Exception ex){SetStatus(ex.Message);}
@@ -124,7 +124,7 @@ public partial class MainWindow : Window
             Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();
         }
     }
-    private async Task LoadAsync(string path)
+    internal async Task LoadAsync(string path)
     {
         current?.Cancel();ClearResult();
         using var cts=new CancellationTokenSource();current=cts;LanguageBox.IsEnabled=false;
@@ -236,16 +236,21 @@ public partial class MainWindow : Window
         catch(Exception ex){SetStatus(ex.Message);}
     }
     private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
-    private async void OnEncode(object sender,RoutedEventArgs e)
+    private bool ValidateEncodingRequest()
     {
-        if(current is not null||activePlan is null||sourcePath is null||tools is null||sourceStamp is null)return;
-        var p=activePlan;var input=sourcePath;var resolved=tools;var stamp=sourceStamp;
-        try{stamp.RequireUnchanged(input);}catch(Exception ex){SetStatus(ex.Message);return;}
+        if(current is not null||activePlan is null||sourcePath is null||tools is null||sourceStamp is null)return false;
+        try{sourceStamp.RequireUnchanged(sourcePath);}catch(Exception ex){SetStatus(ex.Message);return false;}
         bool split=SplitBox.IsChecked==true;
         var threads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
-        try{ThreadBudget.ValidateEncoder(threads,split);}catch(ArgumentException ex){SetStatus(ex.Message);return;}
-        if(split&&(p.Codec!="libx264"||media?.Height!=p.Height||media?.Codec!="h264"||!string.Equals(System.IO.Path.GetExtension(input),".mp4",StringComparison.OrdinalIgnoreCase)))
-        {SetStatus("Experimental split requires H.264 MP4 input, H.264 output, original height and CFR. Uncheck it for normal encoding.","분할 압축에는 H.264 MP4 입력과 H.264 출력, 원본 높이, 고정 프레임률이 필요합니다. 일반 압축은 체크를 해제하세요.");return;}
+        try{ThreadBudget.ValidateEncoder(threads,split);}catch(ArgumentException ex){SetStatus(ex.Message);return false;}
+        if(split&&(activePlan.Codec!="libx264"||media?.Height!=activePlan.Height||media?.Codec!="h264"||!string.Equals(System.IO.Path.GetExtension(sourcePath),".mp4",StringComparison.OrdinalIgnoreCase)))
+        {SetStatus("Experimental split requires H.264 MP4 input, H.264 output, original height and CFR. Uncheck it for normal encoding.","분할 압축에는 H.264 MP4 입력과 H.264 출력, 원본 높이, 고정 프레임률이 필요합니다. 일반 압축은 체크를 해제하세요.");return false;}
+        return true;
+    }
+    private async void OnEncode(object sender,RoutedEventArgs e)
+    {
+        if(!ValidateEncodingRequest())return;
+        var input=sourcePath!;
         SaveFileDialog dlg;
         try
         {
@@ -255,6 +260,16 @@ public partial class MainWindow : Window
             {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         }
         catch(Exception ex){SetStatus(ex.Message);return;}
+        await EncodeToAsync(dlg.FileName);
+    }
+    internal async Task EncodeToAsync(string output)
+    {
+        if(!ValidateEncodingRequest())return;
+        var p=activePlan!;var input=sourcePath!;var resolved=tools!;var stamp=sourceStamp!;
+        bool split=SplitBox.IsChecked==true;
+        var threads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
+        if(System.IO.File.Exists(output)||System.IO.Directory.Exists(output))
+        {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         ClearResult();
         using var cts=new CancellationTokenSource();current=cts;encoding=true;LanguageBox.IsEnabled=false;
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
@@ -267,8 +282,8 @@ public partial class MainWindow : Window
                 BusyBar.Value=x.DisplayPercent??0;
                 var suffix=x.DisplayPercent is int percent?$" · {percent}%":"…";SetStatus(x.Stage+suffix,UiLanguage.Stage(true,x.Stage)+suffix);
             });
-            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
-            completedOutput=System.IO.Path.GetFullPath(dlg.FileName);completedReport=report;
+            var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
+            completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
             ResultPath.Text=completedOutput;ResultFolderButton.IsEnabled=CopyResultButton.IsEnabled=true;
             var bytes=report.OutputBytes;
             SetStatus($"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",$"검증 완료: {bytes/1e6:F2} MB · 실제 절감률 {1-bytes/(double)report.InputBytes:P1} · {report.Total.TotalSeconds:F1}초 (검증 {report.Validation.TotalSeconds:F1}초)");

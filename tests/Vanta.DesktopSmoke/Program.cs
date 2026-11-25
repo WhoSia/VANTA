@@ -1,16 +1,19 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
+using System.IO;
 using Vanta.App;
 using Vanta.Core;
 
 internal static class DesktopSmoke
 {
     [STAThread]
-    public static void Main()
+    public static void Main(string[] args)
     {
         // No Show/ShowDialog, clipboard, real user settings writes or external UI automation.
         // Construct real WPF controls and exercise routed events on an STA thread.
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        if(args.Contains("--media")){RunMediaWorkflow(app);return;}
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
         Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled,"No result before successful encode");
@@ -60,6 +63,63 @@ internal static class DesktopSmoke
         Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
         koreanDialog.Close();koreanBatch.Close();batch.Close();dialog.Close();main.Close();app.Shutdown();
         Console.WriteLine("WPF construction and individual editor routed-event smoke passed.");
+    }
+    private static void RunMediaWorkflow(Application app)
+    {
+        var dispatcher=Dispatcher.CurrentDispatcher;
+        var frame=new DispatcherFrame();
+        var task=dispatcher.InvokeAsync(async ()=>await MediaWorkflow()).Task.Unwrap();
+        _=task.ContinueWith(_=>dispatcher.BeginInvoke(new Action(()=>frame.Continue=false)),TaskScheduler.Default);
+        Dispatcher.PushFrame(frame);
+        task.GetAwaiter().GetResult();
+        app.Shutdown();
+        Console.WriteLine("Real media load, loaded-language state, verified output and collision UI workflow passed.");
+    }
+    private static async Task MediaWorkflow()
+    {
+        var root=Path.Combine(Path.GetTempPath(),"VANTA-desktop-"+Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var main=new MainWindow(false);
+        try
+        {
+            using var deadline=new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            var tools=await Toolchain.DiscoverAsync(deadline.Token);
+            var source=Path.Combine(root,"source clip.mp4");
+            var output=Path.Combine(root,"output clip.mp4");
+            var fixture=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=640x360:r=30:d=3","-c:v","libx264","-crf","18","-threads","2","-pix_fmt","yuv420p",source],deadline.Token);
+            Check(fixture.ExitCode==0&&File.Exists(source),"Actual desktop fixture");
+            await main.LoadAsync(source);
+            var plans=Get<ListBox>(main,"Plans");
+            var height=Get<TextBox>(main,"HeightBox");
+            var rate=Get<TextBox>(main,"RateBox");
+            var language=Get<ComboBox>(main,"LanguageBox");
+            var codec=Get<ComboBox>(main,"CodecBox");
+            var threads=Get<ComboBox>(main,"ThreadsBox");
+            var target=Get<TextBox>(main,"TargetBox");
+            var split=Get<CheckBox>(main,"SplitBox");
+            var encode=Get<Button>(main,"EncodeButton");
+            Check(plans.Items.Count>0&&encode.IsEnabled,"Real source yields a usable plan");
+            var planIndex=plans.SelectedIndex;
+            var originalHeight=height.Text;var originalRate=rate.Text;
+            language.SelectedIndex=1;
+            Check(plans.SelectedIndex==planIndex&&height.Text==originalHeight&&rate.Text==originalRate&&encode.IsEnabled,"Selected recommendation survives localization");
+            codec.SelectedItem="libx264";height.Text="360";rate.Text="250.001";
+            threads.SelectedIndex=1;target.Text="0.1";split.IsChecked=true;
+            language.SelectedIndex=0;
+            Check(plans.SelectedIndex==-1&&height.Text=="360"&&rate.Text=="250.001"&&codec.SelectedItem as string=="libx264"&&threads.SelectedIndex==1&&target.Text=="0.1"&&split.IsChecked==true&&encode.IsEnabled,"Manual settings, target text, split and thread choice survive localization");
+            split.IsChecked=false;
+            var before=await File.ReadAllBytesAsync(source);
+            await main.EncodeToAsync(output);
+            Check(File.Exists(output)&&Get<Button>(main,"ResultFolderButton").IsEnabled&&Get<Button>(main,"CopyResultButton").IsEnabled&&Get<TextBlock>(main,"ResultPath").Text==output&&encode.IsEnabled,"Validated output reaches real desktop controls");
+            var outputBytes=await File.ReadAllBytesAsync(output);
+            await main.EncodeToAsync(output);
+            Check((await File.ReadAllBytesAsync(output)).SequenceEqual(outputBytes),"Existing output remains unchanged");
+            Check((await File.ReadAllBytesAsync(source)).SequenceEqual(before),"Source bytes remain unchanged");
+            Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Desktop workflow leaves no temporary files");
+            language.SelectedIndex=1;
+            Check(Get<TextBlock>(main,"ResultPath").Text==output&&Get<Button>(main,"ResultFolderButton").IsEnabled,"Completed result survives localization");
+        }
+        finally {main.Close();Directory.Delete(root,true);}
     }
     static T Get<T>(FrameworkElement window,string name) where T:FrameworkElement
         =>window.FindName(name) as T??throw new Exception("Missing WPF element: "+name);
