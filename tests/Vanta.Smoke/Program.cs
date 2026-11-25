@@ -74,6 +74,17 @@ try
     var destReserved=new HashSet<string>(StringComparer.OrdinalIgnoreCase){Path.Combine(shared,"clip_vanta.mp4")};
     var sharedName=OutputNames.Suggest(first,destReserved,shared);
     Check(sharedName==Path.Combine(shared,"clip_vanta_2.mp4"),"Shared destination reservation");
+    var settings=Path.Combine(namingRoot,"prefs.json");
+    Check(BatchPreferences.Load(settings)==new BatchPreferences(),"Missing preferences default");
+    var prefs=new BatchPreferences("Compact","libx264",1,2);prefs.Save(settings);
+    Check(BatchPreferences.Load(settings)==prefs,"Preferences roundtrip");
+    new BatchPreferences().Save(settings);Check(BatchPreferences.Load(settings)==new BatchPreferences(),"Preferences atomic replacement");
+    rejected=false;try{new BatchPreferences("invalid").Save(settings);}catch(ArgumentException){rejected=true;}
+    Check(rejected&&BatchPreferences.Load(settings)==new BatchPreferences(),"Invalid settings do not overwrite defaults");
+    File.WriteAllText(settings,"{broken");
+    rejected=false;try{BatchPreferences.Load(settings);}catch(System.Text.Json.JsonException){rejected=true;}
+    Check(rejected,"Corrupt settings detected");
+    Check(!Directory.EnumerateFiles(namingRoot,"*.tmp").Any(),"Settings temporary cleanup");
     File.WriteAllText(one,"existing");
     var stamp=SourceStamp.Capture(one);stamp.RequireUnchanged(one);
     File.AppendAllText(one," changed");

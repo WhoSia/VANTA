@@ -12,6 +12,7 @@ public partial class BatchWindow:Window
     private Toolchain? tools;
     private bool initialized;
     private string? destinationDirectory;
+    private static string PreferencesPath=>System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"VANTA","batch-defaults.json");
     private sealed class Row(string input):INotifyPropertyChanged
     {
         public string Input {get;}=input;
@@ -40,7 +41,21 @@ public partial class BatchWindow:Window
         RecommendationBox.ItemsSource=RecommendationChoices.Create();RecommendationBox.SelectedIndex=0;
         ParallelBox.ItemsSource=new[]{1,2};ParallelBox.SelectedIndex=1;
         ThreadsBox.ItemsSource=ThreadChoices.Create();ThreadsBox.SelectedIndex=0;
+        string? settingsError=null;
+        try
+        {
+            var saved=BatchPreferences.Load(PreferencesPath);
+            ProfileBox.SelectedItem=saved.Tier;
+            // Bind to existing item instances rather than relying on record equality in WPF.
+            RecommendationBox.SelectedItem=RecommendationBox.Items.Cast<RecommendationChoice>().First(c=>c.Codec==saved.Codec);
+            ParallelBox.SelectedItem=saved.ParallelJobs;
+            var choice=ThreadsBox.Items.Cast<ThreadChoice>().FirstOrDefault(c=>c.Count==saved.EncoderThreads);
+            ThreadsBox.SelectedItem=choice??ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count is null);
+            if(choice is null)settingsError="Saved encoder thread budget is unavailable on this PC; using Auto.";
+        }
+        catch(Exception ex){settingsError="Saved defaults could not be loaded: "+ex.Message;}
         initialized=true;
+        if(settingsError is not null)Summary.Text=settingsError;
         Loaded+=async (_,_)=>{if(initial.Length>0)await AddAsync(initial);};
     }
     private async void OnAdd(object sender,RoutedEventArgs e)
@@ -110,12 +125,35 @@ public partial class BatchWindow:Window
         try{Clipboard.SetText($"{r.Paths}\n{r.State}\n{r.Detail}");Summary.Text="Selected job details copied.";}
         catch(Exception ex){Summary.Text=ex.Message;}
     }
+    private void OnSaveDefaults(object sender,RoutedEventArgs e)
+    {
+        if(current is not null)return;
+        try
+        {
+            new BatchPreferences((string)ProfileBox.SelectedItem,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,(int)ParallelBox.SelectedItem,(ThreadsBox.SelectedItem as ThreadChoice)?.Count).Save(PreferencesPath);
+            Summary.Text="Batch defaults saved locally. No video paths or individual overrides were stored.";
+        }
+        catch(Exception ex){Summary.Text="Could not save defaults: "+ex.Message;}
+    }
+    private void OnResetDefaults(object sender,RoutedEventArgs e)
+    {
+        if(current is not null)return;
+        try
+        {
+            new BatchPreferences().Save(PreferencesPath);
+            initialized=false;
+            try{ProfileBox.SelectedIndex=1;RecommendationBox.SelectedIndex=0;ParallelBox.SelectedItem=2;ThreadsBox.SelectedIndex=0;}
+            finally{initialized=true;}
+            Replan();Summary.Text+=" | Defaults reset.";
+        }
+        catch(Exception ex){Summary.Text="Could not reset defaults: "+ex.Message;}
+    }
     private void OnProfile(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)Replan();}
     private void OnResourceSettings(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)UpdateSummary();}
     private void SetBusy(bool busy)
     {
         AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=RecommendationBox.IsEnabled=!busy;
-        FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=EditPlanButton.IsEnabled=ResetPlanButton.IsEnabled=!busy;
+        FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=EditPlanButton.IsEnabled=ResetPlanButton.IsEnabled=SaveDefaultsButton.IsEnabled=ResetDefaultsButton.IsEnabled=!busy;
         CancelButton.IsEnabled=busy;UpdateSummary();
     }
     private void UpdateSummary()
