@@ -38,16 +38,23 @@ public static class BatchEncoder
         await Parallel.ForEachAsync(Enumerable.Range(0,jobs.Count),new ParallelOptions{MaxDegreeOfParallelism=parallelism,CancellationToken=ct},async (i,token)=>
         {
             var j=jobs[i];
+            EncodeReport report;
             try
             {
-                var report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
+                report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                 {
                     if(x.Stage!="Complete")progress.Report(new(i,x.Stage,x.Fraction));
                 }),encoderThreads:jobThreads,expectedSource:j.ExpectedSource);
+            }
+            catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));return;}
+            catch(Exception ex){progress.Report(new(i,"Failed",null,ex.Message));return;}
+            // Encoder has already published. A failing notification is not an encoding failure.
+            // Best-effort terminal progress; never issue a contradictory Failed event.
+            try
+            {
                 progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",report));
             }
-            catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));}
-            catch(Exception ex){progress.Report(new(i,"Failed",null,ex.Message));}
+            catch(Exception) { }
         });
     }
     private sealed class InlineProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>
