@@ -264,3 +264,26 @@ Actual independent local FFmpeg 7.1.5-0+deb13u1; 5 visible CPUs, cgroup quota 4;
 |aligned|8.548340|11.221270|8853084|.995458|1169440768|
 
 All three passed proxy checks; temporary fixtures and scripts removed. Bytes within ~0.18% of continuous; global SSIM delta <=.000003. Equal ~30.9% slower and aligned ~43.7% slower; sampled RSS sum ~1.88x continuous. One fixed-order synthetic repetition is exploratory, not conclusive, no causal attribution to alignment or hardware. The minimax objective balances frame counts only, not work complexity or seeks; keyframe restriction may worsen interval balance (135 vs equal90). No adaptive selection or production CRF switch. Next compare longer heterogeneous content, higher CPU parallelism on available Windows runners/owner PC, bounded resource admission and full pipeline audio hash parallel candidate. Use multiple paired trials and quality boundaries before performance claims.
+
+## 2026-11-25 Windows keyframe screen and independent dispatch experiment
+
+CI 45573017677, job 139064031881 succeeded: exhaustive minimax oracle 256 cases; 3/4/8 marker checks, active cancellation, 1080p CRF 23 actual Encoder six trials, packaging and install. Exact source changes 19a0250 (subsequent documentation-only 739da0e/29f90c0). 1920x1080 30 fps 12s synthetic H.264, 4 requested encoder threads; split 4 segments/2 workers. All integrity checks passed.
+
+| Mode | Wall seconds rep 0 / 1 | Mean s | Bytes | SSIM |
+|---|---|---:|---:|---:|
+| Continuous | 11.038863 / 13.920833 | 12.479848 | 8841736 | .995456 |
+| Equal | 13.195254 / 14.653560 | 13.924407 | 8857430 | .995459 |
+| Aligned | 13.777947 / 13.926859 | 13.852403 | 8852324 | .995458 |
+
+No positive speedup. Large repeat variation; no robust ranking of segmented candidates. Workflow emitted Node 20 action deprecation warnings, distinct from compiler diagnostics.
+
+Research 4f985a8 tests longest-first segment dispatch while preserving chronological merge. Local command-level proxy FFmpeg 7.1.5, Linux 5 visible CPUs, cgroup quota 4, 640x360 testsrc2 30fps 12s, AAC sine 440 Hz 48kHz, source H.264 ultrafast CRF18 GOP60, 2 encoder threads. Fixed half-open boundaries [0,60,120,180,360], 2 concurrent workers x 2 requested threads, H.264 medium CRF23. Chronological order [0,1,2,3], longest [3,0,1,2]. Each part early seek max(0,first/30-1), copyts, trim midpoint and setpts, exact count, 90000 track timescale; part decoded-frame count checked, concat explicit frame-count/30 durations, source audio copy once. Wall includes part encoding/checks, merge, all video PTS equality, audio streamhash, complete decode; excludes fixture and initial source probe/hash, not C# full pipeline. Source SHA256 7475c486da3c4b832f5640dbbf5544687e67b225c11ad9897c55ff4534923187 unchanged.
+
+| Dispatch | seconds | Part wall seconds in dispatch order |
+|---|---:|---|
+| chronological | 2.196753 | .641372/.681079/.433054/.861065 |
+| longest | 2.021198 | 1.074463/.567016/.506454/.409763 |
+| longest | 1.889471 | .887142/.492186/.456435/.467947 |
+| chronological | 1.799249 | .450998/.425880/.490210/.826204 |
+
+All four outputs 1251903 bytes, identical SHA256 2fc9ace638cd4670034e2fd5de8704f348d1c2702c6f38aaa1ee7e579da3dcd0. Means 1.998001 versus 1.9553345s, ~2.14% lower, within repeat variation; no established advantage. No audio packet PTS comparison, peak RSS or representative corpus in this proxy. New CI adds original-code deterministic tie and invalid boundary controls, 121-frame marker with nonchronological dispatch, eight full Encoder 1080p trials. Exact CI pending/unconfirmed. Do not change default, expand split range or remove validation. Next compare cost-proxy ordering vs actual complexity and full C# hash parallelism, then resource and quality gates.
