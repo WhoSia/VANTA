@@ -21,7 +21,7 @@ public static class OutputNames
     }
 }
 public sealed record BatchJob(string Input,string Output,Plan Plan,SourceStamp? ExpectedSource=null);
-public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null);
+public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null,EncodeReport? Report=null);
 public static class BatchEncoder
 {
     public static async Task RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default,int? totalEncoderThreads=null)
@@ -44,7 +44,7 @@ public static class BatchEncoder
                 {
                     if(x.Stage!="Complete")progress.Report(new(i,x.Stage,x.Fraction));
                 }),encoderThreads:jobThreads,expectedSource:j.ExpectedSource);
-                progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)"));
+                progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",report));
             }
             catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));}
             catch(Exception ex){progress.Report(new(i,"Failed",null,ex.Message));}

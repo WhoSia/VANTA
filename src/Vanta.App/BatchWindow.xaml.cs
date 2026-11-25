@@ -26,6 +26,7 @@ public partial class BatchWindow:Window
         public SourceStamp? Stamp {get;set;}
         public Plan? Plan {get;set;}
         public Plan? ManualPlan {get;set;}
+        public EncodeReport? Report {get;set;}
         public event PropertyChangedEventHandler? PropertyChanged;
         public void Refresh()=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(string.Empty));
     }
@@ -72,22 +73,22 @@ public partial class BatchWindow:Window
     }
     private void OnEditPlan(object sender,RoutedEventArgs e)
     {
-        if(current is not null||tools is null||Queue.SelectedItem is not Row r||r.Media is null||r.State is not ("Ready" or "Skipped"))
-        {Summary.Text="Select a ready or supported skipped video.";return;}
+        if(current is not null||tools is null||Queue.SelectedItem is not Row r||r.Media is null||!BatchRecovery.CanEdit(r.State,true))
+        {Summary.Text="Select an analyzed, unfinished video. Editing prepares it for the next run.";return;}
         try
         {
             r.Stamp?.RequireUnchanged(r.Input);
             var dialog=new BatchPlanDialog(r.Media,tools.Codecs,r.ManualPlan??r.Plan){Owner=this};
             if(dialog.ShowDialog()!=true||dialog.Result is null)return;
-            r.ManualPlan=dialog.Result;Replan();
+            r.ManualPlan=dialog.Result;r.State="Analyzing";Replan();
         }
         catch(Exception ex){Summary.Text=ex.Message;}
     }
     private void OnResetPlan(object sender,RoutedEventArgs e)
     {
-        if(current is not null||Queue.SelectedItem is not Row r||r.State is not ("Ready" or "Skipped"))
-        {Summary.Text="Select a ready or supported skipped video.";return;}
-        r.ManualPlan=null;Replan();
+        if(current is not null||Queue.SelectedItem is not Row r||!BatchRecovery.CanEdit(r.State,r.Media is not null))
+        {Summary.Text="Select an analyzed, unfinished video. Reset prepares it for the next run.";return;}
+        r.ManualPlan=null;r.State="Analyzing";Replan();
     }
     private void OnRetry(object sender,RoutedEventArgs e)
     {
@@ -125,6 +126,8 @@ public partial class BatchWindow:Window
         double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
         Summary.Text=$"{rows.Count} videos · {ready} ready · {rows.Count(r=>r.State=="Complete")} complete · {rows.Count(r=>r.State=="Failed")} failed · {rows.Count(r=>r.State=="Canceled")} canceled · {rows.Count(r=>r.State=="Skipped")} skipped";
         if(pending.Length>0)Summary.Text+=$" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)";
+        var totals=BatchTotals.From(rows.Where(r=>r.State=="Complete"&&r.Report is not null).Select(r=>r.Report!));
+        if(totals.Completed>0)Summary.Text+=$" | Completed: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB ({totals.Savings:P1} actual savings); {totals.JobTime.TotalSeconds:F1}s summed job time";
         if(current is null&&ParallelBox.SelectedItem is int parallel)
         {
             try
@@ -199,7 +202,7 @@ public partial class BatchWindow:Window
         try{ThreadBudget.PerJob(totalThreads,parallel);}catch(ArgumentException ex){Summary.Text=ex.Message;return;}
         var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!,r.Stamp)).ToArray();
         using var cts=new CancellationTokenSource();current=cts;
-        foreach(var r in ready){r.State="Queued";r.Detail="";r.Refresh();}
+        foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Refresh();}
         SetBusy(true);
         try
         {
@@ -207,7 +210,7 @@ public partial class BatchWindow:Window
             var progress=new UiProgress(x=>Dispatcher.Invoke(()=>{
                 var r=ready[x.Index];
                 r.State=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercent is int percent?$"Encoding {percent}%":x.Stage;
-                r.Detail=x.Detail??"";r.Refresh();UpdateSummary();
+                r.Detail=x.Detail??"";r.Report=x.Report;r.Refresh();UpdateSummary();
             }));
             await BatchEncoder.RunAsync(tools,jobs,parallel,progress,cts.Token,totalEncoderThreads:totalThreads);
         }

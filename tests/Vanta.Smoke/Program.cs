@@ -94,5 +94,11 @@ foreach(int badThreads in new[]{0,1,3,65})
 rejected=false;try{ThreadBudget.PerJob(1,2);}catch(ArgumentException){rejected=true;}
 Check(rejected,"Insufficient batch thread budget");
 Console.WriteLine("Thread budget allocation passed.");
+Check(BatchRecovery.CanEdit("Failed",true)&&BatchRecovery.CanEdit("Canceled",true)&&!BatchRecovery.CanEdit("Complete",true)&&!BatchRecovery.CanEdit("Failed",false),"Batch edit recovery policy");
+var zero=TimeSpan.Zero;
+var reports=new[]{new EncodeReport(zero,zero,zero,zero,zero,zero,zero,TimeSpan.FromSeconds(2),50,100),new EncodeReport(zero,zero,zero,zero,zero,zero,zero,TimeSpan.FromSeconds(3),300,200)};
+var totals=BatchTotals.From(reports);
+Check(totals.Completed==2&&totals.InputBytes==300&&totals.OutputBytes==350&&Math.Abs(totals.Savings!.Value+1d/6)<1e-12&&totals.JobTime.TotalSeconds==5,"Actual weighted batch savings including growth");
+Check(BatchTotals.From([]).Savings is null,"Empty result is not zero percent");
 Console.WriteLine("Smoke checks passed");
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}
