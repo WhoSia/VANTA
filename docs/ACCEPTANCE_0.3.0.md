@@ -1,19 +1,19 @@
 # 0.3.0 — Desktop Reliability & Distribution Readiness
 
-Owner approval 2026-11-25 KST; in development. Baseline accepted 0.2.0 build 5a7f687. Latest fully tested build inputs ebc9d7c9a49f8265be7632adfa5633ee711fd542, CI 45551368705, job 138993072083, zero warnings/errors. Subsequent source 2e6c709 is not yet accepted.
+Owner approval 2026-11-25 KST; automated acceptance complete, awaiting interactive owner-PC acceptance. Baseline accepted 0.2.0 build 5a7f687. Exact b77ea830c4157a91c94059acfc994ccacc238232 CI 45559737020, job 139020300522, succeeded, zero warnings/errors. Single artifact 14996559713, outer ZIP 213059 bytes SHA256 e270d8a7786f2ccae4ef7dfb2a484a40d791371c5f647931ad0dbf895eb1e665, expires 2026-12-02T06:22:37Z; inner application ZIP 209839 bytes SHA256 ef1476c225051e862a53a3de74e5573283f0a0a6112a0cbbc1b27ae8ee51408f. Clean probe replay accepted and identical zero-exit error diagnostic rejected; Span parser differential passed; real-media WPF workflow passed; published and installed launcher positive check passed; explicit missing and relative VANTA_FFMPEG_DIR negative controls rejected; package hash/collision/manifest/traversal regressions passed. All automated stages passed. This seals the tested build, not interactive owner acceptance, clean-machine dependency installation, or signed distribution.
 
 | Required gate | Current evidence | Status |
 |---|---|---|
-| Version and coherent build | Exact ebc9d7c CI | Pass |
+| Version and coherent build | Exact b77ea83 CI | Pass |
 | Local distribution package | One versioned artifact, inner SHA-256, manifest, measured bytes | Pass |
 | Safe local installation | Positive, wrong hash, collision, version mismatch, traversal and cleanup CI | Pass |
-| Dependency diagnosis | Core checks matching version and codec; shared launcher/app check implemented, exact CI pending; clean-machine install untested | Partial |
+| Dependency diagnosis | Published and installed launcher reuse app matching-pair/encoder check; explicit missing/relative paths rejected; clean-machine installation untested | Automated pass |
 | Desktop workflow | Actual FFmpeg single/batch, language state, cancellation/result, logical layout test | Automated pass; interactive owner test open |
-| Supported media reliability | A/V, visual, source lease, codec/preset, collision and cancellation regressions | Pass at ebc9d7c; new parser and dedicated negative control pending |
+| Supported media reliability | A/V, visual, source lease, codec/preset, collision and cancellation regressions | Pass at b77ea83; parser differential and dedicated negative control passed |
 | User acceptance | Fresh extraction, actual interaction, DPI and keyboard on owner PC | Pending owner evidence |
 | Distribution handoff | Verified single package, bilingual instructions, side-by-side extraction and limitations | Pass for development preview |
 
-Do not treat CI as interactive acceptance. Remaining blocking work: exact new CI, dependency diagnostic consistency and minimal owner-PC checklist. Optional AV1, adaptive threads and native acceleration remain research, not mandatory production additions. No version/tag/release advancement. Once remaining automated gates pass and owner-PC action is the sole blocker, pause automation and request the minimal checklist.
+Do not treat CI as interactive acceptance. Remaining blocker: five-case owner-PC checklist in DESKTOP_ACCEPTANCE.md. Freeze build-affecting changes at b77ea83 unless an acceptance defect is reported. Pause scheduled development at this gate; no further speculative changes. Optional AV1, adaptive threads and native acceleration remain research, not mandatory production additions. No version/tag/release advancement. Once remaining automated gates pass and owner-PC action is the sole blocker, pause automation and request the minimal checklist.
 
 ## Historical checkpoints (superseded by current table)
 
@@ -37,3 +37,9 @@ Latest: f04964c CI passed; artifact 14993331013. 7492d50 adds actual managed par
 Latest checkpoint: ebc9d7c exact CI 45551368705 passed, package 14994525983. e5d2e00 parser adoption, ac3fe27 shared dependency check, 2e6c709 bounded startup/zero-exit probe negative control on main. CI 45555766695 pending. No new version/release/tag. If exact automated gate passes, owner-PC checklist is next blocking evidence, not optional Rust/AV1 work.
 
 2026-11-25 checkpoint: 2e6c709 CI 45555766695 job 139007351625 failed at the newly introduced synthetic probe control ("Zero-exit stderr negative control is genuine"), before the rejection assertion. Build, core smoke, WPF control and real-media workflows passed; publication, launcher and installer steps skipped. The log does not identify which exit/stdout/stderr predicate differed, so exact cause is unconfirmed; Unicode/console encoding is a candidate. b77ea83 makes captured JSON ASCII via JSON serialization and replays raw bytes, compares clean and error-bearing invocations of the same fixture, checks clean replay is accepted by Probe.InspectAsync, requires identical stdout and zero exit for the error case, and reports component values on failure. Unexpected test arguments no longer fall through into the full suite. Production rejection logic unchanged. Exact new CI 45559737020 in_progress at recording; not accepted. Latest fully verified package remains ebc9d7c artifact 14994525983. No new performance result or release. Await this run before further build-affecting changes.
+
+## Current handoff — automated gate complete
+
+Exact b77ea830c4157a91c94059acfc994ccacc238232 CI 45559737020, job 139020300522, succeeded, zero warnings/errors. Single artifact 14996559713, outer ZIP 213059 bytes SHA256 e270d8a7786f2ccae4ef7dfb2a484a40d791371c5f647931ad0dbf895eb1e665, expires 2026-12-02T06:22:37Z; inner application ZIP 209839 bytes SHA256 ef1476c225051e862a53a3de74e5573283f0a0a6112a0cbbc1b27ae8ee51408f. Clean probe replay accepted and identical zero-exit error diagnostic rejected; Span parser differential passed; real-media WPF workflow passed; published and installed launcher positive check passed; explicit missing and relative VANTA_FFMPEG_DIR negative controls rejected; package hash/collision/manifest/traversal regressions passed. All automated stages passed. This seals the tested build, not interactive owner acceptance, clean-machine dependency installation, or signed distribution.
+
+Seven of eight acceptance rows meet their automated/development-preview criteria; the desktop workflow has a separate interactive component covered by the owner acceptance row. No claim of stable release. Request owner checklist, fix any reported issue within 0.3.0, and require separate explicit approval for proposed 0.4.0 — Measured Acceleration & Adaptive Resource Scheduling. No next-version implementation or release/tag.
