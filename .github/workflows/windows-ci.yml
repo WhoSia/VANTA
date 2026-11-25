@@ -56,6 +56,14 @@ jobs:
         run: |
           Copy-Item scripts/Start-VANTA.ps1 artifacts/VANTA/Start-VANTA.ps1
           & ./artifacts/VANTA/Start-VANTA.ps1 -CheckOnly
+      - name: Create versioned local package
+        shell: pwsh
+        run: |
+          & ./scripts/Build-VANTA-Package.ps1 -PublishedDirectory artifacts/VANTA -OutputDirectory artifacts/package -Version 0.3.0 -Commit $env:GITHUB_SHA
+      - name: Test local package installation
+        shell: pwsh
+        run: |
+          & ./tests/Install-VANTA.Tests.ps1 -PackageDirectory artifacts/package -Version 0.3.0
       - name: Measure preview
         shell: pwsh
         run: |
@@ -65,5 +73,11 @@ jobs:
         with:
           name: VANTA-win-x64-development
           path: artifacts/VANTA/
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VANTA-0.3.0-win-x64-package
+          path: artifacts/package/
           if-no-files-found: error
           retention-days: 7
