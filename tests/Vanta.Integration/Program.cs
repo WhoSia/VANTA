@@ -317,9 +317,9 @@ try
     Console.WriteLine("All 121 unique frame IDs preserved across odd split.");
     foreach(var (segments,workers) in new[]{(3,2),(4,4),(8,2),(8,4)})
     {
-        var dest=Path.Combine(root,$"marker-{segments}-{workers}.mp4");
-        await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,dest,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:4,splitSegments:segments,splitWorkers:workers);
-        Check(ids.SequenceEqual(await MarkerHashes(dest)),$"Frame identities changed in {segments}/{workers} split");
+        var markerDest=Path.Combine(root,$"marker-{segments}-{workers}.mp4");
+        await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,markerDest,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:4,splitSegments:segments,splitWorkers:workers);
+        Check(ids.SequenceEqual(await MarkerHashes(markerDest)),$"Frame identities changed in {segments}/{workers} split");
         Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Multi-split staging leaked");
     }
     var invalidSplit=Path.Combine(root,"invalid worker budget.mp4");
