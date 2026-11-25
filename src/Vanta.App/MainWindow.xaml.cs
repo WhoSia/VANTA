@@ -53,8 +53,11 @@ public partial class MainWindow : Window
     private async void OnOpen(object sender,RoutedEventArgs e)
     {
         if(encoding)return;
-        var dlg=new OpenFileDialog{Filter="Video files|*.mp4;*.mkv;*.mov;*.webm;*.avi|All files|*.*"};
-        if(dlg.ShowDialog()==true) await LoadAsync(dlg.FileName);
+        var dlg=new OpenFileDialog{Multiselect=true,Filter="Video files|*.mp4;*.mkv;*.mov;*.webm;*.avi|All files|*.*"};
+        if(dlg.ShowDialog()!=true)return;
+        if(dlg.FileNames.Length==1)await LoadAsync(dlg.FileName);
+        else if(current is null)new BatchWindow(dlg.FileNames){Owner=this}.ShowDialog();
+        else Status.Text="Finish or cancel analysis before opening a batch.";
     }
     private async void OnDrop(object sender,DragEventArgs e)
     {
@@ -105,6 +108,8 @@ public partial class MainWindow : Window
             Source.Text=$"{System.IO.Path.GetFileName(path)} · {m.Width}×{m.Height} · {m.Fps:F2} fps · {m.Codec} · {m.Bytes/1e6:F1} MB";
             if(!details.Supported){Status.Text=details.Reason;return;}
             tools=resolved;media=m;sourcePath=path;sourceStamp=stamp;
+            HeightChoicesBox.ItemsSource=QuickSettings.Heights(m);
+            RateChoicesBox.ItemsSource=QuickSettings.Rates(m).Select(r=>(r/1000m).ToString("0.###",CultureInfo.InvariantCulture)).ToArray();
             CodecBox.ItemsSource=resolved.Codecs;
             RecommendationBox.ItemsSource=RecommendationChoices.Create(resolved.Codecs);
             RecommendationBox.SelectedIndex=0;
@@ -147,10 +152,27 @@ public partial class MainWindow : Window
         finally{applying=false;}
         RefreshEstimate();
     }
+    private void OnQuickHeight(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(HeightChoicesBox.SelectedItem is int h){HeightBox.Text=h.ToString(CultureInfo.InvariantCulture);HeightChoicesBox.SelectedIndex=-1;}
+    }
+    private void OnQuickRate(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(RateChoicesBox.SelectedItem is string rate){RateBox.Text=rate;RateChoicesBox.SelectedIndex=-1;}
+    }
+    private void OnMoreCompression(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||media is null||activePlan is null)return;
+        if(QuickSettings.MoreCompression(activePlan,media) is Plan next)
+        {
+            Plans.SelectedIndex=-1;Apply(next);Status.Text="Lower video bitrate budget applied. Quality may decrease; no encoding started.";
+        }
+    }
     private void OnSettings(object sender,RoutedEventArgs e){if(!applying){if(Plans is not null)Plans.SelectedIndex=-1;if(TargetBox is not null)TargetBox.Clear();RefreshEstimate();}}
     private void RefreshEstimate()
     {
         activePlan=null;
+        if(MoreCompressionButton is not null)MoreCompressionButton.IsEnabled=false;
         if(EncodeButton is null||media is null)return;
         EncodeButton.IsEnabled=false;
         try
@@ -162,6 +184,7 @@ public partial class MainWindow : Window
             Estimate.Text=$"Bitrate budget {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} budget savings";
             Evidence.Text=$"Pixel retention {v.PixelRetention:P1} · quality not measured · actual size may be much smaller or larger; not a limit";
             EncodeButton.IsEnabled=current is null&&!encoding;
+            MoreCompressionButton.IsEnabled=EncodeButton.IsEnabled&&p.VideoBitsPerSecond>PlanRules.MinimumVideoRate;
         }
         catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";}
     }

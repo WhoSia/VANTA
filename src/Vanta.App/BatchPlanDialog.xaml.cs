@@ -20,12 +20,27 @@ public partial class BatchPlanDialog:Window
         PresetBox.SelectedItem=seed?.Preset??"medium";
         HeightBox.Text=(seed?.Height??media.Height).ToString(CultureInfo.InvariantCulture);
         RateBox.Text=seed is null?"":(seed.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);
+        HeightChoicesBox.ItemsSource=QuickSettings.Heights(media);
+        RateChoicesBox.ItemsSource=QuickSettings.Rates(media).Select(r=>(r/1000m).ToString("0.###",CultureInfo.InvariantCulture)).ToArray();
         initialized=true;Evaluate();
+    }
+    private void OnQuickHeight(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(HeightChoicesBox.SelectedItem is int h){HeightBox.Text=h.ToString(CultureInfo.InvariantCulture);HeightChoicesBox.SelectedIndex=-1;}
+    }
+    private void OnQuickRate(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(RateChoicesBox.SelectedItem is string rate){RateBox.Text=rate;RateChoicesBox.SelectedIndex=-1;}
+    }
+    private void OnMoreCompression(object sender,RoutedEventArgs e)
+    {
+        if(candidate is not null&&QuickSettings.MoreCompression(candidate,media) is Plan next)
+            RateBox.Text=(next.VideoBitsPerSecond/1000m).ToString("0.###",CultureInfo.InvariantCulture);
     }
     private void OnChanged(object sender,RoutedEventArgs e){if(initialized){TargetBox.Clear();Evaluate();}}
     private void Evaluate()
     {
-        candidate=null;ApplyButton.IsEnabled=false;
+        candidate=null;ApplyButton.IsEnabled=MoreCompressionButton.IsEnabled=false;
         try
         {
             if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out var height))
@@ -33,7 +48,7 @@ public partial class BatchPlanDialog:Window
             var plan=new Plan("Custom",CodecBox.SelectedItem as string??"",height,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedItem as string??"",false);
             candidate=BatchPlanSelection.Resolve(media,available,"Balanced",null,plan);
             Estimate.Text=$"Bitrate budget: {plan.EstimateBytes(media)/1e6:F2} MB · {plan.Savings(media):P1} budget savings";
-            ApplyButton.IsEnabled=true;
+            ApplyButton.IsEnabled=true;MoreCompressionButton.IsEnabled=plan.VideoBitsPerSecond>PlanRules.MinimumVideoRate;
         }
         catch(Exception ex){Estimate.Text=ex.Message;}
     }

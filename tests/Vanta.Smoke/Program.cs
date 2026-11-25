@@ -124,5 +124,12 @@ foreach(var invalidRate in new[]{"63.999","100000.001","64.0001","NaN","1,000","
     rejected=false;try{PlanRules.ParseVideoKbps(invalidRate);}catch(ArgumentException){rejected=true;}
     Check(rejected,"Invalid or fractional-bit rate rejected");
 }
+var quickHeights=QuickSettings.Heights(source);
+Check(quickHeights[0]==1080&&quickHeights.Contains(720)&&!quickHeights.Contains(2160)&&quickHeights.All(h=>h%2==0),"Source-bounded quick heights");
+var quickRates=QuickSettings.Rates(source);
+Check(quickRates.Count>0&&quickRates.Distinct().Count()==quickRates.Count&&quickRates.All(r=>r>=PlanRules.MinimumVideoRate&&r<=PlanRules.MaximumVideoRate),"Bounded quick rates");
+var more=QuickSettings.MoreCompression(plans[0],source)!;
+Check(more.VideoBitsPerSecond<plans[0].VideoBitsPerSecond&&more.Height==plans[0].Height&&more.Codec==plans[0].Codec&&more.EstimateBytes(source)<plans[0].EstimateBytes(source),"More compression reduces video budget only");
+Check(QuickSettings.MoreCompression(plans[0] with {VideoBitsPerSecond=64001},source)!.VideoBitsPerSecond==64000&&QuickSettings.MoreCompression(plans[0] with {VideoBitsPerSecond=64000},source) is null,"More compression stops at bitrate floor");
 Console.WriteLine("Smoke checks passed");
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}

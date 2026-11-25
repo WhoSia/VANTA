@@ -34,6 +34,14 @@ internal static class DesktopSmoke
         Get<TextBox>(dialog,"TargetBox").Text="5";
         Get<TextBox>(dialog,"RateBox").Text="600";
         Check(Get<TextBox>(dialog,"TargetBox").Text=="","Manual edit clears stale target");
+        Get<ComboBox>(dialog,"HeightChoicesBox").SelectedItem=480;
+        Check(Get<TextBox>(dialog,"HeightBox").Text=="480","Quick height updates actual editor");
+        Get<ComboBox>(dialog,"RateChoicesBox").SelectedItem="500";
+        Check(Get<TextBox>(dialog,"RateBox").Text=="500","Quick rate updates actual editor");
+        Get<Button>(dialog,"MoreCompressionButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Check(Get<TextBox>(dialog,"RateBox").Text=="375","More compression changes only budget");
+        Get<TextBox>(dialog,"RateBox").Text="64";
+        Check(!Get<Button>(dialog,"MoreCompressionButton").IsEnabled,"More compression stops at minimum");
         dialog.Close();main.Close();app.Shutdown();
         Console.WriteLine("WPF construction and individual editor routed-event smoke passed.");
     }
