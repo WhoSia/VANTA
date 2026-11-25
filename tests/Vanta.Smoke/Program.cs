@@ -111,5 +111,12 @@ var reports=new[]{new EncodeReport(zero,zero,zero,zero,zero,zero,zero,TimeSpan.F
 var totals=BatchTotals.From(reports);
 Check(totals.Completed==2&&totals.InputBytes==300&&totals.OutputBytes==350&&Math.Abs(totals.Savings!.Value+1d/6)<1e-12&&totals.JobTime.TotalSeconds==5,"Actual weighted batch savings including growth");
 Check(BatchTotals.From([]).Savings is null,"Empty result is not zero percent");
+var visual=new VisualMetadata(16d/9,"tv","bt709","bt709","bt709",false);
+visual.ValidateOutput(visual);
+foreach(var changedVisual in new[]{visual with {DisplayRatio=4d/3},visual with {Range="pc"},visual with {Primaries=""},visual with {HasTransform=true}})
+{
+    rejected=false;try{visual.ValidateOutput(changedVisual);}catch(InvalidDataException){rejected=true;}
+    Check(rejected,"Visual metadata mismatch rejected");
+}
 Console.WriteLine("Smoke checks passed");
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}

@@ -125,6 +125,18 @@ try
     var silentInfo=await Probe.InspectAsync("ffprobe",silentOut,ct);
     Check(silentInfo.Info.AudioTracks==0 && silentInfo.Info.Height==90,"Silent scaled output incorrect");
     Console.WriteLine("Silent video and scaling passed.");
+    var anamorphic=Path.Combine(root,"anamorphic.mp4");
+    await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=2","-vf","setsar=4/3","-c:v","libx264","-pix_fmt","yuv420p","-colorspace","bt709","-color_range","tv",anamorphic);
+    var originalVisual=await Probe.InspectAsync(resolved.Ffprobe,anamorphic,ct);
+    Check(originalVisual.Supported&&originalVisual.Visual?.DisplayRatio is double dar&&Math.Abs(dar-64d/27)<.001,"Anamorphic fixture metadata");
+    foreach(var codec in PlanRules.Codecs)
+    {
+        var visualOut=Path.Combine(root,codec+" anamorphic.mp4");
+        await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,anamorphic,visualOut,plan with {Codec=codec,Height=90},ct);
+        var outputVisual=await Probe.InspectAsync(resolved.Ffprobe,visualOut,ct);
+        originalVisual.Visual!.ValidateOutput(outputVisual.Visual!);
+    }
+    Console.WriteLine("Anamorphic DAR and declared color tags preserved for both software codecs.");
     var avcOut=Path.Combine(root,"avc fast.mp4");
     await Encoder.EncodeAsync("ffmpeg","ffprobe",input,avcOut,plan with {Codec="libx264",Preset="fast"},ct,encoderThreads:1);
     var avc=await Probe.InspectAsync("ffprobe",avcOut,ct);

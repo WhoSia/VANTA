@@ -58,6 +58,7 @@ public static class Encoder
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
             if(actual.Height!=plan.Height || actual.Codec!=(plan.Codec=="libx265"?"hevc":"h264")) throw new InvalidDataException("Output codec or height mismatch");
+            if(details.Visual is not null&&actualDetails.Visual is not null)details.Visual.ValidateOutput(actualDetails.Visual);
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
             var outputProbe=Lap();
