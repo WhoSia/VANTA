@@ -75,3 +75,7 @@ Subjective vectors (value, implementation, evidence, integrity): keyframe partit
 ## Indexed access screening update
 
 Subjective (user value, implementation, evidence, integrity): indexed seek (.98,.20,.35,.35), random-access admissibility (1,.15,.30,.30), shared source grid (.97,.25,.30,.40), dispatch ordering (.91,.65,.35,.50). Local closed-GOP indexed seek promising (~16.86% lower than existing early seek proxy), but open-GOP both reject, no continuous comparator and only two repeats. Hard integrity gate outranks apparent speedup. Research harness independent of current Windows CI; do not enable indexed seek or new cache. Verify exact 4f985a8 run first; no new version.
+
+## AVC random access checkpoint
+
+Exact 4f985a8 Windows CI success, longest-first no speed gain in 1080p screen; no promotion. Subjective (value, implementation, evidence, integrity): longest-first (.91,.80,.80,.85), IDR candidate classification (.98,.55,.45,.55), safe indexed seek (.98,.25,.45,.50), full-workflow speed (1,.35,.55,.55), global resource admission (.99,.20,.25,.45). 46d7a7f C# classifier and reference tests pending Windows. Open GOP 2/3 direct keyframe failures, preceding IDR 3/3 matches in local proxy. Prioritize closed-GOP independent reference, indexing cost and continuous fallback; no default change.

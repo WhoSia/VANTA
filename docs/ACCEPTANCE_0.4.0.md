@@ -34,3 +34,7 @@ CI 45573017677 job 139064031881 completed successfully; 256 small oracle cases a
 ## Indexed-seek research checkpoint
 
 Docs-only independent harness, no compiled code changes and no new default. Closed-GOP proxy shows four identical output hashes; open-GOP fixture rejects both early and indexed seek on decoder error. No actual C# random-access guarantee, no continuous comparator, no final speed threshold claim. 4f985a8 exact workflow status not confirmed (available commit-workflow listing is PR-only); retain verified 19a0250 package and wait for reliable exact CI evidence before another build-affecting commit.
+
+## AVC anchor research and longest-first verification
+
+Exact 4f985a8 CI 45574223982 passed; marker order, full 1080p matrix, package/install passed; no speed advantage. Latest verified preview artifact 15004475008 (219235 bytes outer) https://github.com/WhoSia/VANTA/actions/runs/45574223982/artifacts/15004475008. 46d7a7f introduces research-only AVC random-access classifier and six independent decoded frame comparisons. Local proxy finds 2 direct-keyframe open-GOP failures; prior IDR anchor matches reference 3/3. Actual C# build/test pending. No production seek or release change. No owner acceptance or 15% continuous-baseline gate met.
