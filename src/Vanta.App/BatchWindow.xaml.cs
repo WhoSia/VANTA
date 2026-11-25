@@ -55,10 +55,10 @@ public partial class BatchWindow:Window
             ParallelBox.SelectedItem=saved.ParallelJobs;
             var choice=ThreadsBox.Items.Cast<ThreadChoice>().FirstOrDefault(c=>c.Count==saved.EncoderThreads);
             ThreadsBox.SelectedItem=choice??ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count is null);
-            if(choice is null)settingsError="Saved encoder thread budget is unavailable on this PC; using Auto.";
+            if(choice is null)settingsError=T("Saved encoder thread budget is unavailable on this PC; using Auto.","저장된 스레드 예산을 사용할 수 없어 자동으로 설정했습니다.");
         }
         catch(Exception ex){settingsError="Saved defaults could not be loaded: "+ex.Message;}
-        initialized=true;UpdateSelection();
+        initialized=true;UpdateSummary();
         if(settingsError is not null)Summary.Text=settingsError;
         Loaded+=async (_,_)=>{if(initial.Length>0)await AddAsync(initial);};
     }
@@ -74,7 +74,7 @@ public partial class BatchWindow:Window
     }
     private void OnClosing(object? sender,CancelEventArgs e)
     {
-        if(current is not null){e.Cancel=true;current.Cancel();Summary.Text="Canceling. Close after cleanup completes.";}
+        if(current is not null){e.Cancel=true;current.Cancel();Summary.Text=T("Canceling. Close after cleanup completes.","취소 중입니다. 정리가 끝난 후 닫아 주세요.");}
     }
     private void OnClear(object sender,RoutedEventArgs e){if(current is null){rows.Clear();UpdateSummary();}}
     private void OnRemove(object sender,RoutedEventArgs e){if(current is null&&Queue.SelectedItem is Row r){rows.Remove(r);UpdateSummary();}}
@@ -93,7 +93,7 @@ public partial class BatchWindow:Window
     private void OnEditPlan(object sender,RoutedEventArgs e)
     {
         if(current is not null||tools is null||Queue.SelectedItem is not Row r||r.Media is null||!BatchRecovery.CanEdit(r.State,true))
-        {Summary.Text="Select an analyzed, unfinished video. Editing prepares it for the next run.";return;}
+        {Summary.Text=T("Select an analyzed, unfinished video. Editing prepares it for the next run.","분석이 끝난 미완료 영상을 선택하세요. 수정한 설정은 다음 작업에 적용됩니다.");return;}
         try
         {
             r.Stamp?.RequireUnchanged(r.Input);
@@ -106,27 +106,27 @@ public partial class BatchWindow:Window
     private void OnResetPlan(object sender,RoutedEventArgs e)
     {
         if(current is not null||Queue.SelectedItem is not Row r||!BatchRecovery.CanEdit(r.State,r.Media is not null))
-        {Summary.Text="Select an analyzed, unfinished video. Reset prepares it for the next run.";return;}
+        {Summary.Text=T("Select an analyzed, unfinished video. Reset prepares it for the next run.","분석이 끝난 미완료 영상을 선택하세요. 초기화한 설정은 다음 작업에 적용됩니다.");return;}
         r.ManualPlan=null;r.State="Analyzing";Replan();
     }
     private void OnRetry(object sender,RoutedEventArgs e)
     {
         if(current is not null||Queue.SelectedItem is not Row r)return;
-        if(r.State is not ("Failed" or "Canceled")){Summary.Text="Select a failed or canceled job.";return;}
-        if(r.Media is null){Summary.Text="Source analysis failed or was canceled. Remove and add the file again.";return;}
+        if(r.State is not ("Failed" or "Canceled")){Summary.Text=T("Select a failed or canceled job.","실패하거나 취소된 작업을 선택하세요.");return;}
+        if(r.Media is null){Summary.Text=T("Source analysis failed or was canceled. Remove and add the file again.","원본 분석이 실패했거나 취소되었습니다. 목록에서 제거한 후 다시 추가하세요.");return;}
         try{r.Stamp?.RequireUnchanged(r.Input);}catch(Exception ex){Summary.Text=ex.Message;return;}
         r.State="Analyzing";Replan();
     }
     private void OnOpenResult(object sender,RoutedEventArgs e)
     {
-        if(Queue.SelectedItem is not Row r||r.State!="Complete"||!System.IO.File.Exists(r.Output)){Summary.Text="Select an existing completed output.";return;}
+        if(Queue.SelectedItem is not Row r||r.State!="Complete"||!System.IO.File.Exists(r.Output)){Summary.Text=T("Select an existing completed output.","완료된 출력 파일을 선택하세요.");return;}
         try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(System.IO.Path.GetDirectoryName(r.Output)!){UseShellExecute=true});}
         catch(Exception ex){Summary.Text=ex.Message;}
     }
     private void OnCopy(object sender,RoutedEventArgs e)
     {
         if(Queue.SelectedItem is not Row r)return;
-        try{Clipboard.SetText($"{r.Paths}\n{r.State}\n{r.Detail}");Summary.Text="Selected job details copied.";}
+        try{Clipboard.SetText($"{r.Paths}\n{r.State}\n{r.Detail}");Summary.Text=T("Selected job details copied.","선택한 작업의 상세 정보를 복사했습니다.");}
         catch(Exception ex){Summary.Text=ex.Message;}
     }
     private void OnSaveDefaults(object sender,RoutedEventArgs e)
@@ -135,7 +135,7 @@ public partial class BatchWindow:Window
         try
         {
             new BatchPreferences(((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,(int)ParallelBox.SelectedItem,(ThreadsBox.SelectedItem as ThreadChoice)?.Count).Save(PreferencesPath);
-            Summary.Text="Batch defaults saved locally. No video paths or individual overrides were stored.";
+            Summary.Text=T("Batch defaults saved locally. No video paths or individual overrides were stored.","공통 기본값을 저장했습니다. 영상 경로와 개별 설정은 저장하지 않았습니다.");
         }
         catch(Exception ex){Summary.Text="Could not save defaults: "+ex.Message;}
     }
@@ -184,16 +184,17 @@ public partial class BatchWindow:Window
         StartButton.Content=ready>0?T($"Compress {ready} ready video(s)",$"준비된 영상 {ready}개 압축"):T("Compress ready videos","준비된 영상 압축");
         var pending=rows.Where(r=>r.State=="Ready"&&r.Plan is not null&&r.Media is not null).ToArray();
         double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
-        Summary.Text=$"{rows.Count} videos · {ready} ready · {rows.Count(r=>r.State=="Complete")} complete · {rows.Count(r=>r.State=="Failed")} failed · {rows.Count(r=>r.State=="Canceled")} canceled · {rows.Count(r=>r.State=="Skipped")} skipped";
-        if(pending.Length>0)Summary.Text+=$" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)";
+        int complete=rows.Count(r=>r.State=="Complete"), failed=rows.Count(r=>r.State=="Failed"), canceled=rows.Count(r=>r.State=="Canceled"), skipped=rows.Count(r=>r.State=="Skipped");
+        Summary.Text=T($"{rows.Count} videos · {ready} ready · {complete} complete · {failed} failed · {canceled} canceled · {skipped} skipped",$"영상 {rows.Count}개 · 준비 {ready} · 완료 {complete} · 실패 {failed} · 취소 {canceled} · 건너뜀 {skipped}");
+        if(pending.Length>0)Summary.Text+=T($" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)",$" | 대기: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB 용량 예산 (보장 없음)");
         var totals=BatchTotals.From(rows.Where(r=>r.State=="Complete"&&r.Report is not null).Select(r=>r.Report!));
-        if(totals.Completed>0)Summary.Text+=$" | Completed: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB ({totals.Savings:P1} actual savings); {totals.JobTime.TotalSeconds:F1}s summed job time";
+        if(totals.Completed>0)Summary.Text+=T($" | Completed: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB ({totals.Savings:P1} actual savings); {totals.JobTime.TotalSeconds:F1}s summed job time",$" | 완료: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB (실제 절감률 {totals.Savings:P1}); 작업 시간 합계 {totals.JobTime.TotalSeconds:F1}초");
         if(current is null&&ParallelBox.SelectedItem is int parallel)
         {
             try
             {
                 var count=ThreadBudget.PerJob((ThreadsBox.SelectedItem as ThreadChoice)?.Count,parallel);
-                Summary.Text+=count is int n?$" | {n} requested encoder threads/job (not a CPU cap)":" | Automatic encoder threads";
+                Summary.Text+=count is int n?T($" | {n} requested encoder threads/job (not a CPU cap)",$" | 작업당 인코더 스레드 {n}개 요청 (CPU 상한 아님)"):T(" | Automatic encoder threads"," | 자동 인코더 스레드");
             }
             catch(ArgumentException ex){Summary.Text+=" | "+ex.Message;StartButton.IsEnabled=false;}
         }
@@ -210,7 +211,7 @@ public partial class BatchWindow:Window
                 var m=r.Media!;
                 r.Stamp?.RequireUnchanged(r.Input);
                 var p=BatchPlanSelection.Resolve(m,tools!.Codecs,((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,r.ManualPlan);
-                if(p is null){r.State="Skipped";r.Detail="Selected codec or budget tier unavailable; choose another or use single-file settings.";r.Refresh();continue;}
+                if(p is null){r.State="Skipped";r.Detail=T("Selected codec or budget tier unavailable; choose another or use single-file settings.","선택한 코덱 또는 플랜을 사용할 수 없습니다. 다른 플랜을 선택하거나 개별 설정을 수정하세요.");r.Refresh();continue;}
                 r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
                 r.Budget=$"{UiLanguage.Tier(korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB";
                 r.State="Ready";r.Detail=r.ManualPlan is null?T("Shared profile; size not guaranteed.","공통 플랜 · 용량 보장 없음"):T("Individual override; size not guaranteed.","개별 설정 · 용량 보장 없음");

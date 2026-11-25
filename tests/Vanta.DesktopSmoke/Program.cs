@@ -54,6 +54,7 @@ internal static class DesktopSmoke
         language.SelectedIndex=0;
         Check((string)Get<Button>(main,"OpenButton").Content=="Open videos… (one or many)","English main captions restored");
         var koreanBatch=new BatchWindow(korean:true);
+        Check(Get<TextBlock>(koreanBatch,"Summary").Text.Contains("영상 0개 · 준비 0"),"Korean queue summary");
         Check((string)Get<Button>(koreanBatch,"AddButton").Content=="영상 추가…"&&!Get<Button>(koreanBatch,"StartButton").IsEnabled,"Korean batch labels and idle gate");
         var koreanDialog=new BatchPlanDialog(media,["libx264"],new Plan("Custom","libx264",720,300_000,0,"fast",false),true);
         Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
