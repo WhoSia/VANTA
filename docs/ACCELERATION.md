@@ -134,3 +134,19 @@ All eight outputs full-decoded successfully, ffprobe counted 120 video frames, a
 Windows CI 45546909751 job 138978616567 continuous phase two-rep mean total 5.3425s, encode 3.50795s, packet timeline .91335s, audio hash .28835s, decode .48605s; split mean 6.43025s. Prioritize preset choices, then equivalence-tested reduction of repeated validation IO. Never drop timestamp, copied audio or full decode checks; prior fused packet hash shadow work does not yet prove extradata/priming equivalence. Do not automatically enable split or alter default threads on this evidence.
 
 Latest exact 0685a93 Windows CI 45547843938: PACKET_SHADOW baseline .9531/.9145 s (mean .9338); fused .8875/.8739 s (mean .8807), 5.69% stage-time improvement. Same fixture within same run, not cross-run comparison. Continuous total 2.9829/3.1280 s (mean 3.05545); split 3.8146/3.7724 (mean 3.7935), 24.15% slower. SSIM continuous .980958/.980934, split .980890/.980876. This does not justify dropping existing audio streamhash or enabling split by default. Continue exact equivalence tests for packet payload, timestamps, AAC configuration/priming, and decode. No new benchmark execution in this turn; values retrieved from actual CI logs.
+
+## Rust / fast-anything decision screen
+
+2026-11-25, actual local Debian FFmpeg 7.1.5-0+deb13u1, nproc 5, cgroup cpu.max 400000 100000 (4 CPU equivalents). Checked command availability: fast-anything, rustc, cargo and dotnet absent from PATH; no upstream CLI or Rust compilation performed. Read Ponytail and independent fast-anything skill. Native FFmpeg/Python fallback is a screening test, not C# profiling or a Rust benchmark.
+
+Synthetic fixture generated with ffmpeg -v error -f lavfi -i testsrc2=s=640x360:r=30:d=20 -c:v libx264 -preset ultrafast -threads 2 sample.mp4. Three repetitions of ffprobe -v error -select_streams v:0 -show_frames -show_entries frame=best_effort_timestamp_time -of compact=p=0:nk=0 sample.mp4. Measure wall time of subprocess.check_output, then mean of 100 repetitions parsing captured bytes in Python (splitlines, split on pipe, extract float field, count frames). All 600 timestamps, 22014 output bytes. No user data, no audio. Temporary fixture removed.
+
+| Rep | ffprobe wall s | cached Python parse s |
+|---:|---:|---:|
+| 0 | .225334 | .000170 |
+| 1 | .230272 | .000183 |
+| 2 | .220113 | .000157 |
+
+Mean .225240 vs .000170. Python parse is roughly .075% of these two measured stages combined; this is NOT a bound on managed C# streaming, allocations, or whole VANTA runtime. It makes a standalone Rust timestamp-text parser low priority until actual .NET profiling shows otherwise. A Rust wrapper invoking the same FFmpeg executable cannot eliminate its native codec work; direct libav integration could avoid process/IO duplication but requires ABI, native library redistribution/licensing, cancellation, security/update and correctness validation. Prefer existing C# orchestration, native FFmpeg codec implementations, measured algorithmic reductions and explicit preset selection. No Rust dependency added. Candidate future port only if measured representative C# hot path has material end-to-end share and passes differential testing plus packaging/rollback. No estimated speedup presented as measured.
+
+Exact 40087b4 CI 45549388454: baseline PACKET_SHADOW 1.1516/1.2376 s mean 1.1946; fused 1.1621/1.0199 mean 1.0910, about 8.67% stage reduction; one pair slower. Continuous mean 4.15035s, split mean 5.0140s, about 20.81% slower. Keep legacy audio hash and split opt-in; no new performance path enabled.
