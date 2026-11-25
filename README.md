@@ -8,7 +8,7 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 0.3.0 — Desktop Reliability & Distribution Readiness (owner-approved, in development). No tagged release.
 
-Accepted 0.2.0 baseline preview (not the new 0.3.0 build): [Windows x64 CI artifact (5a7f687)](https://github.com/WhoSia/VANTA/actions/runs/45521060956#artifacts), 193397 compressed bytes, excluding shared dependencies. Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions) and the exact build SHA. Extract the development ZIP into a new directory and launch Vanta.App.exe. Requires Windows x64 .NET 10 Desktop Runtime and a matching FFmpeg/FFprobe pair. See [distribution](docs/DISTRIBUTION.md). CI success does not establish interactive desktop acceptance.
+**[Download the verified Windows x64 package (193e402)](https://github.com/WhoSia/VANTA/actions/runs/45534589424/artifacts/14985877592).** Download only the package artifact; the older development artifact contains the same app. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance.
 
 ## Current preview
 
