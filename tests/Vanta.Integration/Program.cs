@@ -1,5 +1,12 @@
 using Vanta.Core;
 using System.Security.Cryptography;
+// This test executable doubles as a deterministic, zero-exit fake probe only for a marked fixture.
+if(args.Length==7&&args[0]=="-v"&&args[1]=="error"&&args[2]=="-show_format"&&args[3]=="-show_streams"&&args[4]=="-of"&&args[5]=="json"&&File.Exists(args[6]+".test-probe.json"))
+{
+    Console.Write(await File.ReadAllTextAsync(args[6]+".test-probe.json"));
+    Console.Error.WriteLine("Synthetic error-level probe diagnostic");
+    return;
+}
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);
 using var timeout=new CancellationTokenSource(TimeSpan.FromMinutes(5));
@@ -45,6 +52,18 @@ try
     var before=Hash(input);
     var source=await Probe.InspectAsync("ffprobe",input,ct);
     Check(source.Supported,source.Reason);
+    var fakeProbe=Path.Combine(AppContext.BaseDirectory,"Vanta.Integration"+(OperatingSystem.IsWindows()?".exe":""));
+    var capturedProbe=await ProcessRunner.RunAsync(resolved.Ffprobe,["-v","error","-show_format","-show_streams","-of","json",input],ct);
+    Check(capturedProbe.ExitCode==0&&string.IsNullOrWhiteSpace(capturedProbe.Error),"Positive probe control");
+    await File.WriteAllTextAsync(input+".test-probe.json",capturedProbe.Output,ct);
+    var synthetic=await ProcessRunner.RunAsync(fakeProbe,["-v","error","-show_format","-show_streams","-of","json",input],ct);
+    Check(synthetic.ExitCode==0&&synthetic.Output==capturedProbe.Output&&synthetic.Error.Contains("Synthetic error-level probe diagnostic"),"Zero-exit stderr negative control is genuine");
+    bool diagnosticRejected=false;
+    try{await Probe.InspectAsync(fakeProbe,input,ct);}
+    catch(InvalidOperationException ex) when(ex.Message.Contains("Synthetic error-level probe diagnostic")){diagnosticRejected=true;}
+    Check(diagnosticRejected,"Probe accepted error-level stderr with exit zero");
+    File.Delete(input+".test-probe.json");
+    Console.WriteLine("Zero-exit probe error diagnostic rejected.");
     var plan=new Plan("CI","libx265",180,180000,0,"medium",false,true);
     var events=new List<EncodeProgress>();
     var expectedStamp=SourceStamp.Capture(input);

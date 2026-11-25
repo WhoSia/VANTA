@@ -11,7 +11,8 @@ public partial class App:Application
         {
             // No window, no preferences, no installation or network activity.
             using var deadline=new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            try{Toolchain.DiscoverAsync(deadline.Token).GetAwaiter().GetResult();Shutdown(0);}
+            // Run discovery outside the WPF Dispatcher context to avoid sync-over-async deadlock.
+            try{Task.Run(()=>Toolchain.DiscoverAsync(deadline.Token)).GetAwaiter().GetResult();Shutdown(0);}
             catch(Exception){Shutdown(2);}
             return;
         }

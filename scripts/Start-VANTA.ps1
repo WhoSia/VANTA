@@ -8,9 +8,10 @@ function Update-SearchPath {
     $env:Path = (@($env:Path,$machine,$user,$links) | Where-Object { $_ }) -join ';'
 }
 function Find-Runtime {
+    if (-not [Environment]::Is64BitOperatingSystem) { throw 'VANTA requires Windows x64.' }
     $paths = @()
-    if ($env:ProgramFiles) { $paths += Join-Path $env:ProgramFiles 'dotnet\dotnet.exe' }
-    if ($env:ProgramW6432) { $paths += Join-Path $env:ProgramW6432 'dotnet\dotnet.exe' }
+    $programFiles64 = if ($env:ProgramW6432) { $env:ProgramW6432 } else { $env:ProgramFiles }
+    if ($programFiles64) { $paths += Join-Path $programFiles64 'dotnet\dotnet.exe' }
     foreach ($p in ($paths | Select-Object -Unique)) {
         if ((Test-Path -LiteralPath $p -PathType Leaf) -and ((& $p --list-runtimes) -match '^Microsoft\.WindowsDesktop\.App 10\.')) { return $true }
     }
@@ -33,8 +34,14 @@ $exe = Join-Path $PSScriptRoot 'Vanta.App.exe'
 if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) { throw 'Vanta.App.exe is missing. Extract the complete preview ZIP.' }
 function Test-Tools {
     # Use the published app's own bounded matching-pair and encoder checks.
-    $p = Start-Process -FilePath $exe -ArgumentList '--check-dependencies' -WorkingDirectory $PSScriptRoot -Wait -PassThru
-    return ($p.ExitCode -eq 0)
+    $p = Start-Process -FilePath $exe -ArgumentList '--check-dependencies' -WorkingDirectory $PSScriptRoot -PassThru
+    try {
+        if (-not $p.WaitForExit(45000)) {
+            if (-not $p.HasExited) { $p.Kill() }
+            throw 'Dependency check did not exit within 45 seconds. Check the runtime installation.'
+        }
+        return ($p.ExitCode -eq 0)
+    } finally { $p.Dispose() }
 }
 if (-not (Test-Tools)) {
     if ($env:VANTA_FFMPEG_DIR) { throw 'Configured VANTA_FFMPEG_DIR is invalid or lacks a compatible matching FFmpeg/FFprobe pair. Correct or remove it; no fallback.' }
