@@ -83,3 +83,7 @@ Exact 4f985a8 Windows CI success, longest-first no speed gain in 1080p screen; n
 ## Public corpus expansion
 
 Subjective (value, implementation, evidence, integrity): public media coverage (1,.65,.15,.45), native compatibility (.99,.45,.20,.45), per-frame quality screening (.98,.60,.25,.55), AVC IDR classifier (.98,.75,.80,.80), adaptive resource admission (.99,.20,.25,.45), representative speed gate (1,.35,.35,.50). 46d7a7f verified, no production routing. 44a0a5d introduces separate corpus CI, pending both workflows. Highest priority: seal actual acquired bytes and verify normalization CFR; local negative evidence shows explicit -r and -fps_mode cfr are needed in FFmpeg 7.1.5. No default speed claim. Future content additions should include high-motion live footage, low-light/noise, long native audio, VFR phone and gaming; avoid counting resolution variants as independent content.
+
+## Objective review after real media run
+
+Do not assign measured success to implementation effort. Observed: normal CI pass, public corpus overall fail, 5/6 normalized inputs, 20 full verified outputs, 6/10 comparable pairs, 0/10 speed wins, 0 native original encodes. Highest-priority blockers: BBB fixture audio clock, source provenance seal, strong native encoder baseline, resource and broader native compatibility coverage. Segment policy remains experimental; no default benefit, and matched pair evidence argues against promoting it on these short clips. No arbitrary score increase from commit volume.
