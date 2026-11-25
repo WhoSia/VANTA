@@ -1,0 +1,161 @@
+[
+  {
+    "candidate": "aligned",
+    "n": 10,
+    "independentContentGroups": 4,
+    "matched": 6,
+    "jointWin": 0,
+    "jointTarget": 0,
+    "contentWeightedMeanTimeReduction": -0.29381496193290313,
+    "contentWeightedJointWin": 0,
+    "leaveOneContentOut": [
+      -0.3369571047278475,
+      -0.24609776498094318
+    ],
+    "clusterResampleSensitivity": [
+      -0.3791161285770891,
+      -0.20851379528871716
+    ],
+    "resampleCount": 256,
+    "clusters": [
+      {
+        "id": "waterfall-portrait",
+        "n": 2,
+        "meanTimeReduction": -0.2526390570293644,
+        "matched": 1,
+        "jointWin": 0,
+        "jointTarget": 0
+      },
+      {
+        "id": "screen-recording",
+        "n": 2,
+        "meanTimeReduction": -0.43696655278878305,
+        "matched": 0,
+        "jointWin": 0,
+        "jointTarget": 0
+      },
+      {
+        "id": "slow-motion-drops",
+        "n": 2,
+        "meanTimeReduction": -0.16438853354806993,
+        "matched": 1,
+        "jointWin": 0,
+        "jointTarget": 0
+      },
+      {
+        "id": "earth",
+        "n": 4,
+        "meanTimeReduction": -0.3212657043653952,
+        "matched": 0.5,
+        "jointWin": 0,
+        "jointTarget": 0
+      }
+    ]
+  },
+  {
+    "candidate": "continuous-auto",
+    "n": 10,
+    "independentContentGroups": 4,
+    "matched": 10,
+    "jointWin": 4,
+    "jointTarget": 0,
+    "contentWeightedMeanTimeReduction": 0.007633428351808053,
+    "contentWeightedJointWin": 0.5,
+    "leaveOneContentOut": [
+      -0.007671810954489174,
+      0.018514387973157204
+    ],
+    "clusterResampleSensitivity": [
+      -0.012932422493183299,
+      0.03390949707496495
+    ],
+    "resampleCount": 256,
+    "clusters": [
+      {
+        "id": "waterfall-portrait",
+        "n": 2,
+        "meanTimeReduction": 0.05354914627069973,
+        "matched": 1,
+        "jointWin": 1,
+        "jointTarget": 0
+      },
+      {
+        "id": "screen-recording",
+        "n": 2,
+        "meanTimeReduction": -0.0008553944741271913,
+        "matched": 1,
+        "jointWin": 0.5,
+        "jointTarget": 0
+      },
+      {
+        "id": "slow-motion-drops",
+        "n": 2,
+        "meanTimeReduction": 0.0028494121228990754,
+        "matched": 1,
+        "jointWin": 0.5,
+        "jointTarget": 0
+      },
+      {
+        "id": "earth",
+        "n": 4,
+        "meanTimeReduction": -0.025009450512239406,
+        "matched": 1,
+        "jointWin": 0,
+        "jointTarget": 0
+      }
+    ]
+  },
+  {
+    "candidate": "continuous-fast",
+    "n": 10,
+    "independentContentGroups": 4,
+    "matched": 4,
+    "jointWin": 4,
+    "jointTarget": 0,
+    "contentWeightedMeanTimeReduction": 0.09661022786538645,
+    "contentWeightedJointWin": 0.5,
+    "leaveOneContentOut": [
+      0.08190867626165756,
+      0.11472456791811832
+    ],
+    "clusterResampleSensitivity": [
+      0.062104501527757636,
+      0.12639100791123692
+    ],
+    "resampleCount": 256,
+    "clusters": [
+      {
+        "id": "waterfall-portrait",
+        "n": 2,
+        "meanTimeReduction": 0.1216163829894582,
+        "matched": 1,
+        "jointWin": 1,
+        "jointTarget": 0
+      },
+      {
+        "id": "screen-recording",
+        "n": 2,
+        "meanTimeReduction": 0.04226720770719078,
+        "matched": 1,
+        "jointWin": 1,
+        "jointTarget": 0
+      },
+      {
+        "id": "slow-motion-drops",
+        "n": 2,
+        "meanTimeReduction": 0.14071488267657312,
+        "matched": 0,
+        "jointWin": 0,
+        "jointTarget": 0
+      },
+      {
+        "id": "earth",
+        "n": 4,
+        "meanTimeReduction": 0.08184243808832367,
+        "matched": 0,
+        "jointWin": 0,
+        "jointTarget": 0
+      }
+    ]
+  }
+]
