@@ -336,6 +336,7 @@ try
     Console.WriteLine("Longest-first work scheduling preserved chronological frame identities.");
     await MultiSplitScreen.RunAsync(resolved,root,ct);
     await KeyframePartitionScreen.RunAsync(resolved,root,ct);
+    await AvcRandomAccessScreen.RunAsync(resolved,root,ct);
     var reversed=Path.Combine(root,"reversed frame IDs.mp4");
     await Run("-v","error","-nostdin","-n","-i",marker,"-vf","reverse","-c:v","libx264","-crf","0","-pix_fmt","yuv420p",reversed);
     await PacketTimeline.ValidateAsync(resolved.Ffprobe,marker,reversed,0,ct);
