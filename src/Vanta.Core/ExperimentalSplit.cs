@@ -1,13 +1,15 @@
 using System.Globalization;
 namespace Vanta.Core;
 
-// Opt-in two-way video-only experiment. The final Encoder validation is mandatory.
+// Opt-in video-only experiment. Production remains two-way; research may vary segments and workers.
 internal static class ExperimentalSplit
 {
     private static string Num(double x)=>x.ToString("0.000000000",CultureInfo.InvariantCulture);
 
-    public static async Task EncodeVideoAndMuxAsync(string ffmpeg,string ffprobe,string input,string destination,MediaDetails details,Plan plan,CancellationToken ct,int? encoderThreads=null)
+    public static async Task EncodeVideoAndMuxAsync(string ffmpeg,string ffprobe,string input,string destination,MediaDetails details,Plan plan,CancellationToken ct,int? encoderThreads=null,int segmentCount=2,int maxWorkers=2)
     {
+        if(segmentCount is <2 or >16||maxWorkers<1||maxWorkers>Math.Min(segmentCount,8)||encoderThreads is int requested&&requested<maxWorkers)
+            throw new ArgumentException("Research split requires 2–16 segments, 1–8 workers, and at least one encoder thread per worker.");
         var m=details.Info;
         if(plan.Codec!="libx264"||plan.Height!=m.Height||m.Codec!="h264"||
            !string.Equals(Path.GetExtension(input),".mp4",StringComparison.OrdinalIgnoreCase)||
@@ -16,7 +18,9 @@ internal static class ExperimentalSplit
         var frames=await ReadGridAsync(ffprobe,input,m.Fps,ct);
         if(frames<60||frames>2_000_000||Math.Abs(frames/m.Fps-m.VideoDuration)>.002)
             throw new NotSupportedException("Experimental split requires a complete, regular frame grid and known video duration.");
-        var cut=frames/2;
+        if(frames<2L*segmentCount)throw new NotSupportedException("Too few frames for the requested split.");
+        var threadsPerWorker=encoderThreads is int budget?budget/maxWorkers:Math.Clamp(Environment.ProcessorCount/maxWorkers,1,4);
+        long Boundary(int index)=>frames*index/segmentCount;
         var work=Path.Combine(Path.GetDirectoryName(destination)!, ".vanta-split-"+Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(work);
         try
@@ -32,23 +36,35 @@ internal static class ExperimentalSplit
                     "-ss",Num(seek),"-copyts","-i",input,"-map","0:V:0","-an",
                     "-vf",$"trim=start={Num(boundary)},setpts=PTS-STARTPTS",
                     "-frames:v",count.ToString(CultureInfo.InvariantCulture),"-c:v","libx264","-preset",plan.Preset,
-                    "-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-threads",(encoderThreads is int budget?budget/2:Math.Clamp(Environment.ProcessorCount/2,1,4)).ToString(CultureInfo.InvariantCulture),
+                    "-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-threads",threadsPerWorker.ToString(CultureInfo.InvariantCulture),
                     "-fps_mode","passthrough","-video_track_timescale","90000",part};
                 await Checked(ffmpeg,args,token);
                 if(await ReadGridAsync(ffprobe,part,m.Fps,token)!=count)
                     throw new InvalidDataException("Segment frame count changed.");
             }
             using var linked=CancellationTokenSource.CreateLinkedTokenSource(ct);
-            async Task Worker(int index,long first,long count)
+            int next=-1;
+            async Task Worker()
             {
-                try{await Part(index,first,count,linked.Token);}
+                try
+                {
+                    while(true)
+                    {
+                        linked.Token.ThrowIfCancellationRequested();
+                        int index=Interlocked.Increment(ref next);
+                        if(index>=segmentCount)return;
+                        long first=Boundary(index);
+                        await Part(index,first,Boundary(index+1)-first,linked.Token);
+                    }
+                }
                 catch{linked.Cancel();throw;}
             }
-            await Task.WhenAll(Worker(0,0,cut),Worker(1,cut,frames-cut));
+            await Task.WhenAll(Enumerable.Range(0,maxWorkers).Select(_=>Worker()));
             ct.ThrowIfCancellationRequested();
             // Only generated relative filenames are used; concat safe mode stays on.
             var manifest=Path.Combine(work,"parts.txt");
-            await File.WriteAllTextAsync(manifest,$"file 'part0.mp4'\nduration {Num(cut/m.Fps)}\nfile 'part1.mp4'\nduration {Num((frames-cut)/m.Fps)}\n",ct);
+            var entries=Enumerable.Range(0,segmentCount).Select(index=>$"file 'part{index}.mp4'\nduration {Num((Boundary(index+1)-Boundary(index))/m.Fps)}\n");
+            await File.WriteAllTextAsync(manifest,string.Concat(entries),ct);
             await Checked(ffmpeg,["-hide_banner","-nostdin","-n","-xerror","-loglevel","error","-f","concat","-safe","1","-i",manifest,"-i",input,
                 "-map","0:v:0","-map","1:a?","-c","copy","-tag:v","avc1","-video_track_timescale","90000","-movflags","+faststart",destination],ct);
         }

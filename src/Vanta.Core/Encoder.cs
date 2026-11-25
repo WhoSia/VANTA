@@ -3,7 +3,10 @@ using System.Diagnostics;
 namespace Vanta.Core;
 public static class Encoder
 {
-    public static async Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
+    public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
+        =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
+    // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -12,7 +15,7 @@ public static class Encoder
             var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
         }
         ct.ThrowIfCancellationRequested();
-        ThreadBudget.ValidateEncoder(encoderThreads,experimentalSplit);
+        ThreadBudget.ValidateEncoder(encoderThreads,experimentalSplit&&splitSegments==2&&splitWorkers==2);
         input=Path.GetFullPath(input); output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)) throw new IOException("Output must be a new file");
         if(!string.Equals(Path.GetExtension(output),".mp4",StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Only MP4 is supported in this prototype");
@@ -40,7 +43,7 @@ public static class Encoder
             if(experimentalSplit)
             {
                 progress?.Report(new("Experimental split",null));
-                await ExperimentalSplit.EncodeVideoAndMuxAsync(ffmpeg,ffprobe,input,temp,details,plan,ct,encoderThreads);
+                await ExperimentalSplit.EncodeVideoAndMuxAsync(ffmpeg,ffprobe,input,temp,details,plan,ct,encoderThreads,splitSegments,splitWorkers);
             }
             else
             {
@@ -68,7 +71,7 @@ public static class Encoder
             var audioHash=TimeSpan.Zero;
             if(source.AudioTracks>0)
             {
-                await ValidateAudioAsync(ffmpeg,input,temp,ct);
+                await ValidateAudioAsync(ffmpeg,input,temp,ct,parallelAudioHash);
                 audioHash=Lap();
             }
             await Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);

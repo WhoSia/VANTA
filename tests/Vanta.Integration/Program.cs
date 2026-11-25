@@ -315,6 +315,20 @@ try
     var splitIds=await MarkerHashes(markerOut);
     Check(Enumerable.SequenceEqual(ids,splitIds),"Frame content identity changed at split");
     Console.WriteLine("All 121 unique frame IDs preserved across odd split.");
+    foreach(var (segments,workers) in new[]{(3,2),(4,4),(8,2),(8,4)})
+    {
+        var dest=Path.Combine(root,$"marker-{segments}-{workers}.mp4");
+        await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,dest,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:4,splitSegments:segments,splitWorkers:workers);
+        Check(ids.SequenceEqual(await MarkerHashes(dest)),$"Frame identities changed in {segments}/{workers} split");
+        Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Multi-split staging leaked");
+    }
+    var invalidSplit=Path.Combine(root,"invalid worker budget.mp4");
+    rejected=false;
+    try{await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,invalidSplit,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:2,splitSegments:8,splitWorkers:4);}
+    catch(ArgumentException){rejected=true;}
+    Check(rejected&&!File.Exists(invalidSplit)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Invalid research worker budget must fail closed");
+    Console.WriteLine("Multi-split 3/4/8 frame identity and worker budget controls passed.");
+    await MultiSplitScreen.RunAsync(resolved,root,ct);
     var reversed=Path.Combine(root,"reversed frame IDs.mp4");
     await Run("-v","error","-nostdin","-n","-i",marker,"-vf","reverse","-c:v","libx264","-crf","0","-pix_fmt","yuv420p",reversed);
     await PacketTimeline.ValidateAsync(resolved.Ffprobe,marker,reversed,0,ct);
