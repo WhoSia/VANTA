@@ -1,20 +1,20 @@
-<Window x:Class="Vanta.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="VANTA — 0.3.0 preview" Width="790" Height="760" MinWidth="560" MinHeight="480" AllowDrop="True" Drop="OnDrop" Closing="OnClosing" Background="#F3F5F8">
+<Window x:Class="Vanta.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="{DynamicResource Ui001}" Width="790" Height="760" MinWidth="560" MinHeight="480" AllowDrop="True" Drop="OnDrop" Closing="OnClosing" Background="#F3F5F8">
 <Window.Resources>
 <Style TargetType="Button"><Setter Property="Padding" Value="12,7"/><Setter Property="Margin" Value="0,0,8,0"/></Style>
 <Style TargetType="ComboBox"><Setter Property="Margin" Value="0,4,12,12"/><Setter Property="Padding" Value="6"/></Style>
 <Style TargetType="TextBox"><Setter Property="Margin" Value="0,4,12,12"/><Setter Property="Padding" Value="6"/></Style>
 </Window.Resources>
 <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24">
-<TextBlock Text="VANTA" FontSize="30" FontWeight="SemiBold"/>
-<TextBlock Text="Video compression · 0.3.0 development preview" Foreground="#526071" Margin="0,2,0,16"/>
+<DockPanel LastChildFill="True"><ComboBox x:Name="LanguageBox" DockPanel.Dock="Right" Width="104" SelectionChanged="OnLanguage" AutomationProperties.Name="Language / 언어" Margin="0,0,0,0"><ComboBoxItem Content="English"/><ComboBoxItem Content="한국어"/></ComboBox><TextBlock Text="VANTA" FontSize="30" FontWeight="SemiBold"/></DockPanel>
+<TextBlock Text="{DynamicResource Ui002}" Foreground="#526071" Margin="0,2,0,16"/>
 <Border Background="White" CornerRadius="8" Padding="16"><StackPanel>
-<WrapPanel><Button x:Name="OpenButton" Content="Open videos… (one or many)" Click="OnOpen"/><Button x:Name="BatchButton" Content="Batch queue…" Click="OnBatch"/><Button x:Name="DiagnosticsButton" Content="Check hardware encoders…" Click="OnDiagnostics"/></WrapPanel>
+<WrapPanel><Button x:Name="OpenButton" Content="{DynamicResource Ui003}" Click="OnOpen"/><Button x:Name="BatchButton" Content="{DynamicResource Ui004}" Click="OnBatch"/><Button x:Name="DiagnosticsButton" Content="{DynamicResource Ui005}" Click="OnDiagnostics"/></WrapPanel>
 <TextBlock x:Name="Source" TextWrapping="Wrap" Margin="0,10,0,0"/>
 </StackPanel></Border>
-<TextBlock Text="Suggested plans" FontWeight="SemiBold" Margin="0,16,0,6"/>
-<TextBlock Text="Recommendation codec (changing this rebuilds the plans and resets manual settings)" TextWrapping="Wrap" Foreground="#526071"/>
+<TextBlock Text="{DynamicResource Ui006}" FontWeight="SemiBold" Margin="0,16,0,6"/>
+<TextBlock Text="{DynamicResource Ui007}" TextWrapping="Wrap" Foreground="#526071"/>
 <ComboBox x:Name="RecommendationBox" MinWidth="180" MaxWidth="260" HorizontalAlignment="Left" IsEnabled="False" SelectionChanged="OnRecommendation"/>
-<TextBlock Text="Profiles are bitrate-budget tiers, not measured quality guarantees." TextWrapping="Wrap" Foreground="#526071" Margin="0,0,0,6"/>
+<TextBlock Text="{DynamicResource Ui008}" TextWrapping="Wrap" Foreground="#526071" Margin="0,0,0,6"/>
 <ListBox x:Name="Plans" SelectionChanged="OnPlan" MinHeight="92" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
   <ListBox.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate></ListBox.ItemsPanel>
   <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="12,8"/><Setter Property="Margin" Value="0,0,6,0"/><Setter Property="BorderThickness" Value="1"/><Setter Property="BorderBrush" Value="#D8DFE7"/></Style></ListBox.ItemContainerStyle>
@@ -25,21 +25,21 @@
     <TextBlock Text="{Binding Savings}" FontSize="12" Foreground="#526071" TextWrapping="Wrap" Margin="0,4,0,0"/>
   </StackPanel></DataTemplate></ListBox.ItemTemplate>
 </ListBox>
-<TextBlock Text="Encoding settings" FontWeight="SemiBold" Margin="0,16,0,8"/>
+<TextBlock Text="{DynamicResource Ui009}" FontWeight="SemiBold" Margin="0,16,0,8"/>
 <Border Background="White" CornerRadius="8" Padding="16"><StackPanel x:Name="Editor" IsEnabled="False">
-<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Video codec"/><ComboBox x:Name="CodecBox" SelectionChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="Preset"/><ComboBox x:Name="PresetBox" SelectionChanged="OnSettings"/></StackPanel></Grid>
-<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Height (pixels, even)"/><TextBlock Text="Quick choice" FontSize="12" Foreground="#526071"/><ComboBox x:Name="HeightChoicesBox" ToolTip="Suggested heights (pixels)" SelectionChanged="OnQuickHeight" Margin="0,4,12,6"/><TextBlock Text="Custom height" FontSize="12" Foreground="#526071"/><TextBox x:Name="HeightBox" TextChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="Video bitrate (kbps)"/><TextBlock Text="Quick choice" FontSize="12" Foreground="#526071"/><ComboBox x:Name="RateChoicesBox" ToolTip="Example bitrate budgets (kbps)" SelectionChanged="OnQuickRate" Margin="0,4,12,6"/><TextBlock Text="Custom bitrate" FontSize="12" Foreground="#526071"/><TextBox x:Name="RateBox" TextChanged="OnSettings"/></StackPanel></Grid>
-<Button x:Name="MoreCompressionButton" Content="More compression (−25% video bitrate)" IsEnabled="False" Click="OnMoreCompression" HorizontalAlignment="Left" Margin="0,0,0,8" ToolTip="Changes the current budget only; does not start encoding."/><TextBlock Text="Target size (MB, approximate)"/><DockPanel><Button DockPanel.Dock="Right" Content="Apply target" Click="OnTarget"/><TextBox x:Name="TargetBox" Margin="0,4,12,4"/></DockPanel>
-<TextBlock Text="Encoder thread budget (optional)"/>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{DynamicResource Ui010}"/><ComboBox x:Name="CodecBox" SelectionChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="{DynamicResource Ui011}"/><ComboBox x:Name="PresetBox" SelectionChanged="OnSettings"/></StackPanel></Grid>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{DynamicResource Ui012}"/><TextBlock Text="{DynamicResource Ui013}" FontSize="12" Foreground="#526071"/><ComboBox x:Name="HeightChoicesBox" ToolTip="{DynamicResource Ui014}" SelectionChanged="OnQuickHeight" Margin="0,4,12,6"/><TextBlock Text="{DynamicResource Ui015}" FontSize="12" Foreground="#526071"/><TextBox x:Name="HeightBox" TextChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="{DynamicResource Ui016}"/><TextBlock Text="{DynamicResource Ui013}" FontSize="12" Foreground="#526071"/><ComboBox x:Name="RateChoicesBox" ToolTip="{DynamicResource Ui017}" SelectionChanged="OnQuickRate" Margin="0,4,12,6"/><TextBlock Text="{DynamicResource Ui018}" FontSize="12" Foreground="#526071"/><TextBox x:Name="RateBox" TextChanged="OnSettings"/></StackPanel></Grid>
+<Button x:Name="MoreCompressionButton" Content="{DynamicResource Ui019}" IsEnabled="False" Click="OnMoreCompression" HorizontalAlignment="Left" Margin="0,0,0,8" ToolTip="{DynamicResource Ui020}"/><TextBlock Text="{DynamicResource Ui021}"/><DockPanel><Button DockPanel.Dock="Right" Content="{DynamicResource Ui022}" Click="OnTarget"/><TextBox x:Name="TargetBox" Margin="0,4,12,4"/></DockPanel>
+<TextBlock Text="{DynamicResource Ui023}"/>
 <ComboBox x:Name="ThreadsBox" MaxWidth="230" HorizontalAlignment="Left" MinWidth="180"/>
-<TextBlock Text="Auto is the default. This is an encoder thread request, not a CPU usage limit; decoding and codec worker pools may use additional threads." Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,6"/>
-<CheckBox x:Name="SplitBox" Content="Experimental: split video into two parallel parts" Margin="0,10,0,4"/>
-<TextBlock Text="Optional, H.264 MP4 CFR only, original dimensions. May be slower or change quality; strict validation, no output on failure." Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,6"/>
-<TextBlock Text="MP4 · source frame timing · AAC copy · single pass" Foreground="#526071" Margin="0,8,0,0" TextWrapping="Wrap"/>
+<TextBlock Text="{DynamicResource Ui024}" Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,6"/>
+<CheckBox x:Name="SplitBox" Content="{DynamicResource Ui025}" Margin="0,10,0,4"/>
+<TextBlock Text="{DynamicResource Ui026}" Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,6"/>
+<TextBlock Text="{DynamicResource Ui027}" Foreground="#526071" Margin="0,8,0,0" TextWrapping="Wrap"/>
 <TextBlock x:Name="Estimate" FontSize="18" FontWeight="SemiBold" Margin="0,12,0,0" TextWrapping="Wrap"/>
 <TextBlock x:Name="Evidence" Foreground="#526071" Margin="0,4,0,0" TextWrapping="Wrap"/>
 </StackPanel></Border>
-<WrapPanel Margin="0,16,0,0"><Button x:Name="EncodeButton" Content="Compress to new file" IsEnabled="False" Click="OnEncode"/><Button x:Name="CancelButton" Content="Cancel" IsEnabled="False" Click="OnCancel"/><Button x:Name="ResultFolderButton" Content="Open result folder" IsEnabled="False" Click="OnResultFolder"/><Button x:Name="CopyResultButton" Content="Copy result" IsEnabled="False" Click="OnCopyResult"/></WrapPanel>
+<WrapPanel Margin="0,16,0,0"><Button x:Name="EncodeButton" Content="{DynamicResource Ui028}" IsEnabled="False" Click="OnEncode"/><Button x:Name="CancelButton" Content="{DynamicResource Ui029}" IsEnabled="False" Click="OnCancel"/><Button x:Name="ResultFolderButton" Content="{DynamicResource Ui030}" IsEnabled="False" Click="OnResultFolder"/><Button x:Name="CopyResultButton" Content="{DynamicResource Ui031}" IsEnabled="False" Click="OnCopyResult"/></WrapPanel>
 <TextBlock x:Name="ResultPath" TextWrapping="Wrap" Foreground="#526071" Margin="0,6,0,0"/><ProgressBar x:Name="BusyBar" Height="5" Margin="0,12,0,0" Visibility="Collapsed" IsIndeterminate="True"/>
-<TextBlock x:Name="Status" Text="Open an 8-bit SDR video with AAC audio or no audio." TextWrapping="Wrap" Foreground="#526071" Margin="0,10,0,0"/>
+<TextBlock x:Name="Status" Text="{DynamicResource Ui032}" TextWrapping="Wrap" Foreground="#526071" Margin="0,10,0,0"/>
 </StackPanel></ScrollViewer></Window>

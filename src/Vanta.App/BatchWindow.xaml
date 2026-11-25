@@ -1,32 +1,32 @@
-<Window x:Class="Vanta.App.BatchWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="VANTA · Batch compression" Width="1040" Height="700" MinWidth="720" MinHeight="580" WindowStartupLocation="CenterOwner" AllowDrop="True" Drop="OnDrop" Closing="OnClosing" Background="#F3F5F8">
+<Window x:Class="Vanta.App.BatchWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="{DynamicResource Ui033}" Width="1040" Height="700" MinWidth="720" MinHeight="580" WindowStartupLocation="CenterOwner" AllowDrop="True" Drop="OnDrop" Closing="OnClosing" Background="#F3F5F8">
 <Grid Margin="24"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-<StackPanel><TextBlock Text="Batch compression" FontSize="26" FontWeight="SemiBold"/><TextBlock Text="Each video is encoded continuously and independently. Choose a destination or save beside each source." TextWrapping="Wrap" Foreground="#526071" Margin="0,4,0,14"/></StackPanel>
-<StackPanel Grid.Row="1" Margin="0,0,0,12"><WrapPanel Margin="0,0,0,10"><Button x:Name="AddButton" Content="Add videos…" Click="OnAdd" Padding="12,7" Margin="0,0,8,0"/><Button x:Name="ClearButton" Content="Clear" Click="OnClear" Padding="12,7" Margin="0,0,16,0"/><TextBlock Text="Drop videos here or use Add videos. Select a row to edit its settings." VerticalAlignment="Center" TextWrapping="Wrap" Foreground="#526071"/></WrapPanel><WrapPanel><TextBlock Text="Shared profile" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="ProfileBox" Width="112" Margin="0,0,16,0" SelectionChanged="OnProfile"/><TextBlock Text="Recommendation codec" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="RecommendationBox" Width="165" Margin="0,0,16,0" SelectionChanged="OnProfile"/><TextBlock Text="Parallel jobs" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="ParallelBox" Width="60" Margin="0,0,12,0" SelectionChanged="OnResourceSettings"/><TextBlock Text="Total encoder threads" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="ThreadsBox" Width="155" SelectionChanged="OnResourceSettings"/></WrapPanel></StackPanel>
+<StackPanel><TextBlock Text="{DynamicResource Ui034}" FontSize="26" FontWeight="SemiBold"/><TextBlock Text="{DynamicResource Ui035}" TextWrapping="Wrap" Foreground="#526071" Margin="0,4,0,14"/></StackPanel>
+<StackPanel Grid.Row="1" Margin="0,0,0,12"><WrapPanel Margin="0,0,0,10"><Button x:Name="AddButton" Content="{DynamicResource Ui036}" Click="OnAdd" Padding="12,7" Margin="0,0,8,0"/><Button x:Name="ClearButton" Content="{DynamicResource Ui037}" Click="OnClear" Padding="12,7" Margin="0,0,16,0"/><TextBlock Text="{DynamicResource Ui038}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="#526071"/></WrapPanel><WrapPanel><TextBlock Text="{DynamicResource Ui039}" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="ProfileBox" Width="112" Margin="0,0,16,0" SelectionChanged="OnProfile"/><TextBlock Text="{DynamicResource Ui040}" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="RecommendationBox" Width="165" Margin="0,0,16,0" SelectionChanged="OnProfile"/><TextBlock Text="{DynamicResource Ui041}" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="ParallelBox" Width="60" Margin="0,0,12,0" SelectionChanged="OnResourceSettings"/><TextBlock Text="{DynamicResource Ui042}" VerticalAlignment="Center" Margin="0,0,6,0"/><ComboBox x:Name="ThreadsBox" Width="155" SelectionChanged="OnResourceSettings"/></WrapPanel></StackPanel>
 <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="True">
-<Button x:Name="FolderButton" DockPanel.Dock="Right" Content="Choose folder…" Click="OnFolder" Padding="10,6" Margin="8,0,0,0"/>
-<Button x:Name="SourceFolderButton" DockPanel.Dock="Right" Content="Beside sources" Click="OnSourceFolder" Padding="10,6" Margin="8,0,0,0"/>
-<TextBlock x:Name="DestinationText" Text="Output: beside each source" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+<Button x:Name="FolderButton" DockPanel.Dock="Right" Content="{DynamicResource Ui043}" Click="OnFolder" Padding="10,6" Margin="8,0,0,0"/>
+<Button x:Name="SourceFolderButton" DockPanel.Dock="Right" Content="{DynamicResource Ui044}" Click="OnSourceFolder" Padding="10,6" Margin="8,0,0,0"/>
+<TextBlock x:Name="DestinationText" Text="{DynamicResource Ui045}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
 </DockPanel>
 <DataGrid Grid.Row="3" x:Name="Queue" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" SelectionMode="Single" SelectionChanged="OnQueueSelection" RowHeaderWidth="0" Background="White" AlternatingRowBackground="#F6F8FA">
-<DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="ToolTip" Value="{Binding Paths}"/></Style></DataGrid.RowStyle><DataGrid.Columns><DataGridTextColumn Header="Source" Binding="{Binding InputName}" Width="2*"/><DataGridTextColumn Header="Output" Binding="{Binding OutputName}" Width="2*"/><DataGridTextColumn Header="Plan / budget" Binding="{Binding Budget}" Width="210"/><DataGridTextColumn Header="Status" Binding="{Binding State}" Width="140"/><DataGridTextColumn Header="Details" Binding="{Binding Detail}" Width="2*"/></DataGrid.Columns></DataGrid>
+<DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="ToolTip" Value="{Binding Paths}"/></Style></DataGrid.RowStyle><DataGrid.Columns><DataGridTextColumn Header="{DynamicResource Ui046}" Binding="{Binding InputName}" Width="2*"/><DataGridTextColumn Header="{DynamicResource Ui047}" Binding="{Binding OutputName}" Width="2*"/><DataGridTextColumn Header="{DynamicResource Ui048}" Binding="{Binding Budget}" Width="210"/><DataGridTextColumn Header="{DynamicResource Ui049}" Binding="{Binding DisplayState}" Width="140"/><DataGridTextColumn Header="{DynamicResource Ui050}" Binding="{Binding Detail}" Width="2*"/></DataGrid.Columns></DataGrid>
 <StackPanel Grid.Row="4" Margin="0,12,0,0">
   <Border Background="White" BorderBrush="#D8DFE7" BorderThickness="1" Padding="10" Margin="0,0,0,10"><StackPanel>
-    <TextBlock x:Name="SelectedVideoText" Text="No video selected" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,6"/>
+    <TextBlock x:Name="SelectedVideoText" Text="{DynamicResource Ui051}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,6"/>
     <WrapPanel>
-      <Button x:Name="EditPlanButton" Content="Edit settings…" Click="OnEditPlan" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
-      <Button x:Name="ResetPlanButton" Content="Use shared profile" Click="OnResetPlan" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
-      <Button x:Name="RetryButton" Content="Retry" Click="OnRetry" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
-      <Button x:Name="RemoveButton" Content="Remove" Click="OnRemove" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
-      <Button x:Name="OpenResultButton" Content="Open result folder" Click="OnOpenResult" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
-      <Button x:Name="CopyButton" Content="Copy details" Click="OnCopy" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
+      <Button x:Name="EditPlanButton" Content="{DynamicResource Ui052}" Click="OnEditPlan" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
+      <Button x:Name="ResetPlanButton" Content="{DynamicResource Ui053}" Click="OnResetPlan" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
+      <Button x:Name="RetryButton" Content="{DynamicResource Ui054}" Click="OnRetry" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
+      <Button x:Name="RemoveButton" Content="{DynamicResource Ui055}" Click="OnRemove" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
+      <Button x:Name="OpenResultButton" Content="{DynamicResource Ui030}" Click="OnOpenResult" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
+      <Button x:Name="CopyButton" Content="{DynamicResource Ui056}" Click="OnCopy" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
     </WrapPanel>
   </StackPanel></Border>
-  <TextBlock x:Name="Summary" Text="Add or drop videos to review the queue." TextWrapping="Wrap" Margin="0,0,0,10"/>
+  <TextBlock x:Name="Summary" Text="{DynamicResource Ui057}" TextWrapping="Wrap" Margin="0,0,0,10"/>
   <WrapPanel>
-    <Button x:Name="StartButton" Content="Compress ready videos" Click="OnStart" IsEnabled="False" Padding="14,8" Margin="0,0,8,4" FontWeight="SemiBold"/>
-    <Button x:Name="CancelButton" Content="Cancel" Click="OnCancel" IsEnabled="False" Padding="14,8" Margin="0,0,16,4"/>
-    <Button x:Name="SaveDefaultsButton" Content="Save defaults" Click="OnSaveDefaults" Padding="10,6" Margin="0,0,8,4"/>
-    <Button x:Name="ResetDefaultsButton" Content="Reset defaults" Click="OnResetDefaults" Padding="10,6" Margin="0,0,8,4"/>
+    <Button x:Name="StartButton" Content="{DynamicResource Ui058}" Click="OnStart" IsEnabled="False" Padding="14,8" Margin="0,0,8,4" FontWeight="SemiBold"/>
+    <Button x:Name="CancelButton" Content="{DynamicResource Ui029}" Click="OnCancel" IsEnabled="False" Padding="14,8" Margin="0,0,16,4"/>
+    <Button x:Name="SaveDefaultsButton" Content="{DynamicResource Ui059}" Click="OnSaveDefaults" Padding="10,6" Margin="0,0,8,4"/>
+    <Button x:Name="ResetDefaultsButton" Content="{DynamicResource Ui060}" Click="OnResetDefaults" Padding="10,6" Margin="0,0,8,4"/>
   </WrapPanel>
 </StackPanel>
 </Grid></Window>

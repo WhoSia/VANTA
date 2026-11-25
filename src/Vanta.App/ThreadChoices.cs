@@ -6,9 +6,9 @@ internal sealed record ThreadChoice(int? Count,string Label)
 }
 internal static class ThreadChoices
 {
-    public static IReadOnlyList<ThreadChoice> Create()
+    public static IReadOnlyList<ThreadChoice> Create(bool korean=false)
     {
-        var result=new List<ThreadChoice>{new(null,"Auto (encoder default)")};
+        var result=new List<ThreadChoice>{new(null,UiLanguage.Text(korean,"Auto (encoder default)","자동 (인코더 기본값)"))};
         result.AddRange(ThreadBudget.Choices(Environment.ProcessorCount).Select(n=>new ThreadChoice(n,n.ToString())));
         return result;
     }

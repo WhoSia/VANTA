@@ -5,9 +5,9 @@ internal sealed record RecommendationChoice(string? Codec,string Label)
 }
 internal static class RecommendationChoices
 {
-    public static IReadOnlyList<RecommendationChoice> Create(IReadOnlyCollection<string>? available=null)
+    public static IReadOnlyList<RecommendationChoice> Create(IReadOnlyCollection<string>? available=null,bool korean=false)
     {
-        var result=new List<RecommendationChoice>{new(null,"Auto (prefer HEVC)")};
+        var result=new List<RecommendationChoice>{new(null,UiLanguage.Text(korean,"Auto (prefer HEVC)","자동 (HEVC 우선)"))};
         if(available is null||available.Contains("libx264"))result.Add(new("libx264","H.264"));
         if(available is null||available.Contains("libx265"))result.Add(new("libx265","HEVC"));
         return result;

@@ -11,7 +11,7 @@ internal static class DesktopSmoke
         // No Show/ShowDialog, clipboard, real user settings writes or external UI automation.
         // Construct real WPF controls and exercise routed events on an STA thread.
         var app=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
-        var main=new MainWindow();
+        var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
         Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled,"No result before successful encode");
         Check(Get<CheckBox>(main,"SplitBox").IsChecked!=true,"Split disabled initially");
@@ -46,7 +46,18 @@ internal static class DesktopSmoke
         var batch=new BatchWindow();
         Check(!Get<Button>(batch,"EditPlanButton").IsEnabled&&!Get<Button>(batch,"RemoveButton").IsEnabled&&!Get<Button>(batch,"OpenResultButton").IsEnabled&&!Get<Button>(batch,"StartButton").IsEnabled,"Empty queue disables row actions and encoding");
         Check(Get<TextBlock>(batch,"SelectedVideoText").Text=="No video selected","Selection is explicit");
-        batch.Close();dialog.Close();main.Close();app.Shutdown();
+        var language=Get<ComboBox>(main,"LanguageBox");
+        var beforeThreads=Get<ComboBox>(main,"ThreadsBox").SelectedIndex;
+        language.SelectedIndex=1;
+        Check((string)Get<Button>(main,"OpenButton").Content=="영상 열기… (여러 개 가능)","Korean main captions");
+        Check(Get<ComboBox>(main,"ThreadsBox").SelectedIndex==beforeThreads&&!Get<Button>(main,"EncodeButton").IsEnabled,"Language switch preserves idle state and thread choice");
+        language.SelectedIndex=0;
+        Check((string)Get<Button>(main,"OpenButton").Content=="Open videos… (one or many)","English main captions restored");
+        var koreanBatch=new BatchWindow(korean:true);
+        Check((string)Get<Button>(koreanBatch,"AddButton").Content=="영상 추가…"&&!Get<Button>(koreanBatch,"StartButton").IsEnabled,"Korean batch labels and idle gate");
+        var koreanDialog=new BatchPlanDialog(media,["libx264"],new Plan("Custom","libx264",720,300_000,0,"fast",false),true);
+        Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
+        koreanDialog.Close();koreanBatch.Close();batch.Close();dialog.Close();main.Close();app.Shutdown();
         Console.WriteLine("WPF construction and individual editor routed-event smoke passed.");
     }
     static T Get<T>(FrameworkElement window,string name) where T:FrameworkElement
