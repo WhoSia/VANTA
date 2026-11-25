@@ -8,6 +8,7 @@ public partial class BatchPlanDialog:Window
     private readonly IReadOnlyCollection<string> available;
     private bool initialized;
     private Plan? candidate;
+    private string? appliedTarget;
     public Plan? Result {get;private set;}
     private readonly bool korean;
     private string T(string en,string ko)=>UiLanguage.Text(korean,en,ko);
@@ -39,10 +40,13 @@ public partial class BatchPlanDialog:Window
         if(candidate is not null&&QuickSettings.MoreCompression(candidate,media) is Plan next)
             RateBox.Text=(next.VideoBitsPerSecond/1000m).ToString("0.###",CultureInfo.InvariantCulture);
     }
-    private void OnChanged(object sender,RoutedEventArgs e){if(initialized){TargetBox.Clear();Evaluate();}}
+    private void OnChanged(object sender,RoutedEventArgs e){if(initialized){appliedTarget=null;TargetBox.Clear();Evaluate();}}
+    private bool TargetPending=>!string.IsNullOrWhiteSpace(TargetBox.Text)&&TargetBox.Text!=appliedTarget;
+    private void OnTargetTextChanged(object sender,RoutedEventArgs e){if(initialized)Evaluate();}
     private void Evaluate()
     {
         candidate=null;ApplyButton.IsEnabled=MoreCompressionButton.IsEnabled=false;
+        if(TargetPending){Estimate.Text=T("Apply the new target or clear it to use the current bitrate.","새 목표 용량을 적용하거나 지워서 현재 비트레이트를 사용하세요.");return;}
         try
         {
             if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out var height))
@@ -56,15 +60,19 @@ public partial class BatchPlanDialog:Window
     }
     private void OnTarget(object sender,RoutedEventArgs e)
     {
+        appliedTarget=null;
         try
         {
+            if(string.IsNullOrWhiteSpace(TargetBox.Text)){TargetBox.Clear();Evaluate();return;}
             if(!double.TryParse(TargetBox.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out double mb))throw new ArgumentException("Enter target MB.");
             var targetText=TargetBox.Text;
-            RateBox.Text=(PlanRules.TargetRate(media,mb*1e6)/1000d).ToString("0.###",CultureInfo.InvariantCulture);
-            TargetBox.Text=targetText;
+            var rate=(PlanRules.TargetRate(media,mb*1e6)/1000d).ToString("0.###",CultureInfo.InvariantCulture);
+            initialized=false;
+            try{RateBox.Text=rate;appliedTarget=targetText;}
+            finally{initialized=true;}
             Evaluate();
         }
-        catch(Exception ex){Estimate.Text=ex.Message;}
+        catch(Exception ex){Evaluate();Estimate.Text=T("Target not applied: ","목표 용량을 적용하지 못했습니다. ")+ex.Message;}
     }
     private void OnApply(object sender,RoutedEventArgs e)
     {

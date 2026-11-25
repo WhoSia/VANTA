@@ -12,6 +12,7 @@ public partial class MainWindow : Window
     private string? sourcePath;
     private SourceStamp? sourceStamp;
     private Plan? activePlan;
+    private string? appliedTarget;
     private bool applying,encoding;
     private string? completedOutput;
     private EncodeReport? completedReport;
@@ -133,7 +134,7 @@ public partial class MainWindow : Window
     }
     internal async Task LoadAsync(string path)
     {
-        current?.Cancel();ClearResult();
+        current?.Cancel();ClearResult();appliedTarget=null;
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
         CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
@@ -168,7 +169,7 @@ public partial class MainWindow : Window
     {
         if(media is not MediaInfo m||tools is not Toolchain resolved)return;
         var preferred=(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec;
-        TargetBox.Clear();SplitBox.IsChecked=false;
+        appliedTarget=null;TargetBox.Clear();SplitBox.IsChecked=false;
         var rows=Planner.Propose(m,resolved.Codecs,preferred).Select(p=>MakeRow(p,m)).ToArray();
         Plans.ItemsSource=rows;
         if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
@@ -189,7 +190,7 @@ public partial class MainWindow : Window
     private void Apply(Plan p)
     {
         applying=true;
-        try{TargetBox.Clear();CodecBox.SelectedItem=p.Codec;PresetBox.SelectedValue=p.Preset;HeightBox.Text=p.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text=(p.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);}
+        try{appliedTarget=null;TargetBox.Clear();CodecBox.SelectedItem=p.Codec;PresetBox.SelectedValue=p.Preset;HeightBox.Text=p.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text=(p.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);}
         finally{applying=false;}
         RefreshEstimate();
     }
@@ -209,13 +210,20 @@ public partial class MainWindow : Window
             Plans.SelectedIndex=-1;Apply(next);SetStatus("Lower video bitrate budget applied. Quality may decrease; no encoding started.","영상 비트레이트 예산을 낮췄습니다. 화질이 낮아질 수 있으며 압축은 시작되지 않았습니다.");
         }
     }
-    private void OnSettings(object sender,RoutedEventArgs e){if(!applying){if(Plans is not null)Plans.SelectedIndex=-1;if(TargetBox is not null)TargetBox.Clear();RefreshEstimate();}}
+    private void OnSettings(object sender,RoutedEventArgs e){if(!applying){if(Plans is not null)Plans.SelectedIndex=-1;appliedTarget=null;if(TargetBox is not null)TargetBox.Clear();RefreshEstimate();}}
+    private bool TargetPending=>TargetBox is not null&&!string.IsNullOrWhiteSpace(TargetBox.Text)&&TargetBox.Text!=appliedTarget;
+    private void OnTargetTextChanged(object sender,RoutedEventArgs e){if(!applying)RefreshEstimate();}
     private void RefreshEstimate()
     {
         activePlan=null;
         if(MoreCompressionButton is not null)MoreCompressionButton.IsEnabled=false;
         if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
         EncodeButton.IsEnabled=false;
+        if(TargetPending)
+        {
+            Estimate.Text=T("Apply the new target or clear it to use the current bitrate.","새 목표 용량을 적용하거나 지워서 현재 비트레이트를 사용하세요.");
+            Evidence.Text="";return;
+        }
         try
         {
             if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out int h))throw new ArgumentException("Enter a valid height.");
@@ -231,16 +239,21 @@ public partial class MainWindow : Window
     }
     private void OnTarget(object sender,RoutedEventArgs e)
     {
-        if(media is null)return;
+        if(media is null||current is not null)return;
+        appliedTarget=null;
         try
         {
+            if(string.IsNullOrWhiteSpace(TargetBox.Text)){TargetBox.Clear();RefreshEstimate();return;}
             if(!double.TryParse(TargetBox.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out double mb))throw new ArgumentException("Enter target MB.");
             var targetText=TargetBox.Text;
-            RateBox.Text=(PlanRules.TargetRate(media,mb*1e6)/1000d).ToString("0.###",CultureInfo.InvariantCulture);
-            TargetBox.Text=targetText;
+            var rate=(PlanRules.TargetRate(media,mb*1e6)/1000d).ToString("0.###",CultureInfo.InvariantCulture);
+            applying=true;
+            try{Plans.SelectedIndex=-1;RateBox.Text=rate;appliedTarget=targetText;}
+            finally{applying=false;}
+            RefreshEstimate();
             SetStatus("Target applied as bitrate budget, not exact file size.","목표 용량을 비트레이트 예산으로 적용했습니다. 정확한 용량을 보장하지 않습니다.");
         }
-        catch(Exception ex){SetStatus(ex.Message);}
+        catch(Exception ex){RefreshEstimate();SetStatus("Target not applied: "+ex.Message,"목표 용량을 적용하지 못했습니다. 목표를 수정하거나 지워 주세요. ("+ex.Message+")");}
     }
     private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
     private bool ValidateEncodingRequest()
