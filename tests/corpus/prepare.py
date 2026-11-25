@@ -76,7 +76,7 @@ def normalize(item, raw, dest):
     fps = item["fps"]
     vf = f"scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2,fps={fps},setsar=1,setpts=PTS-STARTPTS"
     run("ffmpeg", "-v", "error", "-xerror", "-nostdin", "-n", "-i", str(raw), "-t", str(item["seconds"]),
-        "-map", "0:V:0", "-map", "0:a:0?", "-vf", vf, "-af", "asetpts=PTS-STARTPTS",
+        "-map", "0:V:0", "-map", "0:a:0?", "-vf", vf, "-af", "aresample=48000,asetpts=N/SR/TB",
         "-r", str(fps), "-fps_mode", "cfr",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-g", str(fps), "-keyint_min", str(fps),
         "-sc_threshold", "0", "-x264-params", "open-gop=0", "-threads", "4", "-pix_fmt", "yuv420p",
@@ -87,6 +87,11 @@ def normalize(item, raw, dest):
     from fractions import Fraction
     if Fraction(v['avg_frame_rate']) != fps or abs(float(v['duration']) - int(v['nb_frames']) / fps) > .002:
         raise ValueError('Normalized frame rate or duration inconsistent')
+    for audio in (s for s in normalized["streams"] if s["codec_type"] == "audio"):
+        lines = run("ffprobe", "-v", "error", "-select_streams", str(audio["index"]), "-show_entries", "packet=dts", "-of", "csv=p=0", str(dest)).splitlines()
+        dts = [int(line.split(",")[0]) for line in lines if line.strip()]
+        if not dts or any(a >= b for a, b in zip(dts, dts[1:])):
+            raise ValueError("Normalized audio DTS is not strictly increasing")
     return meta, normalized
 
 def main():
@@ -109,8 +114,10 @@ def main():
             else:
                 acquire(item, raw)
             record["raw_sha256"] = digest(raw)
+            print("CORPUS_RAW", item["id"], record["raw_sha256"], flush=True)
             record["raw_bytes"] = raw.stat().st_size
-            record["raw_probe"], record["fixture_probe"] = normalize(item, raw, dest)
+            record["raw_probe"] = probe(raw)
+            _, record["fixture_probe"] = normalize(item, raw, dest)
             record["fixture_sha256"] = digest(dest)
             if digest(raw) != record["raw_sha256"]:
                 raise ValueError("Source changed")
