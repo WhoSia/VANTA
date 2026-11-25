@@ -18,8 +18,8 @@ public partial class BatchPlanDialog:Window
         SourceInfo.Text=$"{media.Width}×{media.Height} · {media.Fps:F2} fps · {media.Bytes/1e6:F2} MB";
         CodecBox.ItemsSource=available;
         CodecBox.SelectedItem=seed?.Codec??available.FirstOrDefault();
-        PresetBox.ItemsSource=PlanRules.Presets;
-        PresetBox.SelectedItem=seed?.Preset??"medium";
+        UiLanguage.SetPresets(PresetBox,korean);
+        PresetBox.SelectedValue=seed?.Preset??"medium";
         HeightBox.Text=(seed?.Height??media.Height).ToString(CultureInfo.InvariantCulture);
         RateBox.Text=seed is null?"":(seed.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);
         HeightChoicesBox.ItemsSource=QuickSettings.Heights(media);
@@ -47,7 +47,7 @@ public partial class BatchPlanDialog:Window
         {
             if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out var height))
                 throw new ArgumentException("Enter a valid height.");
-            var plan=new Plan("Custom",CodecBox.SelectedItem as string??"",height,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedItem as string??"",false);
+            var plan=new Plan("Custom",CodecBox.SelectedItem as string??"",height,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedValue as string??"",false);
             candidate=BatchPlanSelection.Resolve(media,available,"Balanced",null,plan);
             Estimate.Text=T($"Bitrate budget: {plan.EstimateBytes(media)/1e6:F2} MB · {plan.Savings(media):P1} budget savings",$"용량 예산: {plan.EstimateBytes(media)/1e6:F2} MB · 예산 절감률 {plan.Savings(media):P1}");
             ApplyButton.IsEnabled=true;MoreCompressionButton.IsEnabled=plan.VideoBitsPerSecond>PlanRules.MinimumVideoRate;

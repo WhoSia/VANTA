@@ -17,7 +17,7 @@ internal static class UiLanguage
         ("Ui008","Profiles are bitrate-budget tiers, not measured quality guarantees.","플랜은 비트레이트 예산을 기준으로 하며 실측 화질을 보장하지 않습니다."),
         ("Ui009","Encoding settings","압축 설정"),
         ("Ui010","Video codec","영상 코덱"),
-        ("Ui011","Preset","프리셋"),
+        ("Ui011","Encoding speed","압축 속도 설정"),
         ("Ui012","Height (pixels, even)","영상 높이 (짝수 픽셀)"),
         ("Ui013","Quick choice","빠른 선택"),
         ("Ui014","Suggested heights (pixels)","추천 영상 높이 (픽셀)"),
@@ -74,13 +74,22 @@ internal static class UiLanguage
         ("Ui065","Optional target size budget (MB)","목표 용량 예산 (MB, 선택)"),
         ("Ui066","Original audio and frame timing are preserved. Size and quality are not guaranteed. This override is kept when the shared profile or codec changes.","원본 오디오와 프레임 시간을 유지합니다. 용량과 화질은 보장되지 않습니다. 공통 플랜이나 코덱을 바꿔도 개별 설정이 유지됩니다."),
         ("Ui067","Use these settings","설정 적용"),
-        ("Ui068","veryfast / fast prioritize speed; medium balances speed and compression efficiency; slow may improve efficiency. Size and quality vary.","veryfast / fast는 속도 우선, medium은 균형, slow는 압축 효율 우선입니다. 실제 용량과 화질은 달라질 수 있습니다."),
+        ("Ui068","veryfast / fast prioritize speed; medium balances speed and compression efficiency; slow may improve efficiency. Size and quality vary.","매우 빠르게·빠르게는 속도 우선, 균형은 속도와 압축 효율의 절충, 압축 효율 우선은 더 오래 걸릴 수 있습니다. 실제 용량과 화질은 달라질 수 있습니다."),
         ("Ui069","Saves a separate MP4. Original remains unchanged.","별도 MP4 파일로 저장하며 원본은 변경하지 않습니다."),
-        ("Ui070","Shared preset","공통 프리셋"),
+        ("Ui070","Shared encoding speed","공통 압축 속도"),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
     public static string Tier(bool korean,string tier)=>!korean?tier:tier switch {"Quality"=>"화질 우선","Balanced"=>"균형","Compact"=>"용량 우선","Custom"=>"직접 설정",_=>tier};
+    public static string Preset(bool korean,string key)=>!korean?key:key switch {"veryfast"=>"매우 빠르게","fast"=>"빠르게","medium"=>"균형","slow"=>"압축 효율 우선",_=>key};
+    internal sealed record PresetChoice(string Key,string Label);
+    public static void SetPresets(System.Windows.Controls.ComboBox box,bool korean)
+    {
+        var selected=box.SelectedValue as string;
+        box.SelectedValuePath=nameof(PresetChoice.Key);box.DisplayMemberPath=nameof(PresetChoice.Label);
+        box.ItemsSource=Vanta.Core.PlanRules.Presets.Select(key=>new PresetChoice(key,Preset(korean,key))).ToArray();
+        box.SelectedValue=selected;
+    }
     public static string Stage(bool korean,string stage)
     {
         if(!korean)return stage;

@@ -59,8 +59,9 @@ internal static class DesktopSmoke
         var koreanBatch=new BatchWindow(korean:true);
         Check(Get<TextBlock>(koreanBatch,"Summary").Text.Contains("영상 0개 · 준비 0"),"Korean queue summary");
         Check((string)Get<Button>(koreanBatch,"StartButton").Content=="일괄 압축 시작","Batch has distinct primary action");
-        Check((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedItem=="medium"||PlanRules.Presets.Contains((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedItem),"Shared speed is valid");
+        Check((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedValue=="medium"||PlanRules.Presets.Contains((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedValue),"Shared speed is valid");
         Check((string)Get<Button>(koreanBatch,"AddButton").Content=="영상 추가…"&&!Get<Button>(koreanBatch,"StartButton").IsEnabled,"Korean batch labels and idle gate");
+        Check(UiLanguage.Preset(true,"medium")=="균형"&&UiLanguage.Preset(true,"veryfast")=="매우 빠르게","Korean speed labels");
         var koreanDialog=new BatchPlanDialog(media,["libx264"],new Plan("Custom","libx264",720,300_000,0,"fast",false),true);
         Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
         CheckLayout(main,"Status","EncodeButton",560,480);
@@ -114,7 +115,12 @@ internal static class DesktopSmoke
             Check(plans.SelectedIndex==-1&&height.Text=="360"&&rate.Text=="250.001"&&codec.SelectedItem as string=="libx264"&&threads.SelectedIndex==1&&target.Text=="0.1"&&split.IsChecked==true&&encode.IsEnabled,"Manual settings, target text, split and thread choice survive localization");
             split.IsChecked=false;
             var before=await File.ReadAllBytesAsync(source);
-            await main.EncodeToAsync(output);
+            var encodingTask=main.EncodeToAsync(output);
+            Check(language.IsEnabled&&!encode.IsEnabled,"Language available during single encode");
+            language.SelectedIndex=1;
+            Check((string)encode.Content=="압축 파일 저장…"&&Get<ComboBox>(main,"PresetBox").SelectedValue is string&&!encode.IsEnabled,"Active encode settings preserved on language switch");
+            await encodingTask;
+            language.SelectedIndex=0;
             Check(File.Exists(output)&&Get<Button>(main,"ResultFolderButton").IsEnabled&&Get<Button>(main,"CopyResultButton").IsEnabled&&Get<TextBlock>(main,"ResultPath").Text==output&&encode.IsEnabled,"Validated output reaches real desktop controls");
             var outputBytes=await File.ReadAllBytesAsync(output);
             await main.EncodeToAsync(output);
@@ -128,13 +134,19 @@ internal static class DesktopSmoke
             var batch=new BatchWindow(korean:true);
             try
             {
-                Get<ComboBox>(batch,"SharedPresetBox").SelectedItem="veryfast";
+                Get<ComboBox>(batch,"SharedPresetBox").SelectedValue="veryfast";
                 Get<ComboBox>(batch,"ParallelBox").SelectedItem=2;
                 Get<ComboBox>(batch,"ThreadsBox").SelectedIndex=0;
                 await batch.AddAsync([source,second]);
                 var start=Get<Button>(batch,"StartButton");
                 Check(start.IsEnabled&&(string)start.Content=="영상 2개 압축 시작","Batch action counts ready files");
-                await batch.StartAsync();
+                var batchLanguage=Get<ComboBox>(batch,"LanguageBox");
+                var batchRun=batch.StartAsync();
+                Check(batchLanguage.IsEnabled&&!start.IsEnabled,"Language available during batch encode");
+                batchLanguage.SelectedIndex=0;
+                Check((string)start.Content=="Processing…"&&(string)Get<ComboBox>(batch,"SharedPresetBox").SelectedValue=="veryfast","Batch language change preserves running settings");
+                batchLanguage.SelectedIndex=1;
+                await batchRun;
                 Check(File.Exists(Path.Combine(root,"source clip_vanta.mp4"))&&File.Exists(Path.Combine(root,"second source_vanta.mp4")),"Batch produces separate validated outputs");
                 Check(!start.IsEnabled&&Get<TextBlock>(batch,"Summary").Text.Contains("완료 2")&&Get<TextBlock>(batch,"Summary").Text.Contains("최근 실행 경과 시간"),"Batch completion and wall time reflected in command bar");
                 var third=Path.Combine(root,"third source.mp4");File.Copy(source,third);

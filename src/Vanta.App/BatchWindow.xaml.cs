@@ -21,9 +21,11 @@ public partial class BatchWindow:Window
         public string InputName=>System.IO.Path.GetFileName(Input);
         public string OutputName=>System.IO.Path.GetFileName(Output);
         public string Paths=>$"Source: {Input}\nOutput: {Output}";
-        public string Budget {get;set;}="";
+        public bool Korean {get;set;}=korean;
+        public string Budget=>Plan is Plan p&&Media is MediaInfo m?$"{UiLanguage.Tier(Korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {UiLanguage.Preset(Korean,p.Preset)} · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB":"";
+        public string DisplayDetail=>State=="Ready"?UiLanguage.Text(Korean,ManualPlan is null?"Shared profile; size not guaranteed.":"Individual override; size not guaranteed.",ManualPlan is null?"공통 플랜 · 용량 보장 없음":"개별 설정 · 용량 보장 없음"):State=="Complete"&&Report is EncodeReport r?UiLanguage.Text(Korean,Detail,$"{r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (검증 {r.Validation.TotalSeconds:F1}초)"):Detail;
         public string State {get;set;}="Analyzing";
-        public string DisplayState=>UiLanguage.Stage(korean,State);
+        public string DisplayState=>UiLanguage.Stage(Korean,State);
         public string Detail {get;set;}="";
         public MediaInfo? Media {get;set;}
         public SourceStamp? Stamp {get;set;}
@@ -33,7 +35,8 @@ public partial class BatchWindow:Window
         public event PropertyChangedEventHandler? PropertyChanged;
         public void Refresh()=>PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(string.Empty));
     }
-    private readonly bool korean;
+    private bool korean;
+    internal bool IsKorean=>korean;
     private string T(string en,string ko)=>UiLanguage.Text(korean,en,ko);
     private sealed record ProfileChoice(string Key,string Label){public override string ToString()=>Label;}
     public BatchWindow(string[]? paths=null,bool korean=false)
@@ -43,7 +46,7 @@ public partial class BatchWindow:Window
         Queue.ItemsSource=rows;
         ProfileBox.ItemsSource=new[]{"Quality","Balanced","Compact"}.Select(p=>new ProfileChoice(p,UiLanguage.Tier(korean,p))).ToArray();
         ProfileBox.SelectedIndex=1;
-        SharedPresetBox.ItemsSource=PlanRules.Presets;SharedPresetBox.SelectedItem="medium";
+        UiLanguage.SetPresets(SharedPresetBox,korean);SharedPresetBox.SelectedValue="medium";
         RecommendationBox.ItemsSource=RecommendationChoices.Create(korean:korean);RecommendationBox.SelectedIndex=0;
         ParallelBox.ItemsSource=new[]{1,2};ParallelBox.SelectedIndex=1;
         ThreadsBox.ItemsSource=ThreadChoices.Create(korean);ThreadsBox.SelectedIndex=0;
@@ -54,16 +57,40 @@ public partial class BatchWindow:Window
             ProfileBox.SelectedItem=ProfileBox.Items.Cast<ProfileChoice>().First(p=>p.Key==saved.Tier);
             // Bind to existing item instances rather than relying on record equality in WPF.
             RecommendationBox.SelectedItem=RecommendationBox.Items.Cast<RecommendationChoice>().First(c=>c.Codec==saved.Codec);
-            SharedPresetBox.SelectedItem=saved.Preset;
+            SharedPresetBox.SelectedValue=saved.Preset;
             ParallelBox.SelectedItem=saved.ParallelJobs;
             var choice=ThreadsBox.Items.Cast<ThreadChoice>().FirstOrDefault(c=>c.Count==saved.EncoderThreads);
             ThreadsBox.SelectedItem=choice??ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count is null);
             if(choice is null)settingsError=T("Saved encoder thread budget is unavailable on this PC; using Auto.","저장된 스레드 예산을 사용할 수 없어 자동으로 설정했습니다.");
         }
         catch(Exception ex){settingsError="Saved defaults could not be loaded: "+ex.Message;}
-        initialized=true;UpdateSummary();
+        LanguageBox.SelectedIndex=korean?1:0;initialized=true;UpdateSummary();
         if(settingsError is not null)Summary.Text=settingsError;
         Loaded+=async (_,_)=>{if(initial.Length>0)await AddAsync(initial);};
+    }
+    private void OnLanguage(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(!initialized)return;
+        korean=LanguageBox.SelectedIndex==1;
+        var profile=((ProfileChoice)ProfileBox.SelectedItem).Key;
+        var codec=(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec;
+        var threads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
+        initialized=false;
+        try
+        {
+            UiLanguage.Apply(this,korean);
+            ProfileBox.ItemsSource=new[]{"Quality","Balanced","Compact"}.Select(p=>new ProfileChoice(p,UiLanguage.Tier(korean,p))).ToArray();
+            ProfileBox.SelectedItem=ProfileBox.Items.Cast<ProfileChoice>().First(p=>p.Key==profile);
+            RecommendationBox.ItemsSource=RecommendationChoices.Create(korean:korean);
+            RecommendationBox.SelectedItem=RecommendationBox.Items.Cast<RecommendationChoice>().First(c=>c.Codec==codec);
+            UiLanguage.SetPresets(SharedPresetBox,korean);
+            ThreadsBox.ItemsSource=ThreadChoices.Create(korean);
+            ThreadsBox.SelectedItem=ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count==threads);
+            DestinationText.Text=destinationDirectory is null?T("Output: beside each source","저장 위치: 각 원본 옆"):T("Output: ","저장 위치: ")+destinationDirectory;
+            foreach(var row in rows){row.Korean=korean;row.Refresh();}
+        }
+        finally{initialized=true;}
+        UpdateSummary();
     }
     private async void OnAdd(object sender,RoutedEventArgs e)
     {
@@ -129,7 +156,7 @@ public partial class BatchWindow:Window
     private void OnCopy(object sender,RoutedEventArgs e)
     {
         if(Queue.SelectedItem is not Row r)return;
-        try{Clipboard.SetText($"{r.Paths}\n{r.State}\n{r.Detail}");Summary.Text=T("Selected job details copied.","선택한 작업의 상세 정보를 복사했습니다.");}
+        try{Clipboard.SetText($"{r.Paths}\n{r.DisplayState}\n{r.DisplayDetail}");Summary.Text=T("Selected job details copied.","선택한 작업의 상세 정보를 복사했습니다.");}
         catch(Exception ex){Summary.Text=ex.Message;}
     }
     private void OnSaveDefaults(object sender,RoutedEventArgs e)
@@ -137,7 +164,7 @@ public partial class BatchWindow:Window
         if(current is not null)return;
         try
         {
-            new BatchPreferences(((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,(int)ParallelBox.SelectedItem,(ThreadsBox.SelectedItem as ThreadChoice)?.Count,(string)SharedPresetBox.SelectedItem).Save(PreferencesPath);
+            new BatchPreferences(((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,(int)ParallelBox.SelectedItem,(ThreadsBox.SelectedItem as ThreadChoice)?.Count,(string)SharedPresetBox.SelectedValue).Save(PreferencesPath);
             Summary.Text=T("Batch defaults saved locally. No video paths or individual overrides were stored.","공통 기본값을 저장했습니다. 영상 경로와 개별 설정은 저장하지 않았습니다.");
         }
         catch(Exception ex){Summary.Text="Could not save defaults: "+ex.Message;}
@@ -149,7 +176,7 @@ public partial class BatchWindow:Window
         {
             new BatchPreferences().Save(PreferencesPath);
             initialized=false;
-            try{ProfileBox.SelectedIndex=1;RecommendationBox.SelectedIndex=0;ParallelBox.SelectedItem=2;ThreadsBox.SelectedIndex=0;SharedPresetBox.SelectedItem="medium";}
+            try{ProfileBox.SelectedIndex=1;RecommendationBox.SelectedIndex=0;ParallelBox.SelectedItem=2;ThreadsBox.SelectedIndex=0;SharedPresetBox.SelectedValue="medium";}
             finally{initialized=true;}
             Replan();Summary.Text+=" | Defaults reset.";
         }
@@ -210,15 +237,14 @@ public partial class BatchWindow:Window
         foreach(var r in rows.Where(r=>r.State=="Complete"))reserved.Add(r.Output);
         foreach(var r in rows.Where(r=>r.Media is not null&&(r.State is "Ready" or "Skipped" or "Analyzing")))
         {
-            r.Plan=null;r.Budget="";r.Output="";
+            r.Plan=null;r.Output="";
             try
             {
                 var m=r.Media!;
                 r.Stamp?.RequireUnchanged(r.Input);
-                var p=BatchPlanSelection.Resolve(m,tools!.Codecs,((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,r.ManualPlan,(string)SharedPresetBox.SelectedItem);
+                var p=BatchPlanSelection.Resolve(m,tools!.Codecs,((ProfileChoice)ProfileBox.SelectedItem).Key,(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec,r.ManualPlan,(string)SharedPresetBox.SelectedValue);
                 if(p is null){r.State="Skipped";r.Detail=T("Selected codec or budget tier unavailable; choose another or use single-file settings.","선택한 코덱 또는 플랜을 사용할 수 없습니다. 다른 플랜을 선택하거나 개별 설정을 수정하세요.");r.Refresh();continue;}
                 r.Plan=p;r.Output=OutputNames.Suggest(r.Input,reserved,destinationDirectory);
-                r.Budget=$"{UiLanguage.Tier(korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.Preset} · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB";
                 r.State="Ready";r.Detail=r.ManualPlan is null?T("Shared profile; size not guaranteed.","공통 플랜 · 용량 보장 없음"):T("Individual override; size not guaranteed.","개별 설정 · 용량 보장 없음");
             }
             catch(Exception ex){r.State="Failed";r.Detail=ex.Message;}

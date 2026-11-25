@@ -26,14 +26,14 @@ public partial class MainWindow : Window
         this.korean=korean;this.persistLanguage=persistLanguage;
         InitializeComponent();UiLanguage.Apply(this,korean);
         CodecBox.ItemsSource=PlanRules.Codecs;
-        PresetBox.ItemsSource=PlanRules.Presets;
+        UiLanguage.SetPresets(PresetBox,korean);
         ThreadsBox.ItemsSource=ThreadChoices.Create(korean);ThreadsBox.SelectedIndex=0;
         LanguageBox.SelectedIndex=korean?1:0;languageReady=true;SetStatus(statusEn,statusKo);
     }
     private void SetStatus(string en,string? ko=null){statusEn=en;statusKo=ko??en;Status.Text=T(statusEn,statusKo);}
     private void OnLanguage(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        if(!languageReady||current is not null)return;
+        if(!languageReady)return;
         korean=LanguageBox.SelectedIndex==1;UiLanguage.Apply(this,korean);
         var selected=Plans.SelectedIndex;
         var previousPlans=Plans.ItemsSource is IEnumerable<PlanRow> rows?rows.Select(r=>r.Plan).ToArray():[];
@@ -48,6 +48,7 @@ public partial class MainWindow : Window
                 RecommendationBox.SelectedItem=RecommendationBox.Items.Cast<RecommendationChoice>().First(c=>c.Codec==previousCodec);
                 Plans.ItemsSource=previousPlans.Select(p=>MakeRow(p,m)).ToArray();Plans.SelectedIndex=selected;
             }
+            UiLanguage.SetPresets(PresetBox,korean);
             ThreadsBox.ItemsSource=ThreadChoices.Create(korean);
             ThreadsBox.SelectedItem=ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count==previousThreads);
         }
@@ -89,23 +90,29 @@ public partial class MainWindow : Window
         var dlg=new OpenFileDialog{Multiselect=true,Filter="Video files|*.mp4;*.mkv;*.mov;*.webm;*.avi|All files|*.*"};
         if(dlg.ShowDialog()!=true)return;
         if(dlg.FileNames.Length==1)await LoadAsync(dlg.FileName);
-        else if(current is null)new BatchWindow(dlg.FileNames,korean){Owner=this}.ShowDialog();
+        else if(current is null)ShowBatch(dlg.FileNames);
         else SetStatus("Finish or cancel analysis before opening a batch.","일괄 압축을 열기 전에 분석을 완료하거나 취소해 주세요.");
     }
     private async void OnDrop(object sender,DragEventArgs e)
     {
         if(encoding||e.Data.GetData(DataFormats.FileDrop) is not string[] paths)return;
         if(paths.Length==1)await LoadAsync(paths[0]);
-        else if(paths.Length>1&&current is null)new BatchWindow(paths,korean){Owner=this}.ShowDialog();
+        else if(paths.Length>1&&current is null)ShowBatch(paths);
     }
     private void OnBatch(object sender,RoutedEventArgs e)
     {
-        if(current is null)new BatchWindow(korean:korean){Owner=this}.ShowDialog();
+        if(current is null)ShowBatch();
+    }
+    private void ShowBatch(string[]? paths=null)
+    {
+        var batch=new BatchWindow(paths,korean){Owner=this};
+        batch.ShowDialog();
+        LanguageBox.SelectedIndex=batch.IsKorean?1:0;
     }
     private async void OnDiagnostics(object sender,RoutedEventArgs e)
     {
         if(current is not null)return;
-        using var cts=new CancellationTokenSource();current=cts;LanguageBox.IsEnabled=false;
+        using var cts=new CancellationTokenSource();current=cts;
         encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
         BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
@@ -120,14 +127,14 @@ public partial class MainWindow : Window
         catch(Exception ex){SetStatus(ex.Message);}
         finally
         {
-            current=null;encoding=false;LanguageBox.IsEnabled=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=Plans.IsEnabled=true;
+            current=null;encoding=false;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=Plans.IsEnabled=true;
             Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();
         }
     }
     internal async Task LoadAsync(string path)
     {
         current?.Cancel();ClearResult();
-        using var cts=new CancellationTokenSource();current=cts;LanguageBox.IsEnabled=false;
+        using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
         CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
         try
@@ -151,7 +158,7 @@ public partial class MainWindow : Window
         }
         catch(OperationCanceledException){if(current==cts)SetStatus("Analysis canceled.","분석이 취소되었습니다.");}
         catch(Exception ex){if(current==cts)SetStatus(ex.Message);}
-        finally{if(current==cts){current=null;LanguageBox.IsEnabled=true;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}}
+        finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}}
     }
     private void OnRecommendation(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {
@@ -168,7 +175,7 @@ public partial class MainWindow : Window
         else
         {
             applying=true;
-            try{CodecBox.SelectedItem=preferred??resolved.Codecs[0];PresetBox.SelectedItem="medium";HeightBox.Text=m.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text="";}
+            try{CodecBox.SelectedItem=preferred??resolved.Codecs[0];PresetBox.SelectedValue="medium";HeightBox.Text=m.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text="";}
             finally{applying=false;}
             RefreshEstimate();
         }
@@ -182,7 +189,7 @@ public partial class MainWindow : Window
     private void Apply(Plan p)
     {
         applying=true;
-        try{TargetBox.Clear();CodecBox.SelectedItem=p.Codec;PresetBox.SelectedItem=p.Preset;HeightBox.Text=p.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text=(p.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);}
+        try{TargetBox.Clear();CodecBox.SelectedItem=p.Codec;PresetBox.SelectedValue=p.Preset;HeightBox.Text=p.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text=(p.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);}
         finally{applying=false;}
         RefreshEstimate();
     }
@@ -212,7 +219,7 @@ public partial class MainWindow : Window
         try
         {
             if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out int h))throw new ArgumentException("Enter a valid height.");
-            var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedItem as string??"",false);
+            var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedValue as string??"",false);
             var v=CandidateEvaluation.Evaluate(p,media);
             activePlan=p;
             Estimate.Text=T($"Bitrate budget {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} budget savings",$"용량 예산 {p.EstimateBytes(media)/1e6:F2} MB · 예산 절감률 {p.Savings(media):P1}");
@@ -271,7 +278,7 @@ public partial class MainWindow : Window
         if(System.IO.File.Exists(output)||System.IO.Directory.Exists(output))
         {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         ClearResult();
-        using var cts=new CancellationTokenSource();current=cts;encoding=true;LanguageBox.IsEnabled=false;
+        using var cts=new CancellationTokenSource();current=cts;encoding=true;
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
         try
         {
@@ -290,6 +297,6 @@ public partial class MainWindow : Window
         }
         catch(OperationCanceledException){SetStatus("Canceled; no new output published.","취소되었습니다. 새 출력 파일은 저장되지 않았습니다.");}
         catch(Exception ex){SetStatus(ex.Message);}
-        finally{current=null;encoding=false;LanguageBox.IsEnabled=true;OpenButton.IsEnabled=true;Editor.IsEnabled=true;Plans.IsEnabled=true;RecommendationBox.IsEnabled=true;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}
+        finally{current=null;encoding=false;OpenButton.IsEnabled=true;Editor.IsEnabled=true;Plans.IsEnabled=true;RecommendationBox.IsEnabled=true;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}
     }
 }
