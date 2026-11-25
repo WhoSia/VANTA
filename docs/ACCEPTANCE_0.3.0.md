@@ -1,15 +1,15 @@
 # 0.3.0 — Desktop Reliability & Distribution Readiness
 
-Owner approval 2026-11-25 KST; in development. Baseline accepted 0.2.0 build 5a7f687. Latest fully tested build inputs f04964c49025bf923174753b03222d0001514922, CI 45549751279, job 138987821755, zero warnings/errors. Subsequent source ebc9d7c is not yet accepted.
+Owner approval 2026-11-25 KST; in development. Baseline accepted 0.2.0 build 5a7f687. Latest fully tested build inputs ebc9d7c9a49f8265be7632adfa5633ee711fd542, CI 45551368705, job 138993072083, zero warnings/errors. Subsequent source 2e6c709 is not yet accepted.
 
 | Required gate | Current evidence | Status |
 |---|---|---|
-| Version and coherent build | Exact f04964c CI | Pass |
+| Version and coherent build | Exact ebc9d7c CI | Pass |
 | Local distribution package | One versioned artifact, inner SHA-256, manifest, measured bytes | Pass |
 | Safe local installation | Positive, wrong hash, collision, version mismatch, traversal and cleanup CI | Pass |
-| Dependency diagnosis | Core same-directory matching version and codec checks; launcher presence/runtime check only, clean-machine install untested | Partial |
+| Dependency diagnosis | Core checks matching version and codec; shared launcher/app check implemented, exact CI pending; clean-machine install untested | Partial |
 | Desktop workflow | Actual FFmpeg single/batch, language state, cancellation/result, logical layout test | Automated pass; interactive owner test open |
-| Supported media reliability | A/V, visual, source lease, codec/preset, collision and cancellation regressions | Pass at f04964c; stricter error checks pending |
+| Supported media reliability | A/V, visual, source lease, codec/preset, collision and cancellation regressions | Pass at ebc9d7c; new parser and dedicated negative control pending |
 | User acceptance | Fresh extraction, actual interaction, DPI and keyboard on owner PC | Pending owner evidence |
 | Distribution handoff | Verified single package, bilingual instructions, side-by-side extraction and limitations | Pass for development preview |
 
@@ -33,3 +33,5 @@ Checkpoint: exact 40087b4 CI 45549388454 passed terminal outcome/cancellation an
 
 
 Latest: f04964c CI passed; artifact 14993331013. 7492d50 adds actual managed parser differential/benchmark screen; ebc9d7c strict error-level stderr and required visual metadata validation. CI 45551368705 queued at record creation; no measured C# result yet, no production parser switch. Existing full decode, time axis, audio hash and source protection retained.
+
+Latest checkpoint: ebc9d7c exact CI 45551368705 passed, package 14994525983. e5d2e00 parser adoption, ac3fe27 shared dependency check, 2e6c709 bounded startup/zero-exit probe negative control on main. CI 45555766695 pending. No new version/release/tag. If exact automated gate passes, owner-PC checklist is next blocking evidence, not optional Rust/AV1 work.
