@@ -60,3 +60,7 @@ Subjective implementation/evidence/priority: accuracy (.97,.95,1), failure/cance
 ## 0.4.0 research proposal priorities
 
 Subjective (value, feasibility, current evidence, priority): quality-matched multi-split (1,.75,.35,1), independent segment/worker planning (1,.90,.45,.99), bounded active cancellation (.99,.95,.65,1), keyframe-aware cost partition (.97,.80,.20,.97), scene-complexity budget (.98,.70,.15,.96), actual C# audio parallel end-to-end (.95,.90,.70,.95), shared decode validation (.98,.65,.35,.94), adaptive batch/segment global budget (.99,.75,.25,.97), AV1 (.90,.70,.20,.82), Rust (.80,.55,.10,.70). Current local multi-split screen did not outperform continuous or preserve equivalent quality, so research priority is high, production readiness low. Current 0.3.0 is not formally owner-accepted. See PROPOSAL_0.4.0.md for finite gates and no version advancement.
+
+## 0.4.0 first corrective loop
+
+Hard gate priority 1.00: exact CI 45571468942 after CS4007 test-only correction. Local CRF/partition screen: comparable bytes and global SSIM on one synthetic source, no speed win over continuous, exact-key seek small uncertain reduction vs aligned early. Subjective (value, implementation, evidence, integrity): keyframe partition (0.98,.20,.35,.35), matched-size/quality measurement (1,.35,.40,.55), independent N/W (.99,.75,.30,.55), global resource planning (.99,.20,.20,.45), parallel audio (.95,.65,.76,.70). Source-level implementation and local proxy do not prove Windows correctness. Continue after exact CI; no new production default or release.
