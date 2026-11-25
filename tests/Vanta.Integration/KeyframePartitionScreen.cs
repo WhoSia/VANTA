@@ -15,6 +15,10 @@ internal static class KeyframePartitionScreen
         bool rejected=false;
         try{SegmentPartition.Balanced(120,3,20,[0,60,30]);}catch(ArgumentException){rejected=true;}
         Check(rejected,"Unordered keyframe rejected");
+        Check(Enumerable.SequenceEqual(SegmentPartition.LongestFirst([0L,30,90,120,200]),new[]{3,1,0,2}),"Longest-first schedule and deterministic ties");
+        bool badSchedule=false;
+        try{SegmentPartition.LongestFirst([0L,30,30,60]);}catch(ArgumentException){badSchedule=true;}
+        Check(badSchedule,"Reject empty scheduling interval");
         // Exhaustively compare the DP with an independent three-interval search.
         for(int mask=0;mask<256;mask++)
         {
@@ -35,13 +39,13 @@ internal static class KeyframePartitionScreen
         var fixture=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=1920x1080:r=30:d=12","-f","lavfi","-i","sine=frequency=660:sample_rate=48000:duration=12","-c:v","libx264","-preset","ultrafast","-crf","18","-g","75","-keyint_min","75","-sc_threshold","0","-threads","2","-pix_fmt","yuv420p","-c:a","aac",source],ct);
         Check(fixture.ExitCode==0&&string.IsNullOrWhiteSpace(fixture.Error),"1080p fixture: "+fixture.Error);
         var plan=new Plan("Research","libx264",1080,2_000_000,0,"medium",false);
-        var modes=new[]{"continuous","equal","aligned"};
+        var modes=new[]{"continuous","equal","aligned","aligned-long-first"};
         for(int rep=0;rep<2;rep++)
         foreach(string mode in rep==0?modes:modes.Reverse().ToArray())
         {
             var path=Path.Combine(root,$"keyframe-{rep}-{mode}.mp4");
             var watch=Stopwatch.StartNew();
-            var report=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,path,plan,ct,experimentalSplit:mode!="continuous",encoderThreads:4,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23);
+            var report=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,path,plan,ct,experimentalSplit:mode!="continuous",encoderThreads:4,splitSegments:4,splitWorkers:2,keyframeAligned:mode.StartsWith("aligned",StringComparison.Ordinal),researchCrf:23,longestFirst:mode=="aligned-long-first");
             watch.Stop();
             var quality=await ProcessRunner.RunAsync(tools.Ffmpeg,["-hide_banner","-nostdin","-i",source,"-i",path,"-filter_complex","[0:v][1:v]ssim","-an","-f","null","-"],ct);
             var match=Regex.Match(quality.Error,@"All:([0-9.]+)");

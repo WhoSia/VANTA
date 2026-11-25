@@ -329,6 +329,11 @@ try
     catch(ArgumentException){rejected=true;}
     Check(rejected&&!File.Exists(invalidSplit)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Invalid research worker budget must fail closed");
     Console.WriteLine("Multi-split 3/4/8 frame identity and worker budget controls passed.");
+    var reorderedWorkDest=Path.Combine(root,"marker-longest-first.mp4");
+    await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,reorderedWorkDest,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:4,splitSegments:4,splitWorkers:2,longestFirst:true);
+    var reorderedWorkIds=await MarkerHashes(reorderedWorkDest);
+    Check(Enumerable.SequenceEqual(ids,reorderedWorkIds),"Longest-first work order must not change frame order");
+    Console.WriteLine("Longest-first work scheduling preserved chronological frame identities.");
     await MultiSplitScreen.RunAsync(resolved,root,ct);
     await KeyframePartitionScreen.RunAsync(resolved,root,ct);
     var reversed=Path.Combine(root,"reversed frame IDs.mp4");

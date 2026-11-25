@@ -6,7 +6,7 @@ internal static class ExperimentalSplit
 {
     private static string Num(double x)=>x.ToString("0.000000000",CultureInfo.InvariantCulture);
 
-    public static async Task EncodeVideoAndMuxAsync(string ffmpeg,string ffprobe,string input,string destination,MediaDetails details,Plan plan,CancellationToken ct,int? encoderThreads=null,int segmentCount=2,int maxWorkers=2,bool keyframeAligned=false,int? researchCrf=null)
+    public static async Task EncodeVideoAndMuxAsync(string ffmpeg,string ffprobe,string input,string destination,MediaDetails details,Plan plan,CancellationToken ct,int? encoderThreads=null,int segmentCount=2,int maxWorkers=2,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false)
     {
         if(segmentCount is <2 or >16||maxWorkers<1||maxWorkers>Math.Min(segmentCount,8)||encoderThreads is int requested&&requested<maxWorkers)
             throw new ArgumentException("Research split requires 2–16 segments, 1–8 workers, and at least one encoder thread per worker.");
@@ -24,6 +24,7 @@ internal static class ExperimentalSplit
         var boundaries=keyframeAligned?SegmentPartition.Balanced(frames,segmentCount,(long)Math.Ceiling(m.Fps),keyframes!):Enumerable.Range(0,segmentCount+1).Select(index=>frames*index/segmentCount).ToArray();
         if(boundaries is null)throw new NotSupportedException("No feasible keyframe partition within the research limits.");
         long Boundary(int index)=>boundaries[index];
+        int[] order=longestFirst?SegmentPartition.LongestFirst(boundaries):Enumerable.Range(0,segmentCount).ToArray();
         var work=Path.Combine(Path.GetDirectoryName(destination)!, ".vanta-split-"+Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(work);
         try
@@ -54,8 +55,9 @@ internal static class ExperimentalSplit
                     while(true)
                     {
                         linked.Token.ThrowIfCancellationRequested();
-                        int index=Interlocked.Increment(ref next);
-                        if(index>=segmentCount)return;
+                        int position=Interlocked.Increment(ref next);
+                        if(position>=segmentCount)return;
+                        int index=order[position];
                         long first=Boundary(index);
                         await Part(index,first,Boundary(index+1)-first,linked.Token);
                     }

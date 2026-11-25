@@ -5,6 +5,19 @@ namespace Vanta.Core;
 internal static class SegmentPartition
 {
     internal const int MaxKeyframes=512;
+
+    // Scheduling order is independent of chronological segment identity.
+    // Frame count is only a cost proxy; no production policy changes here.
+    internal static int[] LongestFirst(IReadOnlyList<long> boundaries)
+    {
+        if(boundaries.Count<3||boundaries.Count>17||boundaries[0]!=0)
+            throw new ArgumentException("Invalid segment boundaries");
+        for(int i=1;i<boundaries.Count;i++)
+            if(boundaries[i]<=boundaries[i-1])throw new ArgumentException("Invalid segment boundaries");
+        return Enumerable.Range(0,boundaries.Count-1)
+            .OrderByDescending(i=>boundaries[i+1]-boundaries[i])
+            .ThenBy(i=>i).ToArray();
+    }
     internal static long[]? Balanced(long frames,int segments,long minimum,IReadOnlyList<long> keyframes)
     {
         if(frames<1||segments<2||segments>16||minimum<1||minimum>frames/segments)
