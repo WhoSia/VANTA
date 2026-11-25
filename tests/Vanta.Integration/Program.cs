@@ -319,7 +319,8 @@ try
     {
         var markerDest=Path.Combine(root,$"marker-{segments}-{workers}.mp4");
         await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,marker,markerDest,splitPlan with {Height=96,VideoBitsPerSecond=2_000_000},ct,experimentalSplit:true,encoderThreads:4,splitSegments:segments,splitWorkers:workers);
-        Check(ids.SequenceEqual(await MarkerHashes(markerDest)),$"Frame identities changed in {segments}/{workers} split");
+        var markerIds=await MarkerHashes(markerDest);
+        Check(Enumerable.SequenceEqual(ids,markerIds),$"Frame identities changed in {segments}/{workers} split");
         Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Multi-split staging leaked");
     }
     var invalidSplit=Path.Combine(root,"invalid worker budget.mp4");
