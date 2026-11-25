@@ -25,6 +25,7 @@ try {
     $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
     "$hash  $name" | Set-Content -LiteralPath (Join-Path $destination 'SHA256SUMS.txt') -Encoding ASCII
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-VANTA.ps1') -Destination $destination
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'START-HERE.txt') -Destination $destination
     Write-Host "PACKAGE $name $((Get-Item -LiteralPath $zip).Length) bytes SHA256=$hash"
 } catch {
     Remove-Item -LiteralPath $destination -Recurse -Force

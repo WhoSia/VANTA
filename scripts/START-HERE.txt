@@ -1,0 +1,36 @@
+VANTA — Windows x64 development preview
+======================================
+
+한국어
+1. GitHub Actions에서 VANTA-0.3.0-win-x64-package 하나만 받으세요.
+2. 다운로드 ZIP과 그 안의 VANTA-0.3.0-win-x64.zip을 새 폴더에 압축 해제하세요.
+3. 내부 ZIP의 SHA-256은 SHA256SUMS.txt와 일치해야 합니다.
+   PowerShell: Get-FileHash .\VANTA-0.3.0-win-x64.zip -Algorithm SHA256
+4. 앱 폴더에서 Vanta.App.exe를 실행하세요.
+   의존성 확인: .\Start-VANTA.ps1 -CheckOnly
+   확인 후 실행: .\Start-VANTA.ps1
+   누락된 의존성 설치 요청: .\Start-VANTA.ps1 -InstallMissing
+5. .NET 10 Desktop Runtime (x64), FFmpeg 및 FFprobe가 필요합니다.
+   기존 정상 설치를 재사용합니다. .NET SDK는 필요 없습니다.
+6. Install-VANTA.ps1은 선택 사항입니다. 같은 버전은 덮어쓰지 않습니다.
+   새 개발 빌드는 새 폴더에 풀고, 기존 폴더를 보존하세요.
+   정식 출시가 아닌 서명되지 않은 개발 미리 보기입니다.
+
+English
+1. Download only VANTA-0.3.0-win-x64-package from a successful Actions run.
+2. Extract the outer ZIP, then extract VANTA-0.3.0-win-x64.zip into a new folder.
+3. Verify the inner archive against SHA256SUMS.txt obtained from the trusted run.
+   PowerShell: Get-FileHash .\VANTA-0.3.0-win-x64.zip -Algorithm SHA256
+4. Run Vanta.App.exe in the app folder.
+   Check dependencies: .\Start-VANTA.ps1 -CheckOnly
+   Check and launch: .\Start-VANTA.ps1
+   Explicitly request missing dependencies: .\Start-VANTA.ps1 -InstallMissing
+5. Requires .NET 10 Desktop Runtime (x64) and matching FFmpeg/FFprobe.
+   Reuse installed dependencies. No .NET SDK required.
+6. Install-VANTA.ps1 is optional; it never replaces the same version.
+   Extract new preview builds into new folders and keep previous builds.
+   Unsigned development preview, not a tagged release.
+
+The Actions artifact digest identifies the OUTER ZIP; SHA256SUMS.txt
+identifies the INNER application ZIP. Hashes do not authenticate a publisher.
+Do not bypass Windows security or installer hash checks.

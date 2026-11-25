@@ -8,6 +8,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $package = [IO.Path]::GetFullPath($PackageDirectory)
 $archive = Join-Path $package "VANTA-$Version-win-x64.zip"
 $install = Join-Path $package 'Install-VANTA.ps1'
+if (-not (Test-Path -LiteralPath (Join-Path $package 'START-HERE.txt') -PathType Leaf)) { throw 'Missing user instructions.' }
 $hash = ((Get-Content -LiteralPath (Join-Path $package 'SHA256SUMS.txt') -Raw).Trim() -split '\s+')[0]
 $root = Join-Path ([IO.Path]::GetTempPath()) ('VANTA-install-test-'+[Guid]::NewGuid().ToString('N'))
 $dest = Join-Path $root $Version
