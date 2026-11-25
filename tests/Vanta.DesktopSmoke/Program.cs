@@ -61,10 +61,16 @@ internal static class DesktopSmoke
         Check((string)Get<Button>(koreanBatch,"StartButton").Content=="일괄 압축 시작","Batch has distinct primary action");
         Check((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedValue=="medium"||PlanRules.Presets.Contains((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedValue),"Shared speed is valid");
         Check((string)Get<Button>(koreanBatch,"AddButton").Content=="영상 추가…"&&!Get<Button>(koreanBatch,"StartButton").IsEnabled,"Korean batch labels and idle gate");
+        Check((string)Get<DataGrid>(koreanBatch,"Queue").Columns[0].Header=="원본","Korean grid header");
+        Get<ComboBox>(koreanBatch,"LanguageBox").SelectedIndex=0;
+        Check((string)Get<DataGrid>(koreanBatch,"Queue").Columns[0].Header=="Source","Grid header follows live language");
+        Get<ComboBox>(koreanBatch,"LanguageBox").SelectedIndex=1;
+        Check(System.Windows.Automation.AutomationProperties.GetName(Get<ComboBox>(koreanBatch,"SharedPresetBox"))=="공통 압축 속도","Localized accessible field name");
         Check(UiLanguage.Preset(true,"medium")=="균형"&&UiLanguage.Preset(true,"veryfast")=="매우 빠르게","Korean speed labels");
         var koreanDialog=new BatchPlanDialog(media,["libx264"],new Plan("Custom","libx264",720,300_000,0,"fast",false),true);
         Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
         CheckLayout(main,"Status","EncodeButton",560,480);
+        CheckLayout(main,"Status","LanguageBox",560,480);
         CheckLayout(koreanBatch,"Summary","StartButton",720,580);
         CheckLayout(batch,"Summary","StartButton",720,580);
         koreanDialog.Close();koreanBatch.Close();batch.Close();dialog.Close();main.Close();app.Shutdown();
@@ -169,7 +175,7 @@ internal static class DesktopSmoke
         message.Text=string.Join(Environment.NewLine,Enumerable.Repeat("Long diagnostic / 긴 진단 메시지",60));
         var content=(FrameworkElement)window.Content;
         content.Measure(new Size(width,height));content.Arrange(new Rect(0,0,width,height));content.UpdateLayout();
-        var command=Get<Button>(window,commandName);
+        var command=Get<FrameworkElement>(window,commandName);
         var bounds=command.TransformToAncestor(content).TransformBounds(new Rect(command.RenderSize));
         Check(bounds.Height>0&&bounds.Top>=0&&bounds.Bottom<=height+1,"Primary command stays in viewport with long diagnostics");
     }

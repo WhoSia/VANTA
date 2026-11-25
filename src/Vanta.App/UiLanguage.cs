@@ -77,6 +77,8 @@ internal static class UiLanguage
         ("Ui068","veryfast / fast prioritize speed; medium balances speed and compression efficiency; slow may improve efficiency. Size and quality vary.","매우 빠르게·빠르게는 속도 우선, 균형은 속도와 압축 효율의 절충, 압축 효율 우선은 더 오래 걸릴 수 있습니다. 실제 용량과 화질은 달라질 수 있습니다."),
         ("Ui069","Saves a separate MP4. Original remains unchanged.","별도 MP4 파일로 저장하며 원본은 변경하지 않습니다."),
         ("Ui070","Shared encoding speed","공통 압축 속도"),
+        ("Ui072","Compression progress","압축 진행률"),
+        ("Ui073","Video queue","영상 대기열"),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
