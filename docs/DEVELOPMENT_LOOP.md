@@ -1,7 +1,7 @@
 # Development loop and approval gates
 
 Current approved version: 0.2.0 — Adaptive Compression Planning & Granular Control.
-Status: owner approved 0.2.0 on 2026-11-25 KST; active development. 0.1.0 core accepted at 7815ef5. No new version/tag/release without approval.
+Status: owner approved 0.2.0 on 2026-11-25 KST; core/development-preview gate accepted at 5a7f687 (CI 45521060956). Awaiting owner approval of next version. 0.1.0 core accepted at 7815ef5. No new version/tag/release without approval.
 
 Repeat Evaluate → Prioritize → Implement → Verify → Reassess. Use vectors (user value, implementation coverage, evidence coverage, integrity confidence) in [0,1]; label subjective judgments. No linear sum. Failed hard gates outrank enhancements; prioritize blockers and dependencies, then Pareto tradeoffs and smallest useful changes. Record evidence against the exact SHA. No claims of verification from inspection alone.
 
