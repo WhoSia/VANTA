@@ -2,10 +2,10 @@ VANTA — Windows x64 development preview
 ======================================
 
 한국어
-1. GitHub Actions에서 VANTA-0.3.0-win-x64-package 하나만 받으세요.
-2. 다운로드 ZIP과 그 안의 VANTA-0.3.0-win-x64.zip을 새 폴더에 압축 해제하세요.
+1. GitHub Actions에서 VANTA-0.4.0-win-x64-package 하나만 받으세요.
+2. 다운로드 ZIP과 그 안의 VANTA-0.4.0-win-x64.zip을 새 폴더에 압축 해제하세요.
 3. 내부 ZIP의 SHA-256은 SHA256SUMS.txt와 일치해야 합니다.
-   PowerShell: Get-FileHash .\VANTA-0.3.0-win-x64.zip -Algorithm SHA256
+   PowerShell: Get-FileHash .\VANTA-0.4.0-win-x64.zip -Algorithm SHA256
 4. 앱 폴더에서 Vanta.App.exe를 실행하세요.
    의존성 확인: .\Start-VANTA.ps1 -CheckOnly
    확인 후 실행: .\Start-VANTA.ps1
@@ -17,10 +17,10 @@ VANTA — Windows x64 development preview
    정식 출시가 아닌 서명되지 않은 개발 미리 보기입니다.
 
 English
-1. Download only VANTA-0.3.0-win-x64-package from a successful Actions run.
-2. Extract the outer ZIP, then extract VANTA-0.3.0-win-x64.zip into a new folder.
+1. Download only VANTA-0.4.0-win-x64-package from a successful Actions run.
+2. Extract the outer ZIP, then extract VANTA-0.4.0-win-x64.zip into a new folder.
 3. Verify the inner archive against SHA256SUMS.txt obtained from the trusted run.
-   PowerShell: Get-FileHash .\VANTA-0.3.0-win-x64.zip -Algorithm SHA256
+   PowerShell: Get-FileHash .\VANTA-0.4.0-win-x64.zip -Algorithm SHA256
 4. Run Vanta.App.exe in the app folder.
    Check dependencies: .\Start-VANTA.ps1 -CheckOnly
    Check and launch: .\Start-VANTA.ps1

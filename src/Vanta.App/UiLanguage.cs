@@ -7,8 +7,8 @@ internal static class UiLanguage
 {
     private static readonly (string Key,string En,string Ko)[] Captions =
     [
-        ("Ui001","VANTA — 0.3.0 preview","VANTA — 0.3.0 미리 보기"),
-        ("Ui002","Video compression · 0.3.0 development preview","영상 압축 · 0.3.0 개발 미리 보기"),
+        ("Ui001","VANTA — 0.4.0 preview","VANTA — 0.4.0 미리 보기"),
+        ("Ui002","Video compression · 0.4.0 development preview","영상 압축 · 0.4.0 개발 미리 보기"),
         ("Ui003","Open videos… (one or many)","영상 열기… (여러 개 가능)"),
         ("Ui004","Batch queue…","일괄 압축…"),
         ("Ui005","Check hardware encoders…","하드웨어 인코더 검사…"),

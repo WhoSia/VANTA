@@ -1,6 +1,6 @@
 # Proposal: VANTA 0.4.0 — Adaptive Segmented Encoding & Measured Acceleration
 
-Status: PROPOSED, not approved. 0.3.0 owner acceptance remains pending; 457eb66 is the verified fallback. No version bump, tag, release, arbitrary split UI, or acceleration default authorized by this proposal. Research evidence can be gathered under the existing approved corrective scope.
+Status: APPROVED by owner on 2026-11-25 KST. 0.4.0 development authorized; 0.3.0 interactive acceptance remains pending, 457eb66 verified fallback. No tagged release or unverified acceleration default authorized.
 
 ## Objective
 
@@ -15,7 +15,7 @@ Minimize verified end-to-end completion time and resource cost while preserving 
 5. Scheduler: bounded queue with independent segment index, immutable source snapshot, shared global budget across batch and segment workers, work estimate-aware ordering, dynamic admission at job boundaries only. Never mutate active FFmpeg processes to resize threads. Stop peers on failure/cancel, await all children before deleting staging, no publication until complete verification. Join in frame order, original audio muxed once, no overwrite.
 6. Validation: retain source protection, exact ordered frame/packet count, relative timestamp tolerance, metadata and full decode, copied audio hash. Unique-frame marker and boundary negative controls; test swapped frames, truncated segment, malformed manifest, changed source, cancellation before/during/after merge, output collision. More chunks must not increase silent failure risk. No reduction of validation without differential evidence.
 
-## Finite acceptance gates (proposal; owner approval required)
+## Finite acceptance gates (approved research scope)
 
 - Exact Windows CI and repeatable benchmark manifest with source SHA, tool versions, requested threads, observed CPU/memory/disk, N/W, output bytes and per-run timings; preserve negative controls.
 - Matrix covering short/long, 720p/1080p and at least one high-resolution source, low/high motion, varied GOP, CFR NTSC, delayed/multiple AAC; unsupported VFR/rotation fail closed until separately proven.
@@ -29,4 +29,4 @@ Minimize verified end-to-end completion time and resource cost while preserving 
 
 Local 8s 960x540 fixed 4 requested threads: N/W=1/1 mean 1.59792s SSIM .988114; 2/2 2.13446s SSIM ~.971185; 4/4 2.106725s .946421; 8/4 2.28736s .915382. All proxy integrity checks passed, but no matched-size or quality win; continuous remains best for this fixture. Existing Windows 2-split trials usually slower. 45b7737 internal research expands N/W and full Encoder CI matrix; 45567684805 pending at proposal creation. Parallel audio hash is independent lower-risk candidate and needs actual end-to-end and active cancellation before activation. No Rust acceleration demonstrated. See ACCELERATION.md raw results.
 
-Next research after exact CI: diagnose ABR quality/size divergence on same source; test longer/high-resolution and complexity-balanced/keyframe cuts; measure aggregate resource contention; implement calibrated selection only after sufficient data. Stop at CI or owner approval/acceptance gate. User's request is to prepare a 0.4.0 proposal, not start a new version.
+Next research after exact CI: diagnose ABR quality/size divergence on same source; test longer/high-resolution and complexity-balanced/keyframe cuts; measure aggregate resource contention; implement calibrated selection only after sufficient data. Stop at CI or owner approval/acceptance gate. Owner has now approved 0.4.0. This proposal is the design baseline; execution evidence tracked in ACCEPTANCE_0.4.0.md.

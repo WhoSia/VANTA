@@ -9,3 +9,5 @@ Exclude: editing, download, AI, automatic or unverified chunk concatenation, acc
 Decision vectors: (user value, implementation coverage, verified evidence, integrity confidence), separately scored; no arithmetic ranking. A release gate cannot be compensated by other scores. 0 means absent or unverified; subjective estimates are not measured reliability.
 
 Optional owner-requested acceleration: explicitly selected video-only two-part CFR prototype; continuous default, original audio mapped once, same publication gate. Not a required stable release feature if speed/quality/integrity evidence is inadequate. No uncontrolled research expansion.
+
+0.4.0 approved exception: bounded, measured multi-segment encoding research and adaptive selection, only when matched quality/size, resource and integrity gates pass. Continuous fallback remains default until evidence warrants a change. This does not expand to downloader/media editing or unverified formats. See PROPOSAL_0.4.0.md and ACCEPTANCE_0.4.0.md.
