@@ -9,3 +9,7 @@ Local: python tests/corpus/prepare.py --work <new-dir> --report <report-dir>; th
 ## Second screen changes
 
 Audio normalization intentionally reconstructs time from resampled sample count; this can change original relative timing and is not a native-support fix. Validate audio DTS monotonicity and video average FPS/duration/count metadata. Log raw SHA-256 even when fixture preparation fails. Four candidate modes: continuous medium 4 requested threads, aligned medium 4 total requested encoder threads, continuous medium auto threads, continuous fast 4 requested threads. Two reverse-order repeats (up to 48 trials if all six inputs ready). Compare each candidate to continuous medium, preserve existing matching thresholds; P05 SSIM nearest-rank is reported, not a newly post-hoc matching gate. Disable SSIM last-frame repetition, require source frame count. FFmpeg preset/thread benchmarks are not execution of HandBrake itself. No final speed claim.
+
+## Third screen changes
+
+All six raw SHA256 pins observed in run 45659393236; failed BBB raw acquisition was successful but normalized stage raised StopIteration. New explicit raw and normalized video checks, selected stream index, start PTS before fps; do not claim fix until rerun. Model and empirical review separate under docs/decision; native research lane separate from corpus and packaging. No source clip redistributed.

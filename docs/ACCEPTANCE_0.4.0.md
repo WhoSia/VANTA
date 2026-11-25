@@ -47,3 +47,7 @@ Owner requested diverse real media. 44a0a5d adds public acquisition/normalized a
 ## First public corpus result and corrective lane
 
 44a0a5d ordinary CI 45650969578 passed; artifact 15040241766 222372 bytes SHA256 88d5dfd46abda963c9d41abc5c2670cc9c41c7c22a6b4c2e8458a7543dec430f. Corpus run 45650970063 failed overall: BBB normalization duplicate AAC DTS; 20 completed normalized C# runs on five inputs/four contents, six comparable pairs all slower than continuous; four nonmatched pairs also slower. Artifact 15041780442 contains intake/results. Native full encode not executed on any original. No representative speed target met. Candidate CFR/audio-clock correction and additional native encoder policy controls pending exact CI; no production default or version change.
+
+## 2026-11-26 decision and native lane
+
+Ordinary d709217 Windows CI pass, artifact 15045395150. Public corpus fail again (BBB StopIteration, diagnosis unresolved); 40 complete normalized trials, 30 pair rows, no >=15% joint matched speed win. Seal all six raw input hashes and record explicit missing video diagnostics. New isolated C and Rust kernel implementations, local C differential 4000 cases, actual upstream rav1e FFmpeg screen 16 outputs, separate Linux CI and Node model checks. No Rust/.NET compiler in local environment; actual C#/Rust comparison and current Windows/public CI pending. Native kernel not packaged; no production codec, routing, or release change. Current representative acceleration gate open, owner acceptance open.

@@ -87,3 +87,7 @@ Subjective (value, implementation, evidence, integrity): public media coverage (
 ## Objective review after real media run
 
 Do not assign measured success to implementation effort. Observed: normal CI pass, public corpus overall fail, 5/6 normalized inputs, 20 full verified outputs, 6/10 comparable pairs, 0/10 speed wins, 0 native original encodes. Highest-priority blockers: BBB fixture audio clock, source provenance seal, strong native encoder baseline, resource and broader native compatibility coverage. Segment policy remains experimental; no default benefit, and matched pair evidence argues against promoting it on these short clips. No arbitrary score increase from commit volume.
+
+## Decision and observed review
+
+See docs/decision. 12 axes/4 profiles/12000 seeded subjective scenarios; mean/5–95 percentile and first/top-three share, pairwise, regret and Pareto. Model values are not calibrated probability or evidence of feature success; mandatory corpus correction first, codec/preset frontier next. Empirical second run has 30 pair rows, four content groups, no matched >=15% win; native auto content-equal mean +.0076, fast +.0966, aligned -.2938. Do not overstate small corpus. User explicitly requested immediate multilingual implementation; isolated C/Rust comparative lane now implemented, C local reference passed, actual Rust/C# compilation and timings pending. No promotion from novelty.
