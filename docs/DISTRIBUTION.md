@@ -19,3 +19,7 @@ Owner launched the 0.2.0 GUI successfully; screenshot showed ffprobe process cou
 ## Current verified preview and desktop acceptance
 
 Exact a2200f3 CI 45506058355 succeeded (artifact 14973692485, 176321 compressed bytes): https://github.com/WhoSia/VANTA/actions/runs/45506058355#artifacts . Supersedes historical preview links and pending-status notes above; GPU diagnostics available, no GPU compression. Owner previously reported FFmpeg/FFprobe 9.1 full build both execute. New 9458789 recommendation selection CI pending full integration. Do not infer interactive GUI acceptance from CI. See [desktop checklist](DESKTOP_ACCEPTANCE.md).
+
+## Accepted 0.2.0 development preview
+
+Exact 5a7f687dd548f067f43522cb72b20eabad0ec4d6, CI 45521060956, artifact 14980710817, 193397 compressed bytes: https://github.com/WhoSia/VANTA/actions/runs/45521060956#artifacts . This supersedes previous preview links. CI build, WPF control smoke, FFmpeg integration, publish and dependency launcher presence check passed. Artifact expiry remains seven days; no permanent Release or tag created. Clean-machine installation and interactive owner acceptance remain separate gates.
