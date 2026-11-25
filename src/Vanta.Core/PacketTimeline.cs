@@ -25,12 +25,17 @@ public static class PacketTimeline
     {
         while(await reader.ReadLineAsync(ct) is string line)
         {
-            var entry=line.Split('|').FirstOrDefault(s=>s.StartsWith(key+"=",StringComparison.Ordinal));
-            if(entry is null) continue; // possible frame side data line
-            if(!double.TryParse(entry[(key.Length+1)..],NumberStyles.Float,CultureInfo.InvariantCulture,out var t)||!double.IsFinite(t)) throw new InvalidDataException("Missing presentation timestamp");
-            return t;
+            if(ParseTimestamp(line,key) is double time)return time; // skip possible frame side data
         }
         return null;
+    }
+    internal static double? ParseTimestamp(string line,string key)
+    {
+        var entry=line.Split('|').FirstOrDefault(s=>s.StartsWith(key+"=",StringComparison.Ordinal));
+        if(entry is null)return null;
+        if(!double.TryParse(entry[(key.Length+1)..],NumberStyles.Float,CultureInfo.InvariantCulture,out var t)||!double.IsFinite(t))
+            throw new InvalidDataException("Missing presentation timestamp");
+        return t;
     }
     private sealed record AudioPacket(double Pts,string Hash);
     private static async Task<AudioPacket?> ReadPacketAsync(StreamReader reader,CancellationToken ct)
