@@ -259,6 +259,7 @@ try
     Check(File.Exists(longOutput),"Long output absent");
     Console.WriteLine("120-second NTSC-rate timeline passed.");
     await TimestampParsingScreen.RunAsync(resolved.Ffprobe,longInput,ct);
+    await AudioHashScreen.RunAsync(resolved.Ffmpeg,longInput,longOutput,vfr,vfrOut,input,changed,ct);
     for(int repeat=0;repeat<2;repeat++)
     {
         foreach(bool fused in repeat==0?new[]{false,true}:new[]{true,false})

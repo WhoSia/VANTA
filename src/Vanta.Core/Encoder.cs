@@ -87,7 +87,7 @@ public static class Encoder
         }
         finally { if(File.Exists(temp)) File.Delete(temp); }
     }
-    private static async Task ValidateAudioAsync(string exe,string source,string output,CancellationToken ct)
+    internal static async Task ValidateAudioAsync(string exe,string source,string output,CancellationToken ct,bool parallel=false)
     {
         async Task<string> Hash(string path)
         {
@@ -95,7 +95,14 @@ public static class Encoder
             if(r.ExitCode!=0 || !string.IsNullOrWhiteSpace(r.Error) || string.IsNullOrWhiteSpace(r.Output)) throw new InvalidDataException("Audio payload hash unavailable");
             return r.Output.Trim();
         }
-        if(await Hash(source)!=await Hash(output)) throw new InvalidDataException("Copied audio payload changed");
+        string a,b;
+        if(parallel)
+        {
+            var hashes=await Task.WhenAll(Hash(source),Hash(output));
+            a=hashes[0];b=hashes[1];
+        }
+        else{a=await Hash(source);b=await Hash(output);}
+        if(a!=b)throw new InvalidDataException("Copied audio payload changed");
     }
     private static async Task Checked(string exe,IEnumerable<string> args,CancellationToken ct)
     {
