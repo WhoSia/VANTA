@@ -16,25 +16,6 @@ function Find-Runtime {
     }
     return $false
 }
-function Find-Tools {
-    $dirs = @()
-    if ($env:VANTA_FFMPEG_DIR) {
-        if (-not [IO.Path]::IsPathRooted($env:VANTA_FFMPEG_DIR)) { throw 'VANTA_FFMPEG_DIR must be an absolute trusted directory.' }
-        $dirs += $env:VANTA_FFMPEG_DIR
-    } else {
-        $dirs += Join-Path $PSScriptRoot 'tools\ffmpeg\bin'
-        $dirs += @($env:Path -split ';' | ForEach-Object { $_.Trim().Trim('"') } | Where-Object { $_ -and [IO.Path]::IsPathRooted($_) })
-    }
-    foreach ($d in ($dirs | Select-Object -Unique)) {
-        $ff = Join-Path $d 'ffmpeg.exe'
-        $fp = Join-Path $d 'ffprobe.exe'
-        if ((Test-Path -LiteralPath $ff -PathType Leaf) -and (Test-Path -LiteralPath $fp -PathType Leaf)) {
-            # Application performs version and encoder checks; launcher checks presence only.
-            return $d
-        }
-    }
-    return $null
-}
 function Install-Package([string]$Id) {
     if (-not (Get-Command winget.exe -CommandType Application -ErrorAction SilentlyContinue)) { throw 'WinGet is not available. Install dependencies from their official sources.' }
     & winget.exe install --id $Id --exact --source winget
@@ -48,18 +29,20 @@ if (-not (Find-Runtime)) {
     Install-Package 'Microsoft.DotNet.DesktopRuntime.10'
     if (-not (Find-Runtime)) { throw 'Runtime not detected. Reopen PowerShell and retry.' }
 }
-$dir = Find-Tools
-if (-not $dir) {
-    if ($env:VANTA_FFMPEG_DIR) { throw 'Configured VANTA_FFMPEG_DIR does not contain both executables. Correct or remove it.' }
-    if (-not $InstallMissing) { throw 'FFmpeg and FFprobe not found. Run with -InstallMissing or install Gyan.FFmpeg using WinGet.' }
-    Install-Package 'Gyan.FFmpeg'
-    $dir = Find-Tools
-    if (-not $dir) { throw 'FFmpeg not detected. Reopen PowerShell and retry.' }
-}
 $exe = Join-Path $PSScriptRoot 'Vanta.App.exe'
 if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) { throw 'Vanta.App.exe is missing. Extract the complete preview ZIP.' }
-Write-Host "Runtime and executable presence checks passed. FFmpeg directory: $dir"
+function Test-Tools {
+    # Use the published app's own bounded matching-pair and encoder checks.
+    $p = Start-Process -FilePath $exe -ArgumentList '--check-dependencies' -WorkingDirectory $PSScriptRoot -Wait -PassThru
+    return ($p.ExitCode -eq 0)
+}
+if (-not (Test-Tools)) {
+    if ($env:VANTA_FFMPEG_DIR) { throw 'Configured VANTA_FFMPEG_DIR is invalid or lacks a compatible matching FFmpeg/FFprobe pair. Correct or remove it; no fallback.' }
+    if (-not $InstallMissing) { throw 'Compatible FFmpeg/FFprobe with H.264 or HEVC encoder not found. Run with -InstallMissing or install a trusted matching pair.' }
+    Install-Package 'Gyan.FFmpeg'
+    if (-not (Test-Tools)) { throw 'Compatible FFmpeg/FFprobe still unavailable. Reopen PowerShell and retry.' }
+}
+Write-Host 'Runtime and compatible FFmpeg/FFprobe checks passed.'
 if (-not $CheckOnly) {
-    $env:VANTA_FFMPEG_DIR = $dir
     Start-Process -FilePath $exe -WorkingDirectory $PSScriptRoot
 }

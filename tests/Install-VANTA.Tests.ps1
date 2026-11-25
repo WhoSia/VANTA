@@ -36,6 +36,13 @@ try {
     if ((Test-Path -LiteralPath (Join-Path $root 'escape.txt')) -or (Test-Path -LiteralPath (Join-Path $root '98.98.98'))) { throw 'Traversal published output.' }
     if (Get-ChildItem -LiteralPath $root -Force -Filter '.vanta-install-*') { throw 'Staging leak.' }
     & (Join-Path $dest 'Start-VANTA.ps1') -CheckOnly
+    $previousTools = $env:VANTA_FFMPEG_DIR
+    try {
+        $env:VANTA_FFMPEG_DIR = $root
+        Expect-Failure { & (Join-Path $dest 'Start-VANTA.ps1') -CheckOnly } 'Explicit missing matching pair'
+        $env:VANTA_FFMPEG_DIR = 'relative-tools'
+        Expect-Failure { & (Join-Path $dest 'Start-VANTA.ps1') -CheckOnly } 'Relative configured pair'
+    } finally { $env:VANTA_FFMPEG_DIR = $previousTools }
     Write-Host 'Verified package installation, hash, collision, manifest and traversal regressions passed.'
 } finally {
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
