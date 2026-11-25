@@ -13,7 +13,7 @@ if(args.Length==7&&args[0]=="-v"&&args[1]=="error"&&args[2]=="-show_format"&&arg
 if(args.Length!=0)throw new ArgumentException("Unexpected integration-test arguments.");
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);
-using var timeout=new CancellationTokenSource(TimeSpan.FromMinutes(5));
+using var timeout=new CancellationTokenSource(TimeSpan.FromMinutes(8));
 var ct=timeout.Token;
 async Task Run(params string[] args)
 {
@@ -330,6 +330,7 @@ try
     Check(rejected&&!File.Exists(invalidSplit)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Invalid research worker budget must fail closed");
     Console.WriteLine("Multi-split 3/4/8 frame identity and worker budget controls passed.");
     await MultiSplitScreen.RunAsync(resolved,root,ct);
+    await KeyframePartitionScreen.RunAsync(resolved,root,ct);
     var reversed=Path.Combine(root,"reversed frame IDs.mp4");
     await Run("-v","error","-nostdin","-n","-i",marker,"-vf","reverse","-c:v","libx264","-crf","0","-pix_fmt","yuv420p",reversed);
     await PacketTimeline.ValidateAsync(resolved.Ffprobe,marker,reversed,0,ct);
