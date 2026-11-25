@@ -69,23 +69,29 @@ def acquire(item, path):
 
 def normalize(item, raw, dest):
     meta = probe(raw)
-    video = next(s for s in meta["streams"] if s["codec_type"] == "video" and not s.get("disposition", {}).get("attached_pic"))
+    videos = [s for s in meta["streams"] if s["codec_type"] == "video" and not s.get("disposition", {}).get("attached_pic")]
+    if len(videos) != 1:
+        raise ValueError(f"Raw input must contain one non-cover video: {len(videos)}")
+    video = videos[0]
     # Never upscale; preserve portrait orientation within the bounding dimensions.
     w = min(item["width"], video["width"])
     h = min(item["height"], video["height"])
     fps = item["fps"]
-    vf = f"scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2,fps={fps},setsar=1,setpts=PTS-STARTPTS"
+    vf = f"setpts=PTS-STARTPTS,scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2,fps={fps},setsar=1"
     run("ffmpeg", "-v", "error", "-xerror", "-nostdin", "-n", "-i", str(raw), "-t", str(item["seconds"]),
-        "-map", "0:V:0", "-map", "0:a:0?", "-vf", vf, "-af", "aresample=48000,asetpts=N/SR/TB",
+        "-map", f"0:{video['index']}", "-map", "0:a:0?", "-vf", vf, "-af", "aresample=48000,asetpts=N/SR/TB",
         "-r", str(fps), "-fps_mode", "cfr",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-g", str(fps), "-keyint_min", str(fps),
         "-sc_threshold", "0", "-x264-params", "open-gop=0", "-threads", "4", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-ac", "2", "-ar", "48000", "-b:a", "128k", "-map_metadata", "-1",
         "-map_chapters", "-1", "-video_track_timescale", "90000", str(dest))
     normalized = probe(dest)
-    v = next(s for s in normalized['streams'] if s['codec_type'] == 'video')
+    videos = [s for s in normalized['streams'] if s['codec_type'] == 'video']
+    if len(videos) != 1:
+        raise ValueError(f"Normalized video missing or ambiguous; streams={[(s.get('index'), s.get('codec_type')) for s in normalized['streams']]}; raw_video_start={video.get('start_time')}; raw_video_duration={video.get('duration')}")
+    v = videos[0]
     from fractions import Fraction
-    if Fraction(v['avg_frame_rate']) != fps or abs(float(v['duration']) - int(v['nb_frames']) / fps) > .002:
+    if int(v['nb_frames']) < 1 or Fraction(v['avg_frame_rate']) != fps or abs(float(v['duration']) - int(v['nb_frames']) / fps) > .002:
         raise ValueError('Normalized frame rate or duration inconsistent')
     for audio in (s for s in normalized["streams"] if s["codec_type"] == "audio"):
         lines = run("ffprobe", "-v", "error", "-select_streams", str(audio["index"]), "-show_entries", "packet=dts", "-of", "csv=p=0", str(dest)).splitlines()

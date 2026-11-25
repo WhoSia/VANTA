@@ -10,7 +10,8 @@
     "seconds": 7,
     "width": 1280,
     "height": 720,
-    "fps": 24
+    "fps": 24,
+    "sha256": "1a86a4af685a5285d593b7d3ee9d8e23f3c63c5ba3f86bd191c97157c12a237a"
   },
   {
     "id": "waterfall-portrait",
@@ -22,7 +23,8 @@
     "seconds": 8,
     "width": 720,
     "height": 1280,
-    "fps": 30
+    "fps": 30,
+    "sha256": "b10aebf587f7f64adb76573e9e1fd9904a7a219324f628652138ca090d7289a9"
   },
   {
     "id": "screen-recording",
@@ -34,7 +36,8 @@
     "seconds": 12,
     "width": 1280,
     "height": 720,
-    "fps": 30
+    "fps": 30,
+    "sha256": "65e3e0f6b6f5dee946c0cc5324f735b32e5a7ed5dabbc1f32dcefd7c52c74b7a"
   },
   {
     "id": "slow-motion-drops",
@@ -46,7 +49,8 @@
     "seconds": 10,
     "width": 720,
     "height": 1280,
-    "fps": 30
+    "fps": 30,
+    "sha256": "65ce67be523cf97167cc6ff2c3e7ebefd57c6969d26ef4fc4f6d08c87e7a023f"
   },
   {
     "id": "earth-1080p60",
@@ -58,7 +62,8 @@
     "seconds": 8,
     "width": 1920,
     "height": 1080,
-    "fps": 60
+    "fps": 60,
+    "sha256": "a9d75037ff87d600639b064c16dbfa2f6862b18e2d6e8c117c0b23827fa79b4b"
   },
   {
     "id": "earth-4k60",
@@ -70,6 +75,7 @@
     "seconds": 4,
     "width": 3840,
     "height": 2160,
-    "fps": 60
+    "fps": 60,
+    "sha256": "d03879884e0655df49c001b2ab1e0a644ad0037c54b6010f3b5c9854d48ce0f9"
   }
 ]
