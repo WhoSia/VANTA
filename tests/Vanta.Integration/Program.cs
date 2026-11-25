@@ -3,10 +3,14 @@ using System.Security.Cryptography;
 // This test executable doubles as a deterministic, zero-exit fake probe only for a marked fixture.
 if(args.Length==7&&args[0]=="-v"&&args[1]=="error"&&args[2]=="-show_format"&&args[3]=="-show_streams"&&args[4]=="-of"&&args[5]=="json"&&File.Exists(args[6]+".test-probe.json"))
 {
-    Console.Write(await File.ReadAllTextAsync(args[6]+".test-probe.json"));
-    Console.Error.WriteLine("Synthetic error-level probe diagnostic");
+    // Write ASCII JSON bytes directly, independent of the console's code page.
+    using(var stdout=Console.OpenStandardOutput())
+        await stdout.WriteAsync(await File.ReadAllBytesAsync(args[6]+".test-probe.json"));
+    if(File.Exists(args[6]+".test-probe-error"))
+        Console.Error.WriteLine("Synthetic error-level probe diagnostic");
     return;
 }
+if(args.Length!=0)throw new ArgumentException("Unexpected integration-test arguments.");
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);
 using var timeout=new CancellationTokenSource(TimeSpan.FromMinutes(5));
@@ -55,15 +59,27 @@ try
     var fakeProbe=Path.Combine(AppContext.BaseDirectory,"Vanta.Integration"+(OperatingSystem.IsWindows()?".exe":""));
     var capturedProbe=await ProcessRunner.RunAsync(resolved.Ffprobe,["-v","error","-show_format","-show_streams","-of","json",input],ct);
     Check(capturedProbe.ExitCode==0&&string.IsNullOrWhiteSpace(capturedProbe.Error),"Positive probe control");
-    await File.WriteAllTextAsync(input+".test-probe.json",capturedProbe.Output,ct);
-    var synthetic=await ProcessRunner.RunAsync(fakeProbe,["-v","error","-show_format","-show_streams","-of","json",input],ct);
-    Check(synthetic.ExitCode==0&&synthetic.Output==capturedProbe.Output&&synthetic.Error.Contains("Synthetic error-level probe diagnostic"),"Zero-exit stderr negative control is genuine");
+    using var capturedJson=System.Text.Json.JsonDocument.Parse(capturedProbe.Output);
+    string replayJson=System.Text.Json.JsonSerializer.Serialize(capturedJson.RootElement);
+    Check(replayJson.All(c=>c<=127),"Probe replay JSON must be ASCII");
+    await File.WriteAllTextAsync(input+".test-probe.json",replayJson,ct);
+    var probeArgs=new[]{"-v","error","-show_format","-show_streams","-of","json",input};
+    var cleanReplay=await ProcessRunner.RunAsync(fakeProbe,probeArgs,ct);
+    Check(cleanReplay.ExitCode==0&&cleanReplay.Output==replayJson&&string.IsNullOrWhiteSpace(cleanReplay.Error),
+        $"Clean probe replay failed: exit={cleanReplay.ExitCode}, stdout chars={cleanReplay.Output.Length}/{replayJson.Length}, stderr={cleanReplay.Error}");
+    var replayDetails=await Probe.InspectAsync(fakeProbe,input,ct);
+    Check(replayDetails.Supported&&replayDetails.Info==source.Info,"Clean replay must be accepted with matching media details");
+    await File.WriteAllTextAsync(input+".test-probe-error","error",ct);
+    var synthetic=await ProcessRunner.RunAsync(fakeProbe,probeArgs,ct);
+    Check(synthetic.ExitCode==0&&synthetic.Output==cleanReplay.Output&&synthetic.Error.Contains("Synthetic error-level probe diagnostic"),
+        $"Zero-exit error control failed: exit={synthetic.ExitCode}, stdout chars={synthetic.Output.Length}/{cleanReplay.Output.Length}, stderr={synthetic.Error}");
     bool diagnosticRejected=false;
     try{await Probe.InspectAsync(fakeProbe,input,ct);}
     catch(InvalidOperationException ex) when(ex.Message.Contains("Synthetic error-level probe diagnostic")){diagnosticRejected=true;}
     Check(diagnosticRejected,"Probe accepted error-level stderr with exit zero");
+    File.Delete(input+".test-probe-error");
     File.Delete(input+".test-probe.json");
-    Console.WriteLine("Zero-exit probe error diagnostic rejected.");
+    Console.WriteLine("Clean probe replay accepted and identical zero-exit error diagnostic rejected.");
     var plan=new Plan("CI","libx265",180,180000,0,"medium",false,true);
     var events=new List<EncodeProgress>();
     var expectedStamp=SourceStamp.Capture(input);
