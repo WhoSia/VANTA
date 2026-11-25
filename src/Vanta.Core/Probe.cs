@@ -9,7 +9,7 @@ public static class Probe
     {
         var file=new FileInfo(path);
         var r=await ProcessRunner.RunAsync(ffprobe,["-v","error","-show_format","-show_streams","-of","json",file.FullName],ct);
-        if(r.ExitCode!=0) throw new InvalidOperationException(r.Error);
+        if(r.ExitCode!=0||!string.IsNullOrWhiteSpace(r.Error)) throw new InvalidOperationException("Media probe failed: "+r.Error);
         using var doc=JsonDocument.Parse(r.Output);
         var streams=doc.RootElement.GetProperty("streams").EnumerateArray().ToArray();
         var videos=streams.Where(s=>Str(s,"codec_type")=="video" && !(s.TryGetProperty("disposition",out var d)&&d.TryGetProperty("attached_pic",out var a)&&a.GetInt32()==1)).ToArray();

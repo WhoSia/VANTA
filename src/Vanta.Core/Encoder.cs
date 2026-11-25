@@ -50,7 +50,7 @@ public static class Encoder
             progress?.Report(new("Encoding",0));
             var parser=new ProgressParser(source.Seconds,progress);
             var encoded=await ProcessRunner.RunAsync(ffmpeg,args,ct,parser.Read);
-            if(encoded.ExitCode!=0)throw new InvalidOperationException(encoded.Error);
+            if(encoded.ExitCode!=0||!string.IsNullOrWhiteSpace(encoded.Error))throw new InvalidOperationException("Encoding failed: "+encoded.Error);
             }
             var encoding=Lap();
             progress?.Report(new("Validating",null));
@@ -58,7 +58,8 @@ public static class Encoder
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
             if(actual.Height!=plan.Height || actual.Codec!=(plan.Codec=="libx265"?"hevc":"h264")) throw new InvalidDataException("Output codec or height mismatch");
-            if(details.Visual is not null&&actualDetails.Visual is not null)details.Visual.ValidateOutput(actualDetails.Visual);
+            if(details.Visual is null||actualDetails.Visual is null)throw new InvalidDataException("Visual metadata unavailable");
+            details.Visual.ValidateOutput(actualDetails.Visual);
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
             var outputProbe=Lap();
@@ -91,7 +92,7 @@ public static class Encoder
         async Task<string> Hash(string path)
         {
             var r=await ProcessRunner.RunAsync(exe,["-v","error","-nostdin","-i",path,"-map","0:a","-c:a","copy","-f","streamhash","-hash","sha256","-"],ct);
-            if(r.ExitCode!=0 || string.IsNullOrWhiteSpace(r.Output)) throw new InvalidDataException("Audio payload hash unavailable");
+            if(r.ExitCode!=0 || !string.IsNullOrWhiteSpace(r.Error) || string.IsNullOrWhiteSpace(r.Output)) throw new InvalidDataException("Audio payload hash unavailable");
             return r.Output.Trim();
         }
         if(await Hash(source)!=await Hash(output)) throw new InvalidDataException("Copied audio payload changed");
@@ -99,6 +100,6 @@ public static class Encoder
     private static async Task Checked(string exe,IEnumerable<string> args,CancellationToken ct)
     {
         var r=await ProcessRunner.RunAsync(exe,args,ct);
-        if(r.ExitCode!=0) throw new InvalidOperationException(r.Error);
+        if(r.ExitCode!=0||!string.IsNullOrWhiteSpace(r.Error)) throw new InvalidOperationException("Validation failed: "+r.Error);
     }
 }
