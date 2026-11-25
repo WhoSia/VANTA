@@ -6,9 +6,9 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 ## Status and download
 
-0.3.0 — Desktop Reliability & Distribution Readiness (owner-approved, in development). No tagged release.
+0.3.0 — Desktop Reliability & Distribution Readiness (automated gates passed; awaiting owner-PC acceptance). No tagged release.
 
-**[Download the verified Windows x64 package (ebc9d7c)](https://github.com/WhoSia/VANTA/actions/runs/45551368705/artifacts/14994525983).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance.
+**[Download the verified Windows x64 package (b77ea83)](https://github.com/WhoSia/VANTA/actions/runs/45559737020/artifacts/14996559713).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance. See the [five-case owner checklist](docs/DESKTOP_ACCEPTANCE.md#030-owner-pc-minimal-handoff-not-executed).
 
 ## Current preview
 
@@ -16,7 +16,7 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 - Source-aware bitrate-budget tiers, editable H.264/HEVC codec, preset, height, video bitrate and target-size budget. Quality is not measured by the recommendation heuristic and final size can differ substantially.
 - AAC mono/stereo audio copy (or silent), 8-bit SDR yuv420p, known stream timing; MP4 output. Unsupported streams or metadata, including display rotation/matrices, are rejected. Not all MP4/MOV/MKV inputs meet these conditions.
 - Collision-safe _vanta.mp4 output names, common output directory, per-file overrides, local batch defaults, cancellation, explicit retry, aggregate actual savings, result folder and diagnostic copy.
-- Continuous encoding default. Optional bounded CFR H.264 video-only split experiment; not demonstrated faster in matched tests, no automatic selection. Original audio is mapped once.
+- Continuous encoding default. Optional bounded CFR H.264 video-only split experiment; no consistent speedup demonstrated in matched tests, no automatic selection. Original audio is mapped once.
 - Optional encoder thread request (not a CPU cap); explicit synthetic hardware encoder diagnostics only. GPU compression and FPS conversion are not enabled.
 - Per-job elapsed and validation time, full decode and relative A/V timestamp validation before publication. No overwrite, no telemetry.
 
