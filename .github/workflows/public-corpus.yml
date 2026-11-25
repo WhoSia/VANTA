@@ -1,0 +1,51 @@
+name: Public media corpus
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/corpus/**'
+      - 'tests/Vanta.Integration/PublicCorpusScreen.cs'
+      - '.github/workflows/public-corpus.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: public-corpus-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  corpus:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Resolve FFmpeg
+        shell: pwsh
+        run: |
+          if (!(Get-Command ffmpeg -ErrorAction SilentlyContinue) -or !(Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+            $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path
+            $env:Path >> $env:GITHUB_PATH
+          }
+          ffmpeg -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
+          ffprobe -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: Acquire and prepare public inputs
+        shell: pwsh
+        run: python tests/corpus/prepare.py --work "$env:RUNNER_TEMP/vanta-corpus" --report artifacts/corpus-report
+      - name: Real C# encoder comparison
+        if: ${{ !cancelled() && hashFiles('artifacts/corpus-report/intake.json') != '' }}
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --corpus artifacts/corpus-report/intake.json artifacts/corpus-report/results.jsonl
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: VANTA-public-corpus-evidence
+          path: artifacts/corpus-report/
+          if-no-files-found: error
+          retention-days: 14

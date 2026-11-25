@@ -10,6 +10,12 @@ if(args.Length==7&&args[0]=="-v"&&args[1]=="error"&&args[2]=="-show_format"&&arg
         Console.Error.WriteLine("Synthetic error-level probe diagnostic");
     return;
 }
+if(args.Length==3&&args[0]=="--corpus")
+{
+    using var corpusTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(24));
+    await PublicCorpusScreen.RunAsync(args[1],args[2],corpusTimeout.Token);
+    return;
+}
 if(args.Length!=0)throw new ArgumentException("Unexpected integration-test arguments.");
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);

@@ -1,0 +1,75 @@
+[
+  {
+    "id": "animation-bbb",
+    "file": "Big_Buck_Bunny_8_seconds_bird_clip.ogv",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Big_Buck_Bunny_8_seconds_bird_clip.ogv",
+    "source": "https://commons.wikimedia.org/wiki/File:Big_Buck_Bunny_8_seconds_bird_clip.ogv",
+    "credit": "(c) copyright Blender Foundation | www.bigbuckbunny.org",
+    "license": "https://creativecommons.org/licenses/by/3.0/",
+    "sha1": "abb5ac9b24fe7bd5896cdeb83f6e954d19c18b67",
+    "seconds": 7,
+    "width": 1280,
+    "height": 720,
+    "fps": 24
+  },
+  {
+    "id": "waterfall-portrait",
+    "file": "Water_falls.webm",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Water_falls.webm",
+    "source": "https://commons.wikimedia.org/wiki/File:Water_falls.webm",
+    "credit": "Gvignesh493",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "seconds": 8,
+    "width": 720,
+    "height": 1280,
+    "fps": 30
+  },
+  {
+    "id": "screen-recording",
+    "file": "Insertimage.webm",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Insertimage.webm",
+    "source": "https://commons.wikimedia.org/wiki/File:Insertimage.webm",
+    "credit": "Ichdunich",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "seconds": 12,
+    "width": 1280,
+    "height": 720,
+    "fps": 30
+  },
+  {
+    "id": "slow-motion-drops",
+    "file": "Slow_motion_video_of_waterdrops_falling_into_yellow_coloured_water.webm",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/43/Slow_motion_video_of_waterdrops_falling_into_yellow_coloured_water.webm",
+    "source": "https://commons.wikimedia.org/wiki/File:Slow_motion_video_of_waterdrops_falling_into_yellow_coloured_water.webm",
+    "credit": "Pittigrilli",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "seconds": 10,
+    "width": 720,
+    "height": 1280,
+    "fps": 30
+  },
+  {
+    "id": "earth-1080p60",
+    "file": "Earth_wAtmos_spin_02_1080p60.mp4",
+    "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005570/Earth_wAtmos_spin_02_1080p60.mp4",
+    "source": "https://svs.gsfc.nasa.gov/5570/",
+    "credit": "NASA Scientific Visualization Studio; Kel Elkins (USRA); William Putman (NASA/GSFC)",
+    "license": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "seconds": 8,
+    "width": 1920,
+    "height": 1080,
+    "fps": 60
+  },
+  {
+    "id": "earth-4k60",
+    "file": "Earth_wAtmos_spin_02_2160p60.mp4",
+    "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005570/Earth_wAtmos_spin_02_2160p60.mp4",
+    "source": "https://svs.gsfc.nasa.gov/5570/",
+    "credit": "NASA Scientific Visualization Studio; Kel Elkins (USRA); William Putman (NASA/GSFC)",
+    "license": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "seconds": 4,
+    "width": 3840,
+    "height": 2160,
+    "fps": 60
+  }
+]
