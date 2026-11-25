@@ -113,3 +113,22 @@ Local Linux development container, FFmpeg 7.1.5 (no dotnet, no /dev/dri). Listin
 | hevc_qsv | 171 | Error creating MFX session: -9 |
 
 This is a local command-level negative control, not a Windows or user GPU assessment. No throughput comparison; sample success would not establish support at other resolutions/settings. Candidate 57718c449c6dbd1f43f44f3e0c2c1c4ad818155a, parent c38deefea4db6502d1645298570db0c473f1e111, adds explicitly invoked hardware diagnostics (NVENC/QSV/AMF for H.264/HEVC), list check, bounded 10s per listed encoder including probe/decode, 12-frame codec/count check, cancellation and temporary cleanup. UI only reports sample passed/failed/not listed/timed out; no hardware plan or encoding route enabled. Tests use actual software positive controls, hardware state classification without requiring a GPU, pre-cancel. Candidate not on main while planner CI runs. After planner success compare affected base blobs (MainWindow.xaml, MainWindow.xaml.cs, tests/Vanta.Integration/Program.cs) against current main and confirm EncoderDiagnostics.cs does not already exist; rebase with lease preserving docs. If failure fix first. Diagnostic sample is intentionally limited and may fail on otherwise usable hardware with different settings. No automatic hardware recommendation.
+
+## Preset speed screening — 2026-11-25
+
+Actual local FFmpeg 7.1.5 Debian, 5 visible processors, cgroup quota 4 CPUs. 960x540 30fps 4s testsrc2 plus sine 48kHz AAC 128 kbps. H264 fast CRF18 source, 2 requested encoder threads, yuv420p; source 1297423 bytes. Output H264 or HEVC MP4, 1 Mbps video budget, original AAC copy, passthrough timestamps, 2 requested encoder threads; x265 additionally pools=2:frame-threads=1:log-level=error. Alternating medium/veryfast then veryfast/medium; encode subprocess wall time and independent full decode time. SSIM compared with decoded input. No matched perceptual-quality or full VANTA timestamp/validation comparison.
+
+| Codec | Rep | Preset | Encode s | Decode s | Bytes | SSIM |
+|---|---:|---|---:|---:|---:|---:|
+| H264 | 0 | medium | .9523 | .1500 | 561964 | .989305 |
+| H264 | 0 | veryfast | .3876 | .1267 | 562233 | .988511 |
+| H264 | 1 | veryfast | .3908 | .1200 | 562233 | .988511 |
+| H264 | 1 | medium | .7966 | .1184 | 561964 | .989305 |
+| HEVC | 0 | medium | 1.7814 | .1691 | 576699 | .989716 |
+| HEVC | 0 | veryfast | 1.3466 | .1694 | 584615 | .988126 |
+| HEVC | 1 | veryfast | 1.3480 | .1608 | 584615 | .988126 |
+| HEVC | 1 | medium | 1.7139 | .1582 | 576699 | .989716 |
+
+All eight outputs full-decoded successfully, ffprobe counted 120 video frames, and copied AAC streamhash SHA256 matched source. Means H264 .87445 -> .38920s (-55.49% encode time), HEVC 1.74765 -> 1.34730s (-22.91%). Single synthetic source, no real hardware generalization. At fixed requested bitrate SSIM decreases and output size can increase. Do not silently change medium default; expose explicit shared preset preserving per-file overrides. 0685a93 implements shared preset and preference migration, bilingual hint, fixed single footer, distinct batch command and real two-file WPF test. CI 45547843938 pending.
+
+Windows CI 45546909751 job 138978616567 continuous phase two-rep mean total 5.3425s, encode 3.50795s, packet timeline .91335s, audio hash .28835s, decode .48605s; split mean 6.43025s. Prioritize preset choices, then equivalence-tested reduction of repeated validation IO. Never drop timestamp, copied audio or full decode checks; prior fused packet hash shadow work does not yet prove extradata/priming equivalence. Do not automatically enable split or alter default threads on this evidence.
