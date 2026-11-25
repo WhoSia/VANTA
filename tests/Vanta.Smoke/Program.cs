@@ -118,5 +118,11 @@ foreach(var changedVisual in new[]{visual with {DisplayRatio=4d/3},visual with {
     rejected=false;try{visual.ValidateOutput(changedVisual);}catch(InvalidDataException){rejected=true;}
     Check(rejected,"Visual metadata mismatch rejected");
 }
+Check(PlanRules.ParseVideoKbps("64")==64000&&PlanRules.ParseVideoKbps("64.001")==64001&&PlanRules.ParseVideoKbps("100000")==100000000,"Exact bitrate parsing");
+foreach(var invalidRate in new[]{"63.999","100000.001","64.0001","NaN","1,000","1e3",""})
+{
+    rejected=false;try{PlanRules.ParseVideoKbps(invalidRate);}catch(ArgumentException){rejected=true;}
+    Check(rejected,"Invalid or fractional-bit rate rejected");
+}
 Console.WriteLine("Smoke checks passed");
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}

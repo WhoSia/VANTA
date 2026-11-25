@@ -155,8 +155,8 @@ public partial class MainWindow : Window
         EncodeButton.IsEnabled=false;
         try
         {
-            if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out int h)||!decimal.TryParse(RateBox.Text,NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out decimal kb)||kb<64||kb>100000)throw new ArgumentException("Enter a valid height and bitrate.");
-            var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,(long)(kb*1000),0,PresetBox.SelectedItem as string??"",false);
+            if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out int h))throw new ArgumentException("Enter a valid height.");
+            var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedItem as string??"",false);
             var v=CandidateEvaluation.Evaluate(p,media);
             activePlan=p;
             Estimate.Text=$"Bitrate budget {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} budget savings";

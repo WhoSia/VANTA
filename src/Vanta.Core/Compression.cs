@@ -27,6 +27,13 @@ public static class PlanRules
         if(!Codecs.Contains(p.Codec) || !Presets.Contains(p.Preset) || p.Height<2 || p.Height%2!=0 || p.Height>m.Height || p.VideoBitsPerSecond<MinimumVideoRate || p.VideoBitsPerSecond>MaximumVideoRate || !p.CopyAudio || p.AudioBitsPerSecond!=0 || p.TwoPass)
             throw new ArgumentException("Unsupported compression settings");
     }
+    public static long ParseVideoKbps(string text)
+    {
+        if(!decimal.TryParse(text,System.Globalization.NumberStyles.AllowDecimalPoint,System.Globalization.CultureInfo.InvariantCulture,out var kb)||
+           kb<MinimumVideoRate/1000m||kb>MaximumVideoRate/1000m||decimal.Truncate(kb*1000)!=kb*1000)
+            throw new ArgumentException("Enter a bitrate from 64 to 100000 kbps, up to three decimal places.");
+        return (long)(kb*1000);
+    }
     public static long TargetRate(MediaInfo m,double targetBytes)
     {
         ValidateSource(m);

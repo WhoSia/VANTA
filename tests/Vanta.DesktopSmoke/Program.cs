@@ -27,6 +27,13 @@ internal static class DesktopSmoke
         Check(!apply.IsEnabled,"Invalid bitrate disables apply");
         Get<TextBox>(dialog,"RateBox").Text="500";
         Check(apply.IsEnabled,"Valid bitrate enables apply");
+        Get<TextBox>(dialog,"RateBox").Text="500.0001";
+        Check(!apply.IsEnabled,"Fractional-bit bitrate rejected");
+        Get<TextBox>(dialog,"RateBox").Text="500.001";
+        Check(apply.IsEnabled,"Exact single-bit resolution accepted");
+        Get<TextBox>(dialog,"TargetBox").Text="5";
+        Get<TextBox>(dialog,"RateBox").Text="600";
+        Check(Get<TextBox>(dialog,"TargetBox").Text=="","Manual edit clears stale target");
         dialog.Close();main.Close();app.Shutdown();
         Console.WriteLine("WPF construction and individual editor routed-event smoke passed.");
     }

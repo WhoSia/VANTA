@@ -22,17 +22,15 @@ public partial class BatchPlanDialog:Window
         RateBox.Text=seed is null?"":(seed.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);
         initialized=true;Evaluate();
     }
-    private void OnChanged(object sender,RoutedEventArgs e){if(initialized)Evaluate();}
+    private void OnChanged(object sender,RoutedEventArgs e){if(initialized){TargetBox.Clear();Evaluate();}}
     private void Evaluate()
     {
         candidate=null;ApplyButton.IsEnabled=false;
         try
         {
-            if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out var height)||
-               !decimal.TryParse(RateBox.Text,NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out var kb)||
-               kb<64||kb>100000||decimal.Truncate(kb*1000)!=kb*1000)
-                throw new ArgumentException("Enter a valid height and bitrate (up to three decimal places).");
-            var plan=new Plan("Custom",CodecBox.SelectedItem as string??"",height,(long)(kb*1000),0,PresetBox.SelectedItem as string??"",false);
+            if(!int.TryParse(HeightBox.Text,NumberStyles.Integer,CultureInfo.InvariantCulture,out var height))
+                throw new ArgumentException("Enter a valid height.");
+            var plan=new Plan("Custom",CodecBox.SelectedItem as string??"",height,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedItem as string??"",false);
             candidate=BatchPlanSelection.Resolve(media,available,"Balanced",null,plan);
             Estimate.Text=$"Bitrate budget: {plan.EstimateBytes(media)/1e6:F2} MB · {plan.Savings(media):P1} budget savings";
             ApplyButton.IsEnabled=true;
@@ -44,7 +42,9 @@ public partial class BatchPlanDialog:Window
         try
         {
             if(!double.TryParse(TargetBox.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out double mb))throw new ArgumentException("Enter target MB.");
+            var targetText=TargetBox.Text;
             RateBox.Text=(PlanRules.TargetRate(media,mb*1e6)/1000d).ToString("0.###",CultureInfo.InvariantCulture);
+            TargetBox.Text=targetText;
             Evaluate();
         }
         catch(Exception ex){Estimate.Text=ex.Message;}
