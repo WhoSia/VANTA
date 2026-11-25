@@ -1,0 +1,32 @@
+# Proposal: VANTA 0.4.0 — Adaptive Segmented Encoding & Measured Acceleration
+
+Status: PROPOSED, not approved. 0.3.0 owner acceptance remains pending; 457eb66 is the verified fallback. No version bump, tag, release, arbitrary split UI, or acceleration default authorized by this proposal. Research evidence can be gathered under the existing approved corrective scope.
+
+## Objective
+
+Minimize verified end-to-end completion time and resource cost while preserving source/output integrity and a comparable size/quality contract. The downloader analogy motivates independently schedulable chunks, not byte-range concatenation of interdependent compressed frames. Segment count N, simultaneous workers W, requested threads per worker and source complexity are independent decisions. N is not constrained to W. Existing C# WPF, FFmpeg, MP4 and AAC-copy contract remain; Rust only if a measured bottleneck justifies ABI/build/distribution cost.
+
+## Algorithm
+
+1. Determine admissibility: supported codec, regular presentation grid or separately proven VFR model, timestamp bounds, metadata, source lease, memory and scratch budget. Default to continuous if unsupported or predicted gain is not robust.
+2. Candidate partition: choose ordered half-open frame intervals [b_i,b_(i+1)) with b_0=0 and b_N=F; consider source keyframe-aligned cuts to reduce decode preroll, minimum useful duration, and sampled scene complexity to balance estimated work. Equal frame count is baseline, not optimal. Do not assume source keyframe alignment alone preserves output GOP quality. Never cut raw MP4 bytes.
+3. Cost model: estimated makespan max over workers of sum of decode preroll + encode + part validation, plus initial grid scan, mux and final validation. Add launch overhead, predicted I/O and memory, and explicit uncertainty margin. Search bounded N/W/threads/preset candidate set (initial research N=1,2,3,4,8,16; W=1..min(N,8)); choose continuous if candidate advantage is below noise/quality constraints. Actual CPU pools can exceed requested encoder threads; observe resource use rather than claim hard cap.
+4. Budget: match bitrate alone is insufficient (local 8s case loses SSIM as N rises). Compare quality at matched bytes and bytes at matched quality, measure per-segment and boundary quality. Explore complexity-proportional bit budget or encoder rate-control strategies; no automatic subjective quality guarantee, no new default before evidence. Bound sampling overhead and reject inadmissible plans.
+5. Scheduler: bounded queue with independent segment index, immutable source snapshot, shared global budget across batch and segment workers, work estimate-aware ordering, dynamic admission at job boundaries only. Never mutate active FFmpeg processes to resize threads. Stop peers on failure/cancel, await all children before deleting staging, no publication until complete verification. Join in frame order, original audio muxed once, no overwrite.
+6. Validation: retain source protection, exact ordered frame/packet count, relative timestamp tolerance, metadata and full decode, copied audio hash. Unique-frame marker and boundary negative controls; test swapped frames, truncated segment, malformed manifest, changed source, cancellation before/during/after merge, output collision. More chunks must not increase silent failure risk. No reduction of validation without differential evidence.
+
+## Finite acceptance gates (proposal; owner approval required)
+
+- Exact Windows CI and repeatable benchmark manifest with source SHA, tool versions, requested threads, observed CPU/memory/disk, N/W, output bytes and per-run timings; preserve negative controls.
+- Matrix covering short/long, 720p/1080p and at least one high-resolution source, low/high motion, varied GOP, CFR NTSC, delayed/multiple AAC; unsupported VFR/rotation fail closed until separately proven.
+- For eligible auto-selected matched-quality candidates, target median >=15% whole-job time reduction vs continuous, with at least five paired trials across representative sources and explicit confidence/variability. Nonwinning cases choose continuous. This is a research target, not measured or promised. Compare same bytes (within 5%) with global SSIM and worst-segment/boundary checks, or comparable quality with explicit byte delta; define quality thresholds before final experiment, include human playback review. Do not use one metric as universal quality.
+- No dropped/reordered frames, changed audio, failed full decode, stale source, leaked parts, overwrite, unjoined child or false completed status in supported regression suite. All failures/cancel paths settle. Actual owner-PC single/batch and multi-split acceptance.
+- No unrestricted fan-out or unbounded temporary storage; use bounded worker count and conservative disk headroom; compare aggregate peak working set and CPU, report limits and hardware dependence. No silent automatic retry that hides a failure; explicit continuous fallback recommendation or preselected policy only.
+- UX: keep normal Auto as simplest default, advanced segment/worker options only after proof; describe why a plan was selected and whether fallback is used, expose total/segment/validation time, localized controls and cancel state. No complexity added to main workflow solely for experimentation.
+- Distribution: same lightweight native WPF, one verified package and no added native runtime unless actual benefit supports it. Version/tag/release requires explicit approval.
+
+## Current evidence and decision
+
+Local 8s 960x540 fixed 4 requested threads: N/W=1/1 mean 1.59792s SSIM .988114; 2/2 2.13446s SSIM ~.971185; 4/4 2.106725s .946421; 8/4 2.28736s .915382. All proxy integrity checks passed, but no matched-size or quality win; continuous remains best for this fixture. Existing Windows 2-split trials usually slower. 45b7737 internal research expands N/W and full Encoder CI matrix; 45567684805 pending at proposal creation. Parallel audio hash is independent lower-risk candidate and needs actual end-to-end and active cancellation before activation. No Rust acceleration demonstrated. See ACCELERATION.md raw results.
+
+Next research after exact CI: diagnose ABR quality/size divergence on same source; test longer/high-resolution and complexity-balanced/keyframe cuts; measure aggregate resource contention; implement calibrated selection only after sufficient data. Stop at CI or owner approval/acceptance gate. User's request is to prepare a 0.4.0 proposal, not start a new version.

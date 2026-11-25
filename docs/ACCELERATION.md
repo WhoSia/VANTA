@@ -187,3 +187,28 @@ Independent local full-workflow proxy, FFmpeg 7.1.5 Debian, nproc 5, cgroup quot
 |2|2|1.223424|1.148058|
 
 Means 1.214224/1.084206 (10.71% reduction), 1.273464/1.204842 (5.39%). Resource peaks, cold cache, representative source diversity, actual C# end-to-end, active cancellation still unmeasured. This small proxy supports next C# whole-workflow shadow experiment, not an immediate production switch or guaranteed speedup. Preserve all strict existing validation. No additional code changes while target guard CI running.
+
+## Multi-split screening: segment count N independent of worker count W
+
+457eb66 exact CI 45566399287 job 139042144637 passed, zero warnings/errors, target guard and all prior regressions. Artifact 15000586159 outer 216494 bytes SHA256 9d5fe751331d79a8499d7bd003029b69c4a27c548003482316c66235c59c4fef; inner 213318 bytes SHA256 d95223875f3d05dbf72eff61516b36f858d93d0fdce1606653fc8eaba3b1511d. Current verified package https://github.com/WhoSia/VANTA/actions/runs/45566399287/artifacts/15000586159. Owner resize observation only; actual owner compression acceptance remains open.
+Actual local FFmpeg 7.1.5 Debian, 5 visible CPUs, cgroup quota 4 CPU equivalents; dotnet, rustc/cargo and fast-anything CLI absent. Python independent proxy, not C# production. 8s 960x540 30fps testsrc2 H264 ultrafast CRF18 GOP60 fixed (-g 60 -keyint_min 60 -sc_threshold 0), 2 encoder threads, yuv420p, 48kHz AAC sine 440Hz, source 5808792 bytes SHA256 f1a29c250cc4498f401f5c6abc6c73a89c64330a2d2125364b828455517e6475, 240 video frames, 376 audio packets. All outputs target libx264 medium 900k; fixed total requested encoder threads 4, per-worker floor(4/W). For N>1, initial full CFR-grid probe; equal half-open intervals floor(F*i/N), seek 1 second early then copyts trim at (first-.5)/fps, reset PTS, exact frame count, no audio per segment, output video timescale 90000; per-part grid checks; concat safe 1 by index with explicit durations, original AAC copied once, faststart MP4. N=1 normal continuous. Full proxy validates source/output video and audio counts, <=2ms residual relative to common video origin, audio streamhash SHA256 equality, strict full decode, source SHA unchanged. Total excludes fixture creation, separate SSIM calculation, and baseline cached source timestamps/hash; not full source lease/metadata/atomic-publication contract. Two opposite-order repetitions; all 12 outputs passed proxy checks. No resource peak or quality-matched comparison. Raw results:
+
+| rep | N | W | encode incl grid/parts/mux s | total s | bytes | SSIM |
+|---:|---:|---:|---:|---:|---:|---:|
+|0|1|1|1.01442|1.58454|974272|.988114|
+|0|2|2|1.48198|2.09451|778018|.971187|
+|0|4|2|2.07740|2.70407|577808|.949558|
+|0|4|4|1.62149|2.22235|497202|.946421|
+|0|8|2|2.25336|2.76620|410813|.915934|
+|0|8|4|1.71997|2.24401|388997|.915382|
+|1|8|4|1.81452|2.33071|388997|.915382|
+|1|8|2|2.28601|2.84569|410813|.915934|
+|1|4|4|1.46634|1.99110|497202|.946421|
+|1|4|2|1.92438|2.48656|577808|.949558|
+|1|2|2|1.57105|2.17441|776939|.971183|
+|1|1|1|.98945|1.61130|974272|.988114|
+
+Mean total s: 1/1 1.59792, 2/2 2.13446, 4/2 2.595315, 4/4 2.106725, 8/2 2.805945, 8/4 2.28736. None beat continuous. More workers help given equal segment count here, yet restart/seek/decode/validation/mux overhead and ABR size/quality changes make shorter segments worse. Causal attribution to any single component is unproven; compare matched size/quality, longer high-resolution and heterogeneous scene fixtures, keyframe-aware partition vs equal intervals. Do not interpret reduced output size as equal-quality speedup. Keep default continuous and 2-way user experiment. Local probe timing and source integrity checks not a universal frame-content guarantee. No Rust/fast-anything runtime executed. 
+457eb66 exact CI 45566399287 job 139042144637 passed, zero warnings/errors, target guard and all prior regressions. Artifact 15000586159 outer 216494 bytes SHA256 9d5fe751331d79a8499d7bd003029b69c4a27c548003482316c66235c59c4fef; inner 213318 bytes SHA256 d95223875f3d05dbf72eff61516b36f858d93d0fdce1606653fc8eaba3b1511d. Current verified package https://github.com/WhoSia/VANTA/actions/runs/45566399287/artifacts/15000586159. Owner resize observation only; actual owner compression acceptance remains open.
+45b7737 generalizes internal split research from fixed 2 to 2–16 segments and 1–8 bounded workers (workers <= segments; explicit encoder threads >= workers). Integer frame interval boundaries, worker queue, linked cancellation, index-ordered concat, mandatory existing production publication checks retained. Public EncodeAsync signature and default continuous / explicit 2-part, serial audio hash behavior unchanged; no user-facing arbitrary split selector. Internal research entrypoint also permits existing parallel audio validator, default false. CI 45567684805 in_progress: 3/4/8 unique marker frame identities, insufficient worker budget rejection, 12 actual full Encoder trials (1/1,2/2,4/2,4/4,8/2,8/4; two reverse-order repetitions) with SSIM, active cancellation and staging cleanup. Actual Windows results pending. No new version/tag/release. 0.4.0 proposal only; see PROPOSAL_0.4.0.md.
+
