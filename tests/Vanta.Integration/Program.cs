@@ -137,6 +137,16 @@ try
         originalVisual.Visual!.ValidateOutput(outputVisual.Visual!);
     }
     Console.WriteLine("Anamorphic DAR and declared color tags preserved for both software codecs.");
+    var rotated=Path.Combine(root,"rotation 90.mp4");
+    await Run("-v","error","-nostdin","-n","-display_rotation","90","-i",silent,"-map","0:v:0","-c","copy",rotated);
+    var rotationInfo=await Probe.InspectAsync(resolved.Ffprobe,rotated,ct);
+    Check(rotationInfo.Visual?.HasTransform==true&&!rotationInfo.Supported,"Real display matrix must be detected and rejected");
+    var rotatedOut=Path.Combine(root,"rotation rejected.mp4");
+    bool rotationRejected=false;
+    try{await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,rotated,rotatedOut,plan,ct);}
+    catch(NotSupportedException){rotationRejected=true;}
+    Check(rotationRejected&&!File.Exists(rotatedOut)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Rotated source must not publish");
+    Console.WriteLine("Real 90-degree display matrix rejected without output publication.");
     var avcOut=Path.Combine(root,"avc fast.mp4");
     await Encoder.EncodeAsync("ffmpeg","ffprobe",input,avcOut,plan with {Codec="libx264",Preset="fast"},ct,encoderThreads:1);
     var avc=await Probe.InspectAsync("ffprobe",avcOut,ct);
