@@ -229,3 +229,38 @@ Actual independent local FFmpeg 7.1.5-0+deb13u1, 5 visible logical CPUs, cgroup 
 |1|continuous|.721581|1.285846|1037921|.994666|.992703|n/a|
 
 Mean total seconds continuous 1.414088; equal early 1.9350865; key early 1.9587805; key exact 1.9153265. All segmented outputs within 0.57% of continuous bytes and 0.000063 global SSIM; unlike earlier ABR mismatch, this is a near-matched-size/SSIM screen, not universal visual equivalence or a target-size guarantee. Continuous wins both repetitions. Exact-key seek improves over key-early in both pairs, but mean ~2.22% difference and only two trials; aligned vs equal reverses direction across reps, no robust partition win. Unequal segment lengths may hurt load balance. Do not activate CRF or exact seeking in production from one synthetic screen; exact source keyframe flag is not proof of closed GOP or safe random access for all files. Next after passing inherited CI: constrained partition planner (minimum interval, unique ordered cuts, seek safety), compare on longer 1080p/high-resolution heterogeneous GOP workloads with five matched trials, record resources and actual C# pipeline. Keep public continuous/2-part behavior and target bitrate contracts. No Rust dependency.
+
+## First passing 0.4.0 Windows multi-split matrix
+
+Exact 78ab876356a5793ff17b7ba14355c1e04240fa55 CI 45571468942 job 139058890310 succeeded, zero warnings/errors. 3/4/8 marker identities, insufficient worker budget, 12 full Encoder timing/SSIM trials, active cancellation/cleanup, existing desktop/core/integration/package install all passed. Artifact 15002671243, outer 217244 bytes SHA256 d756b4980c662f73e0062b227a30ab93b1cf384bd1e3df47b5c9ec89bf29b4a0; inner ZIP 214016 bytes SHA256 145eed3ad4c25ed5ed0aa62bae71476deebe2032bfbc1df3a5e03f9c3bc614b3. Verified package https://github.com/WhoSia/VANTA/actions/runs/45571468942/artifacts/15002671243. Development preview, no owner-PC acceptance or tagged release.
+Same 960x540 8s 30fps source, medium H.264 900k ABR, requested encoder threads 4. Actual full Encoder trials (seconds, encode phase, bytes, SSIM):
+
+| rep | N/W | total | encode | bytes | SSIM |
+|---:|---|---:|---:|---:|---:|
+|0|1/1|2.472169|1.515053|973132|.988114|
+|0|2/2|3.109346|2.151619|961074|.987721|
+|0|4/2|3.346207|2.344377|913510|.986737|
+|0|4/4|3.494507|2.473005|904267|.986351|
+|0|8/2|5.363621|4.042774|855470|.985333|
+|0|8/4|3.701549|2.680979|827199|.984544|
+|1|8/4|3.194456|2.274949|827199|.984544|
+|1|8/2|3.521990|2.632307|855470|.985333|
+|1|4/4|2.846816|1.926217|904267|.986351|
+|1|4/2|3.101038|2.189407|913510|.986737|
+|1|2/2|2.847715|1.926606|961074|.987721|
+|1|1/1|2.356030|1.422098|973132|.988114|
+
+Continuous mean 2.4140995s, 2/2 2.9785305s, 4/2 3.2236225s, 4/4 3.1706615s, 8/2 4.4428055s, 8/4 3.4480025s. No speed win. 2/2 bytes 1.24% below continuous, global SSIM delta .000393; larger N has more size divergence. Not equivalent to prior Debian experiment; do not assume cross-build reproducibility. Existing 120s NTSC continuous 5.45525s mean vs two-part 6.64935s. All final validation intact.
+
+## Bounded keyframe minimax planner and high-resolution screen
+
+19a0250 adds research-only keyframe candidate capture during existing CFR grid scan (bounded 512 keys, no direct seek change), exact O(N K^2) dynamic programming minimizing maximum interval frame count with minimum ceil(fps) frames, optional internal H.264 CRF 0..51. Reject infeasible/oversized candidates before staging. Existing user-facing continuous and explicit two-part ABR behavior unchanged; per-part grid scan now reuses verified Span timestamp parser. Independent exhaustive 256 tiny partition cases and infeasible/unordered inputs, 1080p 12s GOP75 CRF23 full Encoder matrix of continuous/equal/aligned (2 reverse-order reps, 4 requested threads, 4 segments/2 workers) added to CI. Integration deadline 5→8 minutes to accommodate high-res research, workflow still 20 minutes. Exact CI 45573017677 in_progress at recording; no C# result claimed. No direct-seek shortcut, no adaptive default.
+Actual independent local FFmpeg 7.1.5-0+deb13u1; 5 visible CPUs, cgroup quota 4; Python subprocess orchestration with psutil 7.2.2; dotnet/rustc/fast-anything CLI absent. Synthetic 1920x1080 30fps 12s testsrc2 + 48kHz 660Hz sine, source x264 ultrafast CRF18 GOP75 fixed, threads2, yuv420p, AAC. 30100791 bytes SHA256 d6e5fe305b4cdb39a0a13848a62e3b995896ae2133a4c37bd0745a074483a123, 360 frames, 564 audio packets, observed keyframes 0/75/150/225/300. Independent exhaustive combinations oracle chose boundaries [0,75,150,225,360] (minimax max length 135; minimum interval30); equal [0,90,180,270,360]. One trial each, fixed execution order continuous/equal/aligned; CRF23 medium H264 total requested threads4, N=4 W=2 threads2 per part. Split mode full source grid scan, early seek max(0, first/30-1), copyts, trim at max(0,(first-.5)/30), setpts reset, exact count and per-part grid, concat safe relative filenames/index order/explicit durations, original AAC once, faststart. Continuous normal. All three output/source video and audio timestamps/counts compared relative to common origin <=2ms, audio streamhash equality, strict full decode and source SHA unchanged. Source timestamps/hash cached outside timed path; total excludes fixture creation, SSIM measurement, temp deletion, source lease and production metadata/publication checks. psutil sampled summed descendant RSS every nominal 20ms during timed path (not true aggregate unique memory or hard peak; shared mappings double counted, sample can miss spikes); no aggregate CPU/IO measurements. Results:
+
+| mode | encode incl grid/merge s | total s | bytes | global SSIM | sampled descendant RSS bytes |
+|---|---:|---:|---:|---:|---:|
+|continuous|5.369369|7.807409|8842496|.995456|623554560|
+|equal|7.807314|10.218572|8858190|.995459|1169420288|
+|aligned|8.548340|11.221270|8853084|.995458|1169440768|
+
+All three passed proxy checks; temporary fixtures and scripts removed. Bytes within ~0.18% of continuous; global SSIM delta <=.000003. Equal ~30.9% slower and aligned ~43.7% slower; sampled RSS sum ~1.88x continuous. One fixed-order synthetic repetition is exploratory, not conclusive, no causal attribution to alignment or hardware. The minimax objective balances frame counts only, not work complexity or seeks; keyframe restriction may worsen interval balance (135 vs equal90). No adaptive selection or production CRF switch. Next compare longer heterogeneous content, higher CPU parallelism on available Windows runners/owner PC, bounded resource admission and full pipeline audio hash parallel candidate. Use multiple paired trials and quality boundaries before performance claims.
