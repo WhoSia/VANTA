@@ -24,3 +24,5 @@ Axes: user value / implementation coverage / evidence coverage / integrity confi
 | Distribution | (.98,.78,.82,.65) | 177748-byte preview |
 
 Priority: exact b27dbca CI; 7ad9630 already rebased. Staged per-file settings 651a9fc after source consistency CI success, safe rebase instructions in BATCH_UX.md. Verify mixed codec/height and override precedence, then finite 0.2.0 gate review. GPU compression and FPS conversion deferred until independent verified scope. No new version/tag/release before approval.
+
+2026-11-25 update (supersedes earlier pending notes): source lease b27dbca, individual settings f680b4d, batch results 49ec6f2, preferences 10fcfa3 all passed exact CI. Subjective vectors: source consistency (1,.90,.92,.85), individual batch (.98,.90,.86,.80), batch results (.98,.89,.85,.80), preferences (.97,.90,.85,.80). WPF control smoke and single result access 0d8818a on main pending CI; GUI verification (.99,.65,.15,.40). Prioritize metadata contract, then desktop acceptance and finite scope. No version advancement.
