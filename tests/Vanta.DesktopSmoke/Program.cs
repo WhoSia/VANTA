@@ -133,7 +133,16 @@ internal static class DesktopSmoke
                 Check(start.IsEnabled&&(string)start.Content=="영상 2개 압축 시작","Batch action counts ready files");
                 await batch.StartAsync();
                 Check(File.Exists(Path.Combine(root,"source clip_vanta.mp4"))&&File.Exists(Path.Combine(root,"second source_vanta.mp4")),"Batch produces separate validated outputs");
-                Check(!start.IsEnabled&&Get<TextBlock>(batch,"Summary").Text.Contains("완료 2"),"Batch completion reflected in command bar");
+                Check(!start.IsEnabled&&Get<TextBlock>(batch,"Summary").Text.Contains("완료 2")&&Get<TextBlock>(batch,"Summary").Text.Contains("최근 실행 경과 시간"),"Batch completion and wall time reflected in command bar");
+                var third=Path.Combine(root,"third source.mp4");File.Copy(source,third);
+                var fourth=Path.Combine(root,"fourth source.mp4");File.Copy(source,fourth);
+                Get<ComboBox>(batch,"ParallelBox").SelectedItem=1;
+                await batch.AddAsync([third,fourth]);
+                var run=batch.StartAsync();
+                Get<Button>(batch,"CancelButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                await run;
+                Check(Get<TextBlock>(batch,"Summary").Text.Contains("완료 2")&&Get<TextBlock>(batch,"Summary").Text.Contains("취소 2")&&!Get<Button>(batch,"CancelButton").IsEnabled,"Cancel retains previous completed results and settles pending rows");
+                Check(!File.Exists(Path.Combine(root,"third source_vanta.mp4"))&&!File.Exists(Path.Combine(root,"fourth source_vanta.mp4"))&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Canceled batch does not publish or leak staging files");
             }
             finally{batch.Close();}
         }

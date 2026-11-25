@@ -11,6 +11,7 @@ public partial class BatchWindow:Window
     private CancellationTokenSource? current;
     private Toolchain? tools;
     private bool initialized;
+    private TimeSpan? lastBatchElapsed;
     private string? destinationDirectory;
     private static string PreferencesPath=>System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"VANTA","batch-defaults.json");
     private sealed class Row(string input,bool korean):INotifyPropertyChanged
@@ -191,6 +192,7 @@ public partial class BatchWindow:Window
         Summary.Text=T($"{rows.Count} videos · {ready} ready · {complete} complete · {running} running · {queued} queued · {analyzing} analyzing · {failed} failed · {canceled} canceled · {skipped} skipped",$"영상 {rows.Count}개 · 준비 {ready} · 완료 {complete} · 진행 {running} · 대기 {queued} · 분석 {analyzing} · 실패 {failed} · 취소 {canceled} · 건너뜀 {skipped}");
         if(pending.Length>0)Summary.Text+=T($" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)",$" | 대기: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB 용량 예산 (보장 없음)");
         var totals=BatchTotals.From(rows.Where(r=>r.State=="Complete"&&r.Report is not null).Select(r=>r.Report!));
+        if(lastBatchElapsed is TimeSpan elapsed)Summary.Text+=T($" | Last run elapsed {elapsed.TotalSeconds:F1}s",$" | 최근 실행 경과 시간 {elapsed.TotalSeconds:F1}초");
         if(totals.Completed>0)Summary.Text+=T($" | Completed: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB ({totals.Savings:P1} actual savings); {totals.JobTime.TotalSeconds:F1}s summed job time",$" | 완료: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB (실제 절감률 {totals.Savings:P1}); 작업 시간 합계 {totals.JobTime.TotalSeconds:F1}초");
         if(current is null&&ParallelBox.SelectedItem is int parallel)
         {
@@ -268,16 +270,22 @@ public partial class BatchWindow:Window
         var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!,r.Stamp)).ToArray();
         using var cts=new CancellationTokenSource();current=cts;
         foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Refresh();}
+        lastBatchElapsed=null;
+        var clock=System.Diagnostics.Stopwatch.StartNew();
         SetBusy(true);
         try
         {
             // Synchronous dispatch preserves order and prevents stale callbacks after completion.
-            var progress=new UiProgress(x=>Dispatcher.Invoke(()=>{
+            void ApplyUpdate(BatchUpdate x)
+            {
                 var r=ready[x.Index];
-                r.State=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercent is int percent?$"Encoding {percent}%":x.Stage;
-                r.Detail=x.Detail??"";r.Report=x.Report;r.Refresh();UpdateSummary();
-            }));
-            await BatchEncoder.RunAsync(tools,jobs,parallel,progress,cts.Token,totalEncoderThreads:totalThreads);
+                var state=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercent is int percent?$"Encoding {percent}%":x.Stage;
+                if(r.State==state&&r.Detail==(x.Detail??"")&&r.Report==x.Report)return;
+                r.State=state;r.Detail=x.Detail??"";r.Report=x.Report;r.Refresh();
+            }
+            var progress=new UiProgress(x=>Dispatcher.Invoke(()=>{ApplyUpdate(x);UpdateSummary();}));
+            var terminal=await BatchEncoder.RunAsync(tools,jobs,parallel,progress,cts.Token,totalEncoderThreads:totalThreads);
+            foreach(var result in terminal)ApplyUpdate(result);
         }
         catch(OperationCanceledException){}
         catch(Exception ex){MessageBox.Show(this,ex.Message,"VANTA");}
@@ -285,7 +293,7 @@ public partial class BatchWindow:Window
         {
             foreach(var r in ready.Where(r=>r.State=="Queued"||r.State.StartsWith("Encoding")||r.State=="Validating"))
             {r.State=cts.IsCancellationRequested?"Canceled":"Failed";r.Refresh();}
-            current=null;SetBusy(false);
+            lastBatchElapsed=clock.Elapsed;current=null;SetBusy(false);
         }
     }
     private sealed class UiProgress(Action<BatchUpdate> report):IProgress<BatchUpdate>{public void Report(BatchUpdate value)=>report(value);}

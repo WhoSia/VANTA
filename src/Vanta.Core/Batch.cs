@@ -24,7 +24,7 @@ public sealed record BatchJob(string Input,string Output,Plan Plan,SourceStamp? 
 public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null,EncodeReport? Report=null);
 public static class BatchEncoder
 {
-    public static async Task RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default,int? totalEncoderThreads=null)
+    public static async Task<IReadOnlyList<BatchUpdate>> RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default,int? totalEncoderThreads=null)
     {
         if(parallelism is <1 or >2)throw new ArgumentOutOfRangeException(nameof(parallelism));
         var jobThreads=ThreadBudget.PerJob(totalEncoderThreads,parallelism);
@@ -35,27 +35,40 @@ public static class BatchEncoder
             var path=Path.GetFullPath(j.Output);
             if(inputs.Contains(path)||!outputs.Add(path))throw new ArgumentException("Batch output overlaps an input or another output.");
         }
-        await Parallel.ForEachAsync(Enumerable.Range(0,jobs.Count),new ParallelOptions{MaxDegreeOfParallelism=parallelism,CancellationToken=ct},async (i,token)=>
+        var terminal=new BatchUpdate?[jobs.Count];
+        void Notify(BatchUpdate update)
         {
-            var j=jobs[i];
-            EncodeReport report;
-            try
+            // Notifications are advisory; the returned terminal results are authoritative.
+            try{progress.Report(update);}catch(Exception){}
+        }
+        void Finish(BatchUpdate update)
+        {
+            terminal[update.Index]=update;
+            Notify(update);
+        }
+        try
+        {
+            await Parallel.ForEachAsync(Enumerable.Range(0,jobs.Count),new ParallelOptions{MaxDegreeOfParallelism=parallelism,CancellationToken=ct},async (i,token)=>
             {
-                report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
+                var j=jobs[i];
+                EncodeReport report;
+                try
                 {
-                    if(x.Stage!="Complete")progress.Report(new(i,x.Stage,x.Fraction));
-                }),encoderThreads:jobThreads,expectedSource:j.ExpectedSource);
-            }
-            catch(OperationCanceledException) when(token.IsCancellationRequested){progress.Report(new(i,"Canceled",null));return;}
-            catch(Exception ex){progress.Report(new(i,"Failed",null,ex.Message));return;}
-            // Encoder has already published. A failing notification is not an encoding failure.
-            // Best-effort terminal progress; never issue a contradictory Failed event.
-            try
-            {
-                progress.Report(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",report));
-            }
-            catch(Exception) { }
-        });
+                    report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
+                    {
+                        if(x.Stage!="Complete")Notify(new(i,x.Stage,x.Fraction));
+                    }),encoderThreads:jobThreads,expectedSource:j.ExpectedSource);
+                }
+                catch(OperationCanceledException) when(token.IsCancellationRequested){Finish(new(i,"Canceled",null));return;}
+                catch(Exception ex){Finish(new(i,"Failed",null,ex.Message));return;}
+                Finish(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",report));
+            });
+        }
+        catch(OperationCanceledException) when(ct.IsCancellationRequested){}
+        // All workers have joined. Jobs never started due to cancellation still get one terminal result.
+        for(int i=0;i<terminal.Length;i++)
+            if(terminal[i] is null)Finish(new(i,"Canceled",null));
+        return Array.AsReadOnly(terminal.Select(x=>x!).ToArray());
     }
     private sealed class InlineProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>
     {

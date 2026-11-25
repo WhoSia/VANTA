@@ -184,13 +184,24 @@ try
     Console.WriteLine("Parallel batch, collision refusal and per-job failure isolation passed (4 requested encoder threads shared).");
     var notificationOutput=Path.Combine(root,"notification failure.mp4");
     var notifications=new System.Collections.Concurrent.ConcurrentQueue<BatchUpdate>();
-    await BatchEncoder.RunAsync(resolved,[new(silent,notificationOutput,perFile)],1,new BatchProgress(x=>
+    var terminalNotifications=await BatchEncoder.RunAsync(resolved,[new(silent,notificationOutput,perFile)],1,new BatchProgress(x=>
     {
         notifications.Enqueue(x);
         if(x.Stage=="Complete")throw new InvalidOperationException("Synthetic completion observer failure");
     }),ct,totalEncoderThreads:2);
     Check(File.Exists(notificationOutput)&&notifications.Count(x=>x.Stage=="Complete")==1&&!notifications.Any(x=>x.Stage=="Failed"),"Published batch output cannot become failed due to observer");
+    Check(terminalNotifications.Count==1&&terminalNotifications[0].Stage=="Complete"&&terminalNotifications[0].Report is not null,"Published outcome independent of observer");
     Console.WriteLine("Batch post-publication observer exception does not produce a false failure.");
+    using(var stopAfterFirst=CancellationTokenSource.CreateLinkedTokenSource(ct))
+    {
+        var kept=Path.Combine(root,"batch kept.mp4");
+        var never=Path.Combine(root,"batch never started.mp4");
+        var terminal=await BatchEncoder.RunAsync(resolved,[new(silent,kept,perFile),new(silent,never,perFile)],1,new BatchProgress(x=>
+        {
+            if(x.Stage=="Complete"){stopAfterFirst.Cancel();throw new InvalidOperationException("Observer lost completion");}
+        }),stopAfterFirst.Token,totalEncoderThreads:2);
+        Check(terminal.Count==2&&terminal[0].Stage=="Complete"&&terminal[0].Report is not null&&terminal[1].Stage=="Canceled"&&File.Exists(kept)&&!File.Exists(never),"Cancellation after publication preserves completed result and marks queued job");
+    }
     var vfr=Path.Combine(root,"vfr multiple audio.mp4");
     var vfrOut=Path.Combine(root,"vfr compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30:d=12","-f","lavfi","-i","sine=frequency=440:sample_rate=48000:duration=12","-itsoffset","0.15","-f","lavfi","-i","sine=frequency=880:sample_rate=48000:duration=11.85","-map","0:v","-map","1:a","-map","2:a","-vf","select=not(mod(n\\,2))+not(mod(n\\,5))","-fps_mode","vfr","-c:v","libx264","-pix_fmt","yuv420p","-c:a","aac",vfr);
@@ -333,9 +344,10 @@ try
             if(Directory.EnumerateFiles(root,".vanta-*.mp4").Any()){started=true;batchCancel.Cancel();break;}
             await Task.Delay(10,ct);
         }
-        try{await batchTask;}catch(OperationCanceledException){}
+        var terminal=await batchTask;
+        Check(terminal.Count==2&&terminal.All(x=>x.Stage=="Canceled"),"All canceled jobs receive terminal results");
         Check(started&&!File.Exists(batchCancelA)&&!File.Exists(batchCancelB)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Batch active/queued cancellation cleanup");
-        Check(batchEvents.Any(x=>x.Index==0&&x.Stage=="Canceled")&&!batchEvents.Any(x=>x.Index==1&&x.Stage=="Encoding"),"Queued job started after cancel");
+        Check(batchEvents.Count(x=>x.Stage=="Canceled")==2&&!batchEvents.Any(x=>x.Index==1&&x.Stage=="Encoding"),"Queued job started after cancel or lacks terminal notification");
     }
     Console.WriteLine("Batch active and queued cancellation passed.");
     Console.WriteLine("Windows FFmpeg integration checks passed.");
