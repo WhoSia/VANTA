@@ -4,23 +4,14 @@ using Vanta.Core;
 
 internal static class TimestampParsingScreen
 {
-    // Research-only candidate: production keeps its existing parser until measured.
-    private static double? SpanCandidate(string line,string key)
+    // Preserve the prior parser as the independent differential reference.
+    private static double? SplitReference(string line,string key)
     {
-        var rest=line.AsSpan();
-        while(true)
-        {
-            int separator=rest.IndexOf('|');
-            var field=separator<0?rest:rest[..separator];
-            if(field.Length>key.Length&&field[key.Length]=='='&&field[..key.Length].SequenceEqual(key.AsSpan()))
-            {
-                if(!double.TryParse(field[(key.Length+1)..],NumberStyles.Float,CultureInfo.InvariantCulture,out var value)||!double.IsFinite(value))
-                    throw new InvalidDataException("Missing presentation timestamp");
-                return value;
-            }
-            if(separator<0)return null;
-            rest=rest[(separator+1)..];
-        }
+        var entry=line.Split('|').FirstOrDefault(s=>s.StartsWith(key+"=",StringComparison.Ordinal));
+        if(entry is null)return null;
+        if(!double.TryParse(entry[(key.Length+1)..],NumberStyles.Float,CultureInfo.InvariantCulture,out var t)||!double.IsFinite(t))
+            throw new InvalidDataException("Missing presentation timestamp");
+        return t;
     }
     private static (double? Value,bool Rejected) Outcome(Func<string,string,double?> parser,string row,string key)
     {
@@ -36,19 +27,19 @@ internal static class TimestampParsingScreen
         var rows=result.Output.Split('\n').Select(s=>s.TrimEnd('\r')).ToArray();
         var edges=new[]{"","side_data_type=H.264","best_effort_timestamp_time=0.000000","x=9|best_effort_timestamp_time=-.125|x=2","best_effort_timestamp_time= 1e-3 ","best_effort_timestamp_time=N/A","best_effort_timestamp_time=NaN","best_effort_timestamp_time=Infinity","best_effort_timestamp_time=1e999","best_effort_timestamp_time=1|best_effort_timestamp_time=2","best_effort_timestamp_time_extra=1","best_effort_timestamp_time=","|best_effort_timestamp_time=1|"};
         foreach(var row in rows.Concat(edges))
-            if(Outcome(PacketTimeline.ParseTimestamp,row,key)!=Outcome(SpanCandidate,row,key))
+            if(Outcome(SplitReference,row,key)!=Outcome(PacketTimeline.ParseTimestamp,row,key))
                 throw new InvalidDataException("Timestamp parser differential mismatch: "+row);
         int expected=rows.Count(row=>PacketTimeline.ParseTimestamp(row,key).HasValue);
         if(expected<1000)throw new InvalidDataException("Timestamp benchmark fixture too short.");
         Console.WriteLine(FormattableString.Invariant($"MANAGED_PARSE_FIXTURE frames={expected} rows={rows.Length} probe_seconds={probeSeconds:F6}"));
         // Warm both delegates and run interleaved repeated cached-text trials.
-        foreach(var parser in new Func<string,string,double?>[]{PacketTimeline.ParseTimestamp,SpanCandidate})
+        foreach(var parser in new Func<string,string,double?>[]{SplitReference,PacketTimeline.ParseTimestamp})
             foreach(var row in rows)parser(row,key);
         for(int rep=0;rep<4;rep++)
         foreach(bool span in rep%2==0?new[]{false,true}:new[]{true,false})
         {
             ct.ThrowIfCancellationRequested();
-            Func<string,string,double?> parser=span?SpanCandidate:PacketTimeline.ParseTimestamp;
+            Func<string,string,double?> parser=span?PacketTimeline.ParseTimestamp:SplitReference;
             long before=GC.GetAllocatedBytesForCurrentThread();
             clock.Restart();
             int count=0;double sum=0;

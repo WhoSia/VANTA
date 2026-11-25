@@ -31,11 +31,20 @@ public static class PacketTimeline
     }
     internal static double? ParseTimestamp(string line,string key)
     {
-        var entry=line.Split('|').FirstOrDefault(s=>s.StartsWith(key+"=",StringComparison.Ordinal));
-        if(entry is null)return null;
-        if(!double.TryParse(entry[(key.Length+1)..],NumberStyles.Float,CultureInfo.InvariantCulture,out var t)||!double.IsFinite(t))
-            throw new InvalidDataException("Missing presentation timestamp");
-        return t;
+        var rest=line.AsSpan();
+        while(true)
+        {
+            int separator=rest.IndexOf('|');
+            var field=separator<0?rest:rest[..separator];
+            if(field.Length>key.Length&&field[key.Length]=='='&&field[..key.Length].SequenceEqual(key.AsSpan()))
+            {
+                if(!double.TryParse(field[(key.Length+1)..],NumberStyles.Float,CultureInfo.InvariantCulture,out var value)||!double.IsFinite(value))
+                    throw new InvalidDataException("Missing presentation timestamp");
+                return value;
+            }
+            if(separator<0)return null;
+            rest=rest[(separator+1)..];
+        }
     }
     private sealed record AudioPacket(double Pts,string Hash);
     private static async Task<AudioPacket?> ReadPacketAsync(StreamReader reader,CancellationToken ct)
