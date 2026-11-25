@@ -30,3 +30,7 @@ Local 1080p CRF single-repetition proxy: continuous 7.807409s, equal 10.218572s,
 ## 2026-11-25 verified keyframe and scheduling checkpoint
 
 CI 45573017677 job 139064031881 completed successfully; 256 small oracle cases and six actual C# 1080p comparisons passed. Artifact 15003053172 outer 218781 bytes, SHA256 4b16ff48470004ae96c55c815d930b1865e284d249818e3b4fd58b4dba10373a, https://github.com/WhoSia/VANTA/actions/runs/45573017677/artifacts/15003053172. Latest verified preview for keyframe research, no owner acceptance. Continuous mean 12.479848s, equal 13.924407s, aligned 13.852403s with near-matched sizes/SSIM. Keyframe planner and 1080p screen verified, representative >=15% eligible improvement gate still open; no speed win. 4f985a8 research-only longest-first scheduling candidate on main; exact Windows CI unconfirmed. Local proxy four byte-identical outputs, ~2.14% mean reduction within repeat variation. See UPSTREAM_AUDIT.md and ACCELERATION.md. Preserve default continuous and every integrity gate.
+
+## Indexed-seek research checkpoint
+
+Docs-only independent harness, no compiled code changes and no new default. Closed-GOP proxy shows four identical output hashes; open-GOP fixture rejects both early and indexed seek on decoder error. No actual C# random-access guarantee, no continuous comparator, no final speed threshold claim. 4f985a8 exact workflow status not confirmed (available commit-workflow listing is PR-only); retain verified 19a0250 package and wait for reliable exact CI evidence before another build-affecting commit.

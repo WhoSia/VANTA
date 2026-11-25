@@ -71,3 +71,7 @@ Subjective (value, implementation, evidence, integrity): independent N/W (1,.85,
 ## 0.4.0 comparative upstream and dispatch review
 
 Subjective vectors (value, implementation, evidence, integrity): keyframe partition (.98,.80,.80,.85), independent N/W (1,.85,.85,.87), matched quality/size (.99,.60,.70,.70), dispatch ordering (.91,.65,.35,.50), resource admission (.99,.20,.25,.45), parallel audio (.95,.65,.76,.70), owner-PC acceptance (1,.35,.15,.35). 45573017677 passed; no speed win. 4f985a8 pending exact Windows CI; local dispatch proxy no robust gain. Prioritize full workflow overhead and resource-aware admission over more chunks, compare empirical cost proxies to frame count. No weighted sum, new default or version change.
+
+## Indexed access screening update
+
+Subjective (user value, implementation, evidence, integrity): indexed seek (.98,.20,.35,.35), random-access admissibility (1,.15,.30,.30), shared source grid (.97,.25,.30,.40), dispatch ordering (.91,.65,.35,.50). Local closed-GOP indexed seek promising (~16.86% lower than existing early seek proxy), but open-GOP both reject, no continuous comparator and only two repeats. Hard integrity gate outranks apparent speedup. Research harness independent of current Windows CI; do not enable indexed seek or new cache. Verify exact 4f985a8 run first; no new version.

@@ -287,3 +287,22 @@ Research 4f985a8 tests longest-first segment dispatch while preserving chronolog
 | chronological | 1.799249 | .450998/.425880/.490210/.826204 |
 
 All four outputs 1251903 bytes, identical SHA256 2fc9ace638cd4670034e2fd5de8704f348d1c2702c6f38aaa1ee7e579da3dcd0. Means 1.998001 versus 1.9553345s, ~2.14% lower, within repeat variation; no established advantage. No audio packet PTS comparison, peak RSS or representative corpus in this proxy. New CI adds original-code deterministic tie and invalid boundary controls, 121-frame marker with nonchronological dispatch, eight full Encoder 1080p trials. Exact CI pending/unconfirmed. Do not change default, expand split range or remove validation. Next compare cost-proxy ordering vs actual complexity and full C# hash parallelism, then resource and quality gates.
+
+## Indexed seek research — 2026-11-25
+
+Reproduction: python docs/research/indexed_seek_screen.py (Python 3, FFmpeg and ffprobe on PATH; run without Python -O, assertions are used). Original command-level research harness; output files exist only in a temporary directory. Does not exercise C# source lease, metadata, publication or owner environment. Strict nonempty stderr and nonzero status reject a trial. The script is a diagnostic screen, not a release gate.
+
+Local FFmpeg 7.1.5-0+deb13u1, CPU quota 4. Two synthetic 320x180 240-frame NTSC sources, H.264 fast CRF18 GOP60 with scene cuts disabled, AAC 48 kHz; explicitly open-gop=0 or 1. Both decoded grids report [0,60,120,180,240]. Four chunks, two workers x 2 requested encode threads, H.264 medium CRF23. Early seek max(0,first/fps-1), versus indexed observed PTS with -noaccurate_seek. Both use copyts, midpoint trim, setpts, exact count and same explicit concat durations. Timed section includes part encodes, part grid checks, concat, whole output PTS and audio packet PTS/payload checks, full decode; excludes source indexing, source hash, output framemd5 and output SHA256. No continuous comparator or resource measurements.
+
+| GOP | Order | Wall seconds | Result |
+|---|---|---:|---|
+| closed | early | 1.252982 | pass |
+| closed | indexed | 1.048997 | pass |
+| closed | indexed | 1.085476 | pass |
+| closed | early | 1.314307 | pass |
+| open | early | — | strict decoder error: mmco: unref short failure |
+| open | indexed | — | same class of error |
+| open | indexed | — | same class of error |
+| open | early | — | same class of error |
+
+Closed early mean 1.2836447s; indexed 1.0672366s (~16.86% lower within this screening comparison). All four closed outputs 330803 bytes, identical decoded frame hashes and file SHA256 bd1e09a572a5d7010a6d0aae4c7fe6ca4fbdd428563f20bc2245a8aa16e98807. Source SHA256 closed d245417bf30e79724ccc147438fc11eb4af37ede32d300bc1fb521275c3caf88, open 3c5c2568a2be54e8d013f82ad9c2abf15e5d7e41155b9405445099aed825c7b8; both unchanged. Open-GOP output not accepted. The underlying cause and whether failure occurs in exact C# path remain unverified. Closed-GOP identical outputs are equivalence to early reference, not a proof of absolute source-frame identity. This is not the 15% eligible whole-job continuous baseline target. No production seek change; prioritize explicit random-access admissibility, independent lossless source-frame reference, active cancellation and full Windows evidence.
