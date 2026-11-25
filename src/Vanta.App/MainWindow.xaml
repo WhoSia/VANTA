@@ -15,12 +15,21 @@
 <TextBlock Text="Recommendation codec (changing this rebuilds the plans and resets manual settings)" TextWrapping="Wrap" Foreground="#526071"/>
 <ComboBox x:Name="RecommendationBox" MinWidth="180" MaxWidth="260" HorizontalAlignment="Left" IsEnabled="False" SelectionChanged="OnRecommendation"/>
 <TextBlock Text="Profiles are bitrate-budget tiers, not measured quality guarantees." TextWrapping="Wrap" Foreground="#526071" Margin="0,0,0,6"/>
-<ListBox x:Name="Plans" DisplayMemberPath="Label" SelectionChanged="OnPlan" MinHeight="72" MaxHeight="140"/>
+<ListBox x:Name="Plans" SelectionChanged="OnPlan" MinHeight="92" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+  <ListBox.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate></ListBox.ItemsPanel>
+  <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="12,8"/><Setter Property="Margin" Value="0,0,6,0"/><Setter Property="BorderThickness" Value="1"/><Setter Property="BorderBrush" Value="#D8DFE7"/></Style></ListBox.ItemContainerStyle>
+  <ListBox.ItemTemplate><DataTemplate><StackPanel>
+    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+    <TextBlock Text="{Binding Size}" FontSize="20" FontWeight="SemiBold" Margin="0,4,0,2" TextWrapping="Wrap"/>
+    <TextBlock Text="{Binding Settings}" TextWrapping="Wrap"/>
+    <TextBlock Text="{Binding Savings}" FontSize="12" Foreground="#526071" TextWrapping="Wrap" Margin="0,4,0,0"/>
+  </StackPanel></DataTemplate></ListBox.ItemTemplate>
+</ListBox>
 <TextBlock Text="Encoding settings" FontWeight="SemiBold" Margin="0,16,0,8"/>
 <Border Background="White" CornerRadius="8" Padding="16"><StackPanel x:Name="Editor" IsEnabled="False">
 <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Video codec"/><ComboBox x:Name="CodecBox" SelectionChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="Preset"/><ComboBox x:Name="PresetBox" SelectionChanged="OnSettings"/></StackPanel></Grid>
-<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Height (pixels, even)"/><ComboBox x:Name="HeightChoicesBox" ToolTip="Suggested heights (pixels)" SelectionChanged="OnQuickHeight"/><TextBox x:Name="HeightBox" TextChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="Video bitrate (kbps)"/><ComboBox x:Name="RateChoicesBox" ToolTip="Example bitrate budgets (kbps)" SelectionChanged="OnQuickRate"/><TextBox x:Name="RateBox" TextChanged="OnSettings"/></StackPanel></Grid>
-<Button x:Name="MoreCompressionButton" Content="More compression (−25% video bitrate)" IsEnabled="False" Click="OnMoreCompression" HorizontalAlignment="Left" Margin="0,0,0,8"/><TextBlock Text="Target size (MB, approximate)"/><DockPanel><Button DockPanel.Dock="Right" Content="Apply target" Click="OnTarget"/><TextBox x:Name="TargetBox" Margin="0,4,12,4"/></DockPanel>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Height (pixels, even)"/><TextBlock Text="Quick choice" FontSize="12" Foreground="#526071"/><ComboBox x:Name="HeightChoicesBox" ToolTip="Suggested heights (pixels)" SelectionChanged="OnQuickHeight" Margin="0,4,12,6"/><TextBlock Text="Custom height" FontSize="12" Foreground="#526071"/><TextBox x:Name="HeightBox" TextChanged="OnSettings"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="Video bitrate (kbps)"/><TextBlock Text="Quick choice" FontSize="12" Foreground="#526071"/><ComboBox x:Name="RateChoicesBox" ToolTip="Example bitrate budgets (kbps)" SelectionChanged="OnQuickRate" Margin="0,4,12,6"/><TextBlock Text="Custom bitrate" FontSize="12" Foreground="#526071"/><TextBox x:Name="RateBox" TextChanged="OnSettings"/></StackPanel></Grid>
+<Button x:Name="MoreCompressionButton" Content="More compression (−25% video bitrate)" IsEnabled="False" Click="OnMoreCompression" HorizontalAlignment="Left" Margin="0,0,0,8" ToolTip="Changes the current budget only; does not start encoding."/><TextBlock Text="Target size (MB, approximate)"/><DockPanel><Button DockPanel.Dock="Right" Content="Apply target" Click="OnTarget"/><TextBox x:Name="TargetBox" Margin="0,4,12,4"/></DockPanel>
 <TextBlock Text="Encoder thread budget (optional)"/>
 <ComboBox x:Name="ThreadsBox" MaxWidth="230" HorizontalAlignment="Left" MinWidth="180"/>
 <TextBlock Text="Auto is the default. This is an encoder thread request, not a CPU usage limit; decoding and codec worker pools may use additional threads." Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,6"/>

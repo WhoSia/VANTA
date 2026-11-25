@@ -15,7 +15,7 @@ public partial class MainWindow : Window
     private bool applying,encoding;
     private string? completedOutput;
     private EncodeReport? completedReport;
-    private sealed record PlanRow(Plan Plan,string Label);
+    private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings);
     public MainWindow()
     {
         InitializeComponent();
@@ -129,7 +129,7 @@ public partial class MainWindow : Window
         if(media is not MediaInfo m||tools is not Toolchain resolved)return;
         var preferred=(RecommendationBox.SelectedItem as RecommendationChoice)?.Codec;
         TargetBox.Clear();SplitBox.IsChecked=false;
-        var rows=Planner.Propose(m,resolved.Codecs,preferred).Select(p=>new PlanRow(p,$"{p.Name} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {p.EstimateBytes(m)/1e6:F1} MB ({p.Savings(m):P1} budget savings)")).ToArray();
+        var rows=Planner.Propose(m,resolved.Codecs,preferred).Select(p=>new PlanRow(p,p.Name,$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.VideoBitsPerSecond/1000d:F0} kbps",$"{p.Savings(m):P1} budget savings")).ToArray();
         Plans.ItemsSource=rows;
         if(rows.Length>0)Plans.SelectedIndex=Math.Min(1,rows.Length-1);
         else

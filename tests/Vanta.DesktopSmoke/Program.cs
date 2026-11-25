@@ -42,7 +42,11 @@ internal static class DesktopSmoke
         Check(Get<TextBox>(dialog,"RateBox").Text=="375","More compression changes only budget");
         Get<TextBox>(dialog,"RateBox").Text="64";
         Check(!Get<Button>(dialog,"MoreCompressionButton").IsEnabled,"More compression stops at minimum");
-        dialog.Close();main.Close();app.Shutdown();
+        Check(Get<ListBox>(main,"Plans").ItemTemplate is not null,"Recommendation tiles expose separate fields");
+        var batch=new BatchWindow();
+        Check(!Get<Button>(batch,"EditPlanButton").IsEnabled&&!Get<Button>(batch,"RemoveButton").IsEnabled&&!Get<Button>(batch,"OpenResultButton").IsEnabled&&!Get<Button>(batch,"StartButton").IsEnabled,"Empty queue disables row actions and encoding");
+        Check(Get<TextBlock>(batch,"SelectedVideoText").Text=="No video selected","Selection is explicit");
+        batch.Close();dialog.Close();main.Close();app.Shutdown();
         Console.WriteLine("WPF construction and individual editor routed-event smoke passed.");
     }
     static T Get<T>(FrameworkElement window,string name) where T:FrameworkElement

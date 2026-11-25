@@ -54,7 +54,7 @@ public partial class BatchWindow:Window
             if(choice is null)settingsError="Saved encoder thread budget is unavailable on this PC; using Auto.";
         }
         catch(Exception ex){settingsError="Saved defaults could not be loaded: "+ex.Message;}
-        initialized=true;
+        initialized=true;UpdateSelection();
         if(settingsError is not null)Summary.Text=settingsError;
         Loaded+=async (_,_)=>{if(initial.Length>0)await AddAsync(initial);};
     }
@@ -156,10 +156,28 @@ public partial class BatchWindow:Window
         FolderButton.IsEnabled=SourceFolderButton.IsEnabled=RetryButton.IsEnabled=EditPlanButton.IsEnabled=ResetPlanButton.IsEnabled=SaveDefaultsButton.IsEnabled=ResetDefaultsButton.IsEnabled=!busy;
         CancelButton.IsEnabled=busy;UpdateSummary();
     }
+    private void OnQueueSelection(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(initialized)UpdateSelection();
+    }
+    private void UpdateSelection()
+    {
+        var row=Queue.SelectedItem as Row;
+        bool idle=current is null;
+        SelectedVideoText.Text=row is null?"No video selected":$"{row.InputName} — {row.State}";
+        EditPlanButton.IsEnabled=idle&&tools is not null&&row is not null&&BatchRecovery.CanEdit(row.State,row.Media is not null);
+        ResetPlanButton.IsEnabled=EditPlanButton.IsEnabled&&row?.ManualPlan is not null;
+        RetryButton.IsEnabled=idle&&row is not null&&BatchRecovery.CanRetry(row.State,row.Media is not null);
+        RemoveButton.IsEnabled=idle&&row is not null;
+        OpenResultButton.IsEnabled=row is not null&&row.State=="Complete"&&System.IO.File.Exists(row.Output);
+        CopyButton.IsEnabled=row is not null;
+    }
     private void UpdateSummary()
     {
+        UpdateSelection();
         int ready=rows.Count(r=>r.State=="Ready");
         StartButton.IsEnabled=current is null&&ready>0;
+        StartButton.Content=ready>0?$"Compress {ready} ready video(s)":"Compress ready videos";
         var pending=rows.Where(r=>r.State=="Ready"&&r.Plan is not null&&r.Media is not null).ToArray();
         double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
         Summary.Text=$"{rows.Count} videos · {ready} ready · {rows.Count(r=>r.State=="Complete")} complete · {rows.Count(r=>r.State=="Failed")} failed · {rows.Count(r=>r.State=="Canceled")} canceled · {rows.Count(r=>r.State=="Skipped")} skipped";
