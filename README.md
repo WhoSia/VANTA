@@ -6,9 +6,9 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 ## Status and download
 
-0.3.0 — Desktop Reliability & Distribution Readiness (b77ea83 automated gates passed; corrective language UX revision pending CI). No tagged release.
+0.3.0 — Desktop Reliability & Distribution Readiness (3c8dfb4 corrective language UX CI passed; further accessibility and shadow benchmark pending). No tagged release.
 
-**[Download the verified Windows x64 package (b77ea83)](https://github.com/WhoSia/VANTA/actions/runs/45559737020/artifacts/14996559713).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance. See the [five-case owner checklist](docs/DESKTOP_ACCEPTANCE.md#030-owner-pc-minimal-handoff-not-executed).
+**[Download the verified Windows x64 package (3c8dfb4)](https://github.com/WhoSia/VANTA/actions/runs/45562021321/artifacts/14998900876).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance. See the [five-case owner checklist](docs/DESKTOP_ACCEPTANCE.md#030-owner-pc-minimal-handoff-not-executed).
 
 ## Current preview
 
