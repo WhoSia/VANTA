@@ -63,6 +63,9 @@ internal static class DesktopSmoke
         Check((string)Get<Button>(koreanBatch,"AddButton").Content=="영상 추가…"&&!Get<Button>(koreanBatch,"StartButton").IsEnabled,"Korean batch labels and idle gate");
         var koreanDialog=new BatchPlanDialog(media,["libx264"],new Plan("Custom","libx264",720,300_000,0,"fast",false),true);
         Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
+        CheckLayout(main,"Status","EncodeButton",560,480);
+        CheckLayout(koreanBatch,"Summary","StartButton",720,580);
+        CheckLayout(batch,"Summary","StartButton",720,580);
         koreanDialog.Close();koreanBatch.Close();batch.Close();dialog.Close();main.Close();app.Shutdown();
         Console.WriteLine("WPF construction and individual editor routed-event smoke passed.");
     }
@@ -147,6 +150,16 @@ internal static class DesktopSmoke
             finally{batch.Close();}
         }
         finally {main.Close();Directory.Delete(root,true);}
+    }
+    private static void CheckLayout(Window window,string messageName,string commandName,double width,double height)
+    {
+        var message=Get<TextBlock>(window,messageName);
+        message.Text=string.Join(Environment.NewLine,Enumerable.Repeat("Long diagnostic / 긴 진단 메시지",60));
+        var content=(FrameworkElement)window.Content;
+        content.Measure(new Size(width,height));content.Arrange(new Rect(0,0,width,height));content.UpdateLayout();
+        var command=Get<Button>(window,commandName);
+        var bounds=command.TransformToAncestor(content).TransformBounds(new Rect(command.RenderSize));
+        Check(bounds.Height>0&&bounds.Top>=0&&bounds.Bottom<=height+1,"Primary command stays in viewport with long diagnostics");
     }
     static T Get<T>(FrameworkElement window,string name) where T:FrameworkElement
         =>window.FindName(name) as T??throw new Exception("Missing WPF element: "+name);

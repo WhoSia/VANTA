@@ -7,8 +7,8 @@
 <DockPanel LastChildFill="True"><Border DockPanel.Dock="Bottom" Background="White" BorderBrush="#D8DFE7" BorderThickness="0,1,0,0" Padding="20,12"><StackPanel>
 <TextBlock Text="{DynamicResource Ui069}" Foreground="#526071" TextWrapping="Wrap" Margin="0,0,0,4"/>
 <WrapPanel Margin="0,4,0,0"><Button x:Name="EncodeButton" Content="{DynamicResource Ui028}" IsEnabled="False" Click="OnEncode" FontWeight="SemiBold" MinHeight="32"/><Button x:Name="CancelButton" Content="{DynamicResource Ui029}" IsEnabled="False" Click="OnCancel"/><Button x:Name="ResultFolderButton" Content="{DynamicResource Ui030}" IsEnabled="False" Click="OnResultFolder"/><Button x:Name="CopyResultButton" Content="{DynamicResource Ui031}" IsEnabled="False" Click="OnCopyResult"/></WrapPanel>
-<TextBlock x:Name="ResultPath" TextWrapping="Wrap" Foreground="#526071" Margin="0,6,0,0"/><ProgressBar x:Name="BusyBar" Height="5" Margin="0,12,0,0" Visibility="Collapsed" IsIndeterminate="True"/>
-<TextBlock x:Name="Status" Text="{DynamicResource Ui032}" TextWrapping="Wrap" Foreground="#526071" Margin="0,10,0,0"/>
+<TextBlock x:Name="ResultPath" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" Foreground="#526071" Margin="0,6,0,0"/><ProgressBar x:Name="BusyBar" Height="5" Margin="0,12,0,0" Visibility="Collapsed" IsIndeterminate="True"/>
+<ScrollViewer MaxHeight="84" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,0"><TextBlock x:Name="Status" Text="{DynamicResource Ui032}" TextWrapping="Wrap" Foreground="#526071"/></ScrollViewer>
 
 </StackPanel></Border><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24">
 <DockPanel LastChildFill="True"><ComboBox x:Name="LanguageBox" DockPanel.Dock="Right" Width="104" SelectionChanged="OnLanguage" AutomationProperties.Name="Language / 언어" Margin="0,0,0,0"><ComboBoxItem Content="English"/><ComboBoxItem Content="한국어"/></ComboBox><TextBlock Text="VANTA" FontSize="30" FontWeight="SemiBold"/></DockPanel>
