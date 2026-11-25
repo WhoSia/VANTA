@@ -1,20 +1,21 @@
-# 0.2.0 acceptance ledger — provisional
+# 0.2.0 acceptance ledger — PASS (core and development preview)
 
-Approved scope: Adaptive Compression Planning & Granular Control. Do not advance version or publish a release without owner approval. This ledger distinguishes the approved 0.2.0 core/preview gate from final 1.0 desktop acceptance. Not an acceptance declaration.
+Approved version: 0.2.0 — Adaptive Compression Planning & Granular Control.
 
-| Gate | Evidence | Status |
+Accepted build inputs: 5a7f687dd548f067f43522cb72b20eabad0ec4d6. Windows CI [45521060956](https://github.com/WhoSia/VANTA/actions/runs/45521060956), job 138892717871, completed successfully, zero warnings and errors. Artifact 14980710817, 193397 compressed bytes (application only; excludes .NET runtime and FFmpeg). CI artifact is a development preview, not a signed or tagged release.
+
+| Required gate | Exact CI evidence or source contract | Verdict |
 |---|---|---|
-| Executable H.264/HEVC MP4 | 16-cell matrix; 45520375931 exact regression | Pass |
-| Source-aware distinct feasible bitrate tiers or shortage | capability and explicit codec smoke; heuristic limits documented | Pass |
-| Target-size budget solver | inverse-budget smoke, copied audio included, not guaranteed size | Pass |
-| Editable codec/height/preset/bitrate | WPF construction/editor tests; exact bitrate parser correction at 5a7f687 | Pending latest regression |
-| Honest estimates and evidence | explicit bitrate budget labels, measured quality unknown, negative actual savings retained | Pass within stated heuristic scope |
-| A/V preservation and publication | delayed AAC, VFR, NTSC, multi-track, decoded output, hashes, no overwrite, rotation rejection | Pass at cd13a25 |
-| Independent batch and individual settings | mixed codec/height, cancellation and failure isolation; post-publication observer correction 0641a78 | Pending latest regression |
-| Usable preview | WPF control tests and artifact, external dependencies, owner previously reported launch/dependency availability | Pass for build/package; manual desktop acceptance open |
-| Optional split | bounded CFR experiment with same validation; matched trials slower | Retain explicit opt-in only; not performance claim |
-| Latest coherent build | 5a7f687 CI 45521060956 | Pending |
+| H.264/HEVC MP4 | All 16 codec/preset/fixture combinations | Pass |
+| Source-aware distinct feasible budget plans or explicit shortage | Core smoke: distinct ordered budgets, codec availability, preferred codec, insufficient budget | Pass |
+| Target-size solver | Inverse budget including copied audio; boundary tests | Pass |
+| Editable codec, height, preset, bitrate | WPF build, individual editor routed-event tests, exact shared bitrate parser boundary tests | Pass |
+| Honest estimates and evidence | Budget labels; measured quality unknown; signed actual savings; documented ABR uncertainty | Pass |
+| A/V and output integrity | Delayed AAC, multi-audio VFR, NTSC, audio hashes, full decode, no overwrite, source lease, declared visual metadata and rotation rejection | Pass |
+| Batch and per-file settings | Mixed codec/height, failure isolation, active/queued cancel, post-publication observer regression | Pass |
+| Usable development preview | WPF control smoke, framework-dependent publish, dependency launcher check, uploaded artifact | Pass (build/package only) |
+| Latest coherent build | Exact successful CI above; recursive tree audit found only docs/ACCEPTANCE_0.2.0.md and docs/VALIDATION.md changed between tested SHA and pre-seal HEAD 368ccd99495fc6aedac248221ebb3c26ea5a2aba | Pass |
 
-Latest fully verified build at record creation: cd13a25, CI 45520375931, artifact 14979553753, 193273 compressed bytes excluding runtime and FFmpeg. Exact newest source changes: 0641a78 (completion notification cannot cause contradictory Failed after publication), 5a7f687 (shared exact bitrate parser and stale target cleanup, WPF and core boundary tests). Require exact successful full CI before declaring the gate met. The observer change does not establish reliable delivery of notifications that throw; it prevents false encoding failure after publication.
+Optional split: retain explicit opt-in, H.264 CFR only, shared validation. Matched tests did not demonstrate a speed advantage. Hardware diagnostics are not production GPU encoding. Full desktop interaction, real-world quality calibration, clean-machine dependency installation, signing, stable distribution and broader input/rotation/FPS support are not accepted by this gate. A/V validation is limited to supported source contracts and tested fixtures; no universal guarantee. A failed completion observer may lose a notification but cannot reclassify a published batch output as failed in the core.
 
-Remaining scope: verify latest CI and audit acceptance against actual source and evidence; fix any blocking defects, not speculative enhancements. If gates pass, record exact acceptance SHA and artifact, pause scheduled development, present owner with next proposed version/subtitle and explicit approval request. Final interactive Windows acceptance, release signing/installer and broader input support are distinct future gates per DEVELOPMENT_LOOP.md and RELEASE_SCOPE.md. GPU encoding, rotation normalization, FPS conversion and unverified acceleration are deferred. No claim of completed manual desktop testing.
+Disposition: 0.2.0 approved core/development-preview scope accepted. Freeze development pending explicit owner approval of next version. Do not change version, tag or release. Proposed (not approved): **0.3.0 — Desktop Reliability & Distribution Readiness**. Prioritize manual/automated desktop acceptance, safe installer and verified dependencies, real-world compatibility and targeted UX defect fixes. GPU/rotation/FPS are separate optional scope decisions, not automatic inclusion. Pause the scheduled development loop at this gate.
