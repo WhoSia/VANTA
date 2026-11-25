@@ -33,6 +33,8 @@ jobs:
         run: dotnet build src/Vanta.App/Vanta.App.csproj -c Release
       - name: Core smoke tests
         run: dotnet run --project tests/Vanta.Smoke/Vanta.Smoke.csproj -c Release
+      - name: WPF control smoke tests
+        run: dotnet run --project tests/Vanta.DesktopSmoke/Vanta.DesktopSmoke.csproj -c Release
       - name: Resolve FFmpeg
         shell: pwsh
         run: |

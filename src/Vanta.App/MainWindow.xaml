@@ -30,7 +30,7 @@
 <TextBlock x:Name="Estimate" FontSize="18" FontWeight="SemiBold" Margin="0,12,0,0" TextWrapping="Wrap"/>
 <TextBlock x:Name="Evidence" Foreground="#526071" Margin="0,4,0,0" TextWrapping="Wrap"/>
 </StackPanel></Border>
-<StackPanel Orientation="Horizontal" Margin="0,16,0,0"><Button x:Name="EncodeButton" Content="Compress to new file" IsEnabled="False" Click="OnEncode"/><Button x:Name="CancelButton" Content="Cancel" IsEnabled="False" Click="OnCancel"/></StackPanel>
-<ProgressBar x:Name="BusyBar" Height="5" Margin="0,12,0,0" Visibility="Collapsed" IsIndeterminate="True"/>
+<WrapPanel Margin="0,16,0,0"><Button x:Name="EncodeButton" Content="Compress to new file" IsEnabled="False" Click="OnEncode"/><Button x:Name="CancelButton" Content="Cancel" IsEnabled="False" Click="OnCancel"/><Button x:Name="ResultFolderButton" Content="Open result folder" IsEnabled="False" Click="OnResultFolder"/><Button x:Name="CopyResultButton" Content="Copy result" IsEnabled="False" Click="OnCopyResult"/></WrapPanel>
+<TextBlock x:Name="ResultPath" TextWrapping="Wrap" Foreground="#526071" Margin="0,6,0,0"/><ProgressBar x:Name="BusyBar" Height="5" Margin="0,12,0,0" Visibility="Collapsed" IsIndeterminate="True"/>
 <TextBlock x:Name="Status" Text="Open an 8-bit SDR video with AAC audio or no audio." TextWrapping="Wrap" Foreground="#526071" Margin="0,10,0,0"/>
 </StackPanel></ScrollViewer></Window>

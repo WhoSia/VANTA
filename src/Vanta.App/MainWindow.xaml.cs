@@ -13,6 +13,8 @@ public partial class MainWindow : Window
     private SourceStamp? sourceStamp;
     private Plan? activePlan;
     private bool applying,encoding;
+    private string? completedOutput;
+    private EncodeReport? completedReport;
     private sealed record PlanRow(Plan Plan,string Label);
     public MainWindow()
     {
@@ -20,6 +22,29 @@ public partial class MainWindow : Window
         CodecBox.ItemsSource=PlanRules.Codecs;
         PresetBox.ItemsSource=PlanRules.Presets;
         ThreadsBox.ItemsSource=ThreadChoices.Create();ThreadsBox.SelectedIndex=0;
+    }
+    private void ClearResult()
+    {
+        completedOutput=null;completedReport=null;ResultPath.Text="";
+        ResultFolderButton.IsEnabled=CopyResultButton.IsEnabled=false;
+    }
+    private void OnResultFolder(object sender,RoutedEventArgs e)
+    {
+        if(completedOutput is null||!System.IO.File.Exists(completedOutput))
+        {Status.Text="The completed output is no longer available.";return;}
+        try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(System.IO.Path.GetDirectoryName(completedOutput)!){UseShellExecute=true});}
+        catch(Exception ex){Status.Text=ex.Message;}
+    }
+    private void OnCopyResult(object sender,RoutedEventArgs e)
+    {
+        if(completedOutput is null||completedReport is null)return;
+        try
+        {
+            var r=completedReport;
+            Clipboard.SetText($"{completedOutput}\n{r.InputBytes/1e6:F2} MB → {r.OutputBytes/1e6:F2} MB · {1-r.OutputBytes/(double)r.InputBytes:P1} actual savings\n{r.Total.TotalSeconds:F1}s elapsed · {r.Validation.TotalSeconds:F1}s validation");
+            Status.Text="Completed result copied.";
+        }
+        catch(Exception ex){Status.Text=ex.Message;}
     }
     private void OnClosing(object? sender,CancelEventArgs e)
     {
@@ -65,7 +90,7 @@ public partial class MainWindow : Window
     }
     private async Task LoadAsync(string path)
     {
-        current?.Cancel();
+        current?.Cancel();ClearResult();
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";Status.Text="Analyzing…";
         CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
@@ -118,11 +143,11 @@ public partial class MainWindow : Window
     private void Apply(Plan p)
     {
         applying=true;
-        try{CodecBox.SelectedItem=p.Codec;PresetBox.SelectedItem=p.Preset;HeightBox.Text=p.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text=(p.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);}
+        try{TargetBox.Clear();CodecBox.SelectedItem=p.Codec;PresetBox.SelectedItem=p.Preset;HeightBox.Text=p.Height.ToString(CultureInfo.InvariantCulture);RateBox.Text=(p.VideoBitsPerSecond/1000d).ToString("0.###",CultureInfo.InvariantCulture);}
         finally{applying=false;}
         RefreshEstimate();
     }
-    private void OnSettings(object sender,RoutedEventArgs e){if(!applying){if(Plans is not null)Plans.SelectedIndex=-1;RefreshEstimate();}}
+    private void OnSettings(object sender,RoutedEventArgs e){if(!applying){if(Plans is not null)Plans.SelectedIndex=-1;if(TargetBox is not null)TargetBox.Clear();RefreshEstimate();}}
     private void RefreshEstimate()
     {
         activePlan=null;
@@ -146,7 +171,9 @@ public partial class MainWindow : Window
         try
         {
             if(!double.TryParse(TargetBox.Text,NumberStyles.Float,CultureInfo.InvariantCulture,out double mb))throw new ArgumentException("Enter target MB.");
+            var targetText=TargetBox.Text;
             RateBox.Text=(PlanRules.TargetRate(media,mb*1e6)/1000d).ToString("0.###",CultureInfo.InvariantCulture);
+            TargetBox.Text=targetText;
             Status.Text="Target applied as bitrate budget, not exact file size.";
         }
         catch(Exception ex){Status.Text=ex.Message;}
@@ -171,6 +198,7 @@ public partial class MainWindow : Window
             {Status.Text="Choose a new filename; VANTA does not overwrite existing files.";return;}
         }
         catch(Exception ex){Status.Text=ex.Message;return;}
+        ClearResult();
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;Status.Text="Encoding and validating…";
         try
@@ -183,6 +211,8 @@ public partial class MainWindow : Window
                 Status.Text=x.DisplayPercent is int percent?$"{x.Stage} · {percent}%":x.Stage+"…";
             });
             var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,dlg.FileName,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
+            completedOutput=System.IO.Path.GetFullPath(dlg.FileName);completedReport=report;
+            ResultPath.Text=completedOutput;ResultFolderButton.IsEnabled=CopyResultButton.IsEnabled=true;
             var bytes=report.OutputBytes;
             Status.Text=$"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)";
         }
