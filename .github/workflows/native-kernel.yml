@@ -35,7 +35,7 @@ jobs:
       - name: Verify scenario model
         run: |
           node docs/decision/model.mjs > decision-actual.json
-          cmp decision-actual.json docs/decision/results.json
+          node docs/decision/verify-snapshot.mjs decision-actual.json
       - name: Build and test native candidates
         run: |
           mkdir -p native-evidence

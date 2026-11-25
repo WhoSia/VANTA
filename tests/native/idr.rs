@@ -22,7 +22,7 @@ fn count(mut p:&[u8],width:usize)->Option<i64> {
         let n=u32::from_le_bytes(header) as usize;
         p=&p[4..];
         if n==0 || n>p.len() { return None; }
-        total+=i64::from(sample(&p[..n],width)?);
+        if sample(&p[..n],width)? { total+=1; }
         p=&p[n..];
     }
     Some(total)

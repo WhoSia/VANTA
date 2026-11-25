@@ -1,0 +1,16 @@
+{"fixture":"motion","rep":0,"codec":"x264","encode":0.24790400199981377,"verified":0.4606209190001209,"bytes":88154,"ssim":0.991918,"frames":90}
+{"fixture":"motion","rep":0,"codec":"x265","encode":0.4849282469999707,"verified":0.7216260000000148,"bytes":61130,"ssim":0.981026,"frames":90}
+{"fixture":"motion","rep":0,"codec":"rav1e","encode":7.766955415000211,"verified":8.015893252999831,"bytes":96978,"ssim":0.992779,"frames":90}
+{"fixture":"motion","rep":0,"codec":"svtav1","encode":0.752541557999848,"verified":0.9749157709998144,"bytes":102743,"ssim":0.994571,"frames":90}
+{"fixture":"motion","rep":1,"codec":"svtav1","encode":0.6641016100002162,"verified":0.886556314000245,"bytes":102743,"ssim":0.994571,"frames":90}
+{"fixture":"motion","rep":1,"codec":"rav1e","encode":7.764978014999997,"verified":8.03159672100037,"bytes":96978,"ssim":0.992779,"frames":90}
+{"fixture":"motion","rep":1,"codec":"x265","encode":0.5524351879998903,"verified":0.7680178379996505,"bytes":61130,"ssim":0.981026,"frames":90}
+{"fixture":"motion","rep":1,"codec":"x264","encode":0.2288620039998932,"verified":0.4297237330001735,"bytes":88154,"ssim":0.991918,"frames":90}
+{"fixture":"flat","rep":0,"codec":"x264","encode":0.1319326180000644,"verified":0.300262037000266,"bytes":4111,"ssim":1,"frames":90}
+{"fixture":"flat","rep":0,"codec":"x265","encode":0.24327363300017169,"verified":0.416133290000289,"bytes":6717,"ssim":1,"frames":90}
+{"fixture":"flat","rep":0,"codec":"rav1e","encode":0.8047029370000018,"verified":1.0005631049998556,"bytes":3526,"ssim":1,"frames":90}
+{"fixture":"flat","rep":0,"codec":"svtav1","encode":0.4461928840000837,"verified":0.6178701129997535,"bytes":3197,"ssim":1,"frames":90}
+{"fixture":"flat","rep":1,"codec":"svtav1","encode":0.262748936999742,"verified":0.4369714169997678,"bytes":3197,"ssim":1,"frames":90}
+{"fixture":"flat","rep":1,"codec":"rav1e","encode":0.8513507340003343,"verified":1.0313348680001582,"bytes":3526,"ssim":1,"frames":90}
+{"fixture":"flat","rep":1,"codec":"x265","encode":0.2484994999999799,"verified":0.4370150649997413,"bytes":6717,"ssim":1,"frames":90}
+{"fixture":"flat","rep":1,"codec":"x264","encode":0.14035956299994723,"verified":0.3141205940000873,"bytes":4111,"ssim":1,"frames":90}
