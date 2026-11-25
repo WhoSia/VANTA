@@ -16,6 +16,12 @@ if(args.Length==3&&args[0]=="--corpus")
     await PublicCorpusScreen.RunAsync(args[1],args[2],corpusTimeout.Token);
     return;
 }
+if(args.Length==3&&args[0]=="--native-bench")
+{
+    using var nativeTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(5));
+    await NativeKernelScreen.RunAsync(args[1],args[2],nativeTimeout.Token);
+    return;
+}
 if(args.Length!=0)throw new ArgumentException("Unexpected integration-test arguments.");
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);

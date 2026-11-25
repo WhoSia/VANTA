@@ -1,0 +1,58 @@
+name: Native kernel and decision verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/native/**'
+      - 'tests/Vanta.Integration/NativeKernelScreen.cs'
+      - '.github/workflows/native-kernel.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-kernel-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Resolve toolchain
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg || ! command -v ffprobe; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          gcc --version
+          rustc --version
+          dotnet --version
+          ffmpeg -version
+          node --version
+      - name: Verify scenario model
+        run: |
+          node docs/decision/model.mjs > decision-actual.json
+          cmp decision-actual.json docs/decision/results.json
+      - name: Build and test native candidates
+        run: |
+          mkdir -p native-evidence
+          gcc -std=c17 -Wall -Wextra -Werror -O3 -fPIC -shared tests/native/idr.c -o native-evidence/libvanta_c.so
+          rustc --edition=2021 --test tests/native/idr.rs -o native-evidence/idr-test
+          native-evidence/idr-test
+          rustc --edition=2021 -C opt-level=3 --crate-type cdylib tests/native/idr.rs -o native-evidence/libvanta_rust.so
+      - name: Compare C sharp C and Rust kernels
+        run: |
+          set -o pipefail
+          dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --native-bench native-evidence/libvanta_c.so native-evidence/libvanta_rust.so | tee native-evidence/results.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: VANTA-native-kernel-evidence
+          path: |
+            native-evidence/results.txt
+            decision-actual.json
+          if-no-files-found: warn
+          retention-days: 14
