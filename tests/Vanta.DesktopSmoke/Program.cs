@@ -16,6 +16,7 @@ internal static class DesktopSmoke
         if(args.Contains("--media")){RunMediaWorkflow(app);return;}
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
+        Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(main,"EtaText").Text=="","No stale ETA on startup");
         Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled&&!Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Collapsed,"No result before successful encode");
         Check(Get<CheckBox>(main,"SplitBox").IsChecked!=true,"Split disabled initially");
         var media=new MediaInfo(10_000_000,60,1920,1080,30,"h264",0,0);
@@ -162,10 +163,12 @@ internal static class DesktopSmoke
             var before=await File.ReadAllBytesAsync(source);
             var encodingTask=main.EncodeToAsync(output);
             Check(language.IsEnabled&&!encode.IsEnabled,"Language available during single encode");
+            Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Visible&&Get<TextBlock>(main,"ElapsedText").Text.StartsWith("Elapsed:"),"Live progress card at encode start");
             language.SelectedIndex=1;
             Check((string)encode.Content=="압축 파일 저장…"&&Get<ComboBox>(main,"PresetBox").SelectedValue is string&&!encode.IsEnabled,"Active encode settings preserved on language switch");
             await encodingTask;
             language.SelectedIndex=0;
+            Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(main,"EtaText").Text==""&&Get<TextBlock>(main,"PreflightEta").Text.Contains("Previous same-setting total"),"Live ETA cleared and same-setting total retained");
             Check(File.Exists(output)&&Get<Button>(main,"ResultFolderButton").IsEnabled&&Get<Button>(main,"CopyResultButton").IsEnabled&&Get<TextBlock>(main,"ResultPath").Text==output&&encode.IsEnabled,"Validated output reaches real desktop controls");
             Check(Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Text.Contains("actual savings")&&Get<TextBlock>(main,"ResultSummary").Text.Contains("encoding")&&Get<TextBlock>(main,"ResultSummary").Text.Contains("libx264"),"Playable output and persistent actual summary");
             var outputBytes=await File.ReadAllBytesAsync(output);

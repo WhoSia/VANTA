@@ -64,6 +64,23 @@ var parser=new ProgressParser(10,new ImmediateProgress(observed.Add));
 foreach(var line in new[]{"out_time_us=N/A","out_time_us=-5","out_time_us=3000000","out_time_us=2000000","out_time_us=10000000"})parser.Read(line);
 Check(observed.Count==2 && observed[0].Fraction==.3 && observed[1].Fraction==.999,"Monotonic encoding progress capped before validation");
 Check(new EncodeProgress("Encoding",.999).DisplayPercent==99&&new EncodeProgress("Complete",1).DisplayPercent==100&&new EncodeProgress("Validating",null).DisplayPercent is null,"Progress display never rounds encoding to 100%");
+var eta=new EncodingEta();
+TimeSpan Sec(double n)=>TimeSpan.FromSeconds(n);
+eta.Observe(new("Encoding",0),Sec(0));
+eta.Observe(new("Encoding",.01),Sec(1));
+Check(eta.Remaining(Sec(1)) is null,"ETA warmup");
+eta.Observe(new("Encoding",.1),Sec(5));
+Check(eta.Remaining(Sec(5)) is TimeSpan er&&Math.Abs(er.TotalSeconds-45)<.001,"ETA constant rate");
+eta.Observe(new("Encoding",.2),Sec(10));
+Check(eta.Remaining(Sec(10)) is TimeSpan er2&&Math.Abs(er2.TotalSeconds-40)<.001,"ETA updated");
+eta.Observe(new("Encoding",.1),Sec(11));
+Check(eta.Remaining(Sec(11)) is TimeSpan er3&&Math.Abs(er3.TotalSeconds-40)<.001,"ETA rejects regressive fraction");
+Check(eta.Remaining(Sec(21)) is null,"ETA suppressed during stall");
+eta.Observe(new("Validating",null),Sec(22));
+Check(eta.Remaining(Sec(22)) is null,"ETA does not forecast verification");
+eta.Observe(new("Encoding",double.NaN),Sec(23));
+Check(eta.Remaining(Sec(23)) is null,"ETA invalid sample");
+
 var namingRoot=Path.Combine(Path.GetTempPath(),"VANTA-names-"+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(namingRoot);
 try

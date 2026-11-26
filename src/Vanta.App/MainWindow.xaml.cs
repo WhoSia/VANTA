@@ -15,6 +15,50 @@ public partial class MainWindow : Window
     private string? appliedTarget;
     private bool applying,encoding;
     private string? completedOutput;
+    private readonly System.Diagnostics.Stopwatch jobClock=new();
+    private readonly System.Windows.Threading.DispatcherTimer etaTimer=new(){Interval=TimeSpan.FromSeconds(1)};
+    private EncodingEta? eta;
+    private EncodeProgress? jobProgress;
+    private sealed record TimingKey(string Path,SourceStamp Stamp,Plan Plan,int? Threads,bool Split,string Ffmpeg,string Ffprobe);
+    private readonly Dictionary<TimingKey,TimeSpan> timings=new();
+    private TimingKey? CurrentTimingKey(Plan p)=>sourcePath is not null&&sourceStamp is not null&&tools is not null
+        ?new(sourcePath,sourceStamp,p,(ThreadsBox.SelectedItem as ThreadChoice)?.Count,SplitBox.IsChecked==true,tools.Ffmpeg,tools.Ffprobe):null;
+    private static string DurationText(TimeSpan value)
+    {
+        long seconds=(long)Math.Ceiling(Math.Max(0,value.TotalSeconds));
+        return seconds>=3600?$"{seconds/3600}:{seconds%3600/60:00}:{seconds%60:00}":$"{seconds/60:00}:{seconds%60:00}";
+    }
+    private void StartJobProgress(bool split)
+    {
+        jobClock.Restart();eta=split?null:new EncodingEta();jobProgress=new("Preparing",null);
+        ProgressCard.Visibility=Visibility.Visible;etaTimer.Start();RefreshJobProgress();
+    }
+    private void RefreshJobProgress()
+    {
+        if(jobProgress is not EncodeProgress p)return;
+        ProgressStage.Text=UiLanguage.Stage(korean,p.Stage);
+        ProgressPercent.Text=p.DisplayPercent is int percent?$"{percent}%":"";
+        BusyBar.IsIndeterminate=p.Fraction is null;BusyBar.Value=p.DisplayPercent??0;
+        ElapsedText.Text=T("Elapsed: ","경과: ")+DurationText(jobClock.Elapsed);
+        EtaText.Text=current?.IsCancellationRequested==true?T("Canceling…","취소 중…"):
+            p.Stage=="Validating"?T("Verifying output · remaining time unknown","출력 검증 중 · 남은 시간 미정"):
+            p.Stage=="Complete"?T("Verified","검증 완료"):
+            eta?.Remaining(jobClock.Elapsed) is TimeSpan remaining
+                ?T("Encoding ETA ≈ ","압축 예상 잔여 ≈ ")+DurationText(remaining)
+                :T("Estimating · verification time excluded","예상 시간 계산 중 · 검증 시간 제외");
+    }
+    private void StopJobProgress()
+    {
+        etaTimer.Stop();jobClock.Stop();eta=null;jobProgress=null;
+        ProgressCard.Visibility=Visibility.Collapsed;EtaText.Text="";ElapsedText.Text="";ProgressPercent.Text="";ProgressStage.Text="";
+    }
+    private void RefreshPreflightEta()
+    {
+        if(PreflightEta is null)return;
+        PreflightEta.Text=activePlan is Plan p&&CurrentTimingKey(p) is TimingKey k&&timings.TryGetValue(k,out var t)
+            ?T("Previous same-setting total: ","동일 설정 이전 전체 시간: ")+DurationText(t)+T(" · reference only"," · 참고값")
+            :activePlan is not null?T("Time estimate available after encoding starts.","예상 시간은 압축 시작 후 표시됩니다."):"";
+    }
     private EncodeReport? completedReport;
     private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings);
     private bool korean,languageReady;
@@ -26,10 +70,13 @@ public partial class MainWindow : Window
     {
         this.korean=korean;this.persistLanguage=persistLanguage;
         InitializeComponent();UiLanguage.Apply(this,korean);
+        etaTimer.Tick+=(_,_)=>RefreshJobProgress();
         CodecBox.ItemsSource=PlanRules.Codecs;
         UiLanguage.SetPresets(PresetBox,korean);
         ThreadsBox.ItemsSource=ThreadChoices.Create(korean);ThreadsBox.SelectedIndex=0;
         LanguageBox.SelectedIndex=korean?1:0;languageReady=true;SetStatus(statusEn,statusKo);
+        ThreadsBox.SelectionChanged+=(_,_)=>RefreshPreflightEta();
+        SplitBox.Checked+=(_,_)=>RefreshPreflightEta();SplitBox.Unchecked+=(_,_)=>RefreshPreflightEta();
     }
     private void SetStatus(string en,string? ko=null){statusEn=en;statusKo=ko??en;Status.Text=T(statusEn,statusKo);}
     private void OnLanguage(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
@@ -54,7 +101,7 @@ public partial class MainWindow : Window
             ThreadsBox.SelectedItem=ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count==previousThreads);
         }
         finally{applying=false;}
-        RefreshEstimate();RefreshResult();Status.Text=T(statusEn,statusKo);
+        RefreshEstimate();RefreshResult();RefreshJobProgress();Status.Text=T(statusEn,statusKo);
         if(persistLanguage){try{UiLanguage.Save(korean);}catch(Exception ex){SetStatus("Could not save language: "+ex.Message,"언어 설정을 저장하지 못했습니다: "+ex.Message);}}
     }
     private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"));
@@ -134,7 +181,7 @@ public partial class MainWindow : Window
         using var cts=new CancellationTokenSource();current=cts;
         encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
-        BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
+        BusyBar.IsIndeterminate=true;ProgressCard.Visibility=Visibility.Visible;
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
@@ -147,7 +194,7 @@ public partial class MainWindow : Window
         finally
         {
             current=null;encoding=false;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=Plans.IsEnabled=true;
-            Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();
+            Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;ProgressCard.Visibility=Visibility.Collapsed;RefreshEstimate();
         }
     }
     internal async Task LoadAsync(string path)
@@ -155,7 +202,7 @@ public partial class MainWindow : Window
         current?.Cancel();ClearResult();appliedTarget=null;
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
-        CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;BusyBar.Visibility=Visibility.Visible;
+        CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;ProgressCard.Visibility=Visibility.Visible;
         try
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
@@ -177,7 +224,7 @@ public partial class MainWindow : Window
         }
         catch(OperationCanceledException){if(current==cts)SetStatus("Analysis canceled.","분석이 취소되었습니다.");}
         catch(Exception ex){if(current==cts)SetStatus(ex.Message);}
-        finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}}
+        finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;ProgressCard.Visibility=Visibility.Collapsed;RefreshEstimate();}}
     }
     private void OnRecommendation(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {
@@ -249,6 +296,7 @@ public partial class MainWindow : Window
     private void RefreshEstimate()
     {
         activePlan=null;
+        RefreshPreflightEta();
         if(MoreCompressionButton is not null)MoreCompressionButton.IsEnabled=false;
         if(SpeedFirstButton is not null)SpeedFirstButton.IsEnabled=false;
         if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
@@ -264,6 +312,7 @@ public partial class MainWindow : Window
             var p=new Plan("Custom",CodecBox.SelectedItem as string??"",h,PlanRules.ParseVideoKbps(RateBox.Text),0,PresetBox.SelectedValue as string??"",false);
             var v=CandidateEvaluation.Evaluate(p,media);
             activePlan=p;
+            RefreshPreflightEta();
             Estimate.Text=T($"Bitrate budget {p.EstimateBytes(media)/1e6:F2} MB · {p.Savings(media):P1} budget savings",$"용량 예산 {p.EstimateBytes(media)/1e6:F2} MB · 예산 절감률 {p.Savings(media):P1}");
             Evidence.Text=T($"Pixel retention {v.PixelRetention:P1} · quality not measured · actual size may be much smaller or larger; not a limit",$"픽셀 유지 비율 {v.PixelRetention:P1} · 화질 미측정 · 실제 용량은 예산과 다를 수 있음");
             EncodeButton.IsEnabled=current is null&&!encoding;
@@ -326,25 +375,27 @@ public partial class MainWindow : Window
         if(System.IO.File.Exists(output)||System.IO.Directory.Exists(output))
         {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         ClearResult();
+        var timingKey=CurrentTimingKey(p);
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
-        OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;BusyBar.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
+        StartJobProgress(split);
+        OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;ProgressCard.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
         try
         {
             var progress=new Progress<EncodeProgress>(x=>
             {
                 if(current!=cts||cts.IsCancellationRequested)return;
-                BusyBar.IsIndeterminate=x.Fraction is null;
-                BusyBar.Value=x.DisplayPercent??0;
+                jobProgress=x;eta?.Observe(x,jobClock.Elapsed);RefreshJobProgress();
                 var suffix=x.DisplayPercent is int percent?$" · {percent}%":"…";SetStatus(x.Stage+suffix,UiLanguage.Stage(true,x.Stage)+suffix);
             });
             var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
+            if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report.Total;}
             RefreshResult();
             var bytes=report.OutputBytes;
             SetStatus($"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",$"검증 완료: {bytes/1e6:F2} MB · 실제 절감률 {1-bytes/(double)report.InputBytes:P1} · {report.Total.TotalSeconds:F1}초 (검증 {report.Validation.TotalSeconds:F1}초)");
         }
         catch(OperationCanceledException){SetStatus("Canceled; no new output published.","취소되었습니다. 새 출력 파일은 저장되지 않았습니다.");}
         catch(Exception ex){SetStatus(ex.Message);}
-        finally{current=null;encoding=false;OpenButton.IsEnabled=true;Editor.IsEnabled=true;Plans.IsEnabled=true;RecommendationBox.IsEnabled=true;CancelButton.IsEnabled=false;BusyBar.Visibility=Visibility.Collapsed;RefreshEstimate();}
+        finally{StopJobProgress();current=null;encoding=false;OpenButton.IsEnabled=true;Editor.IsEnabled=true;Plans.IsEnabled=true;RecommendationBox.IsEnabled=true;CancelButton.IsEnabled=false;RefreshEstimate();}
     }
 }
