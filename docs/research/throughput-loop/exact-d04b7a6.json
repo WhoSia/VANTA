@@ -1,0 +1,2018 @@
+{
+  "head": "d04b7a68dcb7d805a124c11218731d2f6b467f2c",
+  "windows": {
+    "run": 45875336047,
+    "job": 140100861333,
+    "artifact": 15144404070,
+    "digest": "93e53ab353c48db4bcceb391af4b45e4029e689ad8dc475db398598da6738f1e"
+  },
+  "frontier": {
+    "run": 45875335786,
+    "job": 140100860188,
+    "artifact": 15143699865,
+    "groups": [
+      {
+        "id": "libx264/fast",
+        "n": 6,
+        "matched": 2,
+        "joint15": 2,
+        "meanReduction": 0.4162362123221149
+      },
+      {
+        "id": "libx264/veryfast",
+        "n": 6,
+        "matched": 4,
+        "joint15": 4,
+        "meanReduction": 0.5377292504822325
+      },
+      {
+        "id": "libx264/superfast",
+        "n": 6,
+        "matched": 0,
+        "joint15": 0,
+        "meanReduction": 0.6482110299070801
+      },
+      {
+        "id": "libx265/fast",
+        "n": 6,
+        "matched": 0,
+        "joint15": 0,
+        "meanReduction": 0.0909698674463703
+      },
+      {
+        "id": "libx265/veryfast",
+        "n": 6,
+        "matched": 0,
+        "joint15": 0,
+        "meanReduction": 0.22575397024136454
+      },
+      {
+        "id": "libx265/superfast",
+        "n": 6,
+        "matched": 0,
+        "joint15": 0,
+        "meanReduction": 0.38143599530659644
+      }
+    ],
+    "rows": [
+      {
+        "kind": "environment",
+        "commit": "d04b7a68dcb7d805a124c11218731d2f6b467f2c",
+        "ffmpeg": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers\r",
+        "ffmpegSha": "ED8F66CB877087A96F5BBB40A2944F0E764F2AD8870D5CB647360D912E62BC07",
+        "ffprobeSha": "DF0199F606FAA88E9AD192732A7C3987ACFB647663534C297772E17730611A08",
+        "cpuCount": 4,
+        "origin": "synthetic"
+      },
+      {
+        "kind": "fixture",
+        "id": "motion-1080p60",
+        "rawSha": null,
+        "sourceSha": "DE62A32A5AE9B5686D9D0B20E064C60E50DF933DABF00601279E2039CD4F4BCD",
+        "Width": 1920,
+        "Height": 1080,
+        "Fps": 60,
+        "Seconds": 8,
+        "AudioTracks": 1,
+        "rate": 8000000,
+        "threads": 4,
+        "frames": 480
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "medium",
+        "seconds": 19.8979986,
+        "encoding": 16.7507795,
+        "validation": 3.0837705,
+        "bytes": 8230471,
+        "Mean": 0.9924613854166674,
+        "WorstSecond": 0.9911194999999998,
+        "P05": 0.990129,
+        "Frames": 480,
+        "sha": "DC0ED221C6E753BA09CBBC7331E6EC954DB443F126810D3A7005795C27B80650"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "fast",
+        "seconds": 9.5714695,
+        "encoding": 6.9672691,
+        "validation": 2.5686314,
+        "bytes": 8100183,
+        "Mean": 0.9918531437500003,
+        "WorstSecond": 0.9914320666666666,
+        "P05": 0.989762,
+        "Frames": 480,
+        "sha": "FB32A3AE4345D9BCCC0696117919FBF8B1FD23B735BC2C037F51F6A12586C81D"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "seconds": 7.513039,
+        "encoding": 5.0770832,
+        "validation": 2.3982154,
+        "bytes": 8092321,
+        "Mean": 0.9923349312500006,
+        "WorstSecond": 0.9918071833333335,
+        "P05": 0.990591,
+        "Frames": 480,
+        "sha": "7BA92746D025AE18927093916C4FE37EC9CF464EA828F76D99B4D4F9479E41FA"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "superfast",
+        "seconds": 5.8887323,
+        "encoding": 3.31329,
+        "validation": 2.5400152,
+        "bytes": 8308138,
+        "Mean": 0.9908198583333334,
+        "WorstSecond": 0.9897714333333333,
+        "P05": 0.988401,
+        "Frames": 480,
+        "sha": "49D4EB03728BB96474FF438C854C41A4B0349D4B82E067A8B9B403AE8660D906"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "fast",
+        "seconds": 17.1885588,
+        "encoding": 13.4039505,
+        "validation": 3.7484983,
+        "bytes": 8134343,
+        "Mean": 0.9899159500000003,
+        "WorstSecond": 0.9888892499999998,
+        "P05": 0.988077,
+        "Frames": 480,
+        "sha": "BD82A12C5AF904AEB9987383097D5EA7353329E83584CB606E6C1786B2F60CA3"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "seconds": 13.4072355,
+        "encoding": 10.456047,
+        "validation": 2.9115224,
+        "bytes": 8169504,
+        "Mean": 0.9893642791666662,
+        "WorstSecond": 0.9886591,
+        "P05": 0.98736,
+        "Frames": 480,
+        "sha": "46D5957803273D8774DC60873186D8DE195A55368D214426E3D7619E669BFADE"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "superfast",
+        "seconds": 10.9022655,
+        "encoding": 7.9642431,
+        "validation": 2.9029906,
+        "bytes": 8250817,
+        "Mean": 0.986367602083332,
+        "WorstSecond": 0.9851670500000002,
+        "P05": 0.983333,
+        "Frames": 480,
+        "sha": "50D4C93DE26976E74A6FDDE9EF17BB1365C1D5D60FC968599998E4A68446F773"
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "fast",
+        "matched": true,
+        "paretoNoWorse": false,
+        "byteDelta": -0.015829956754601304,
+        "meanDelta": -0.0006082416666670643,
+        "worstDelta": 0.00031256666666679145,
+        "encodingReduction": 0.5840629924117859,
+        "timeReduction": 0.5189732549282621
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "matched": true,
+        "paretoNoWorse": false,
+        "byteDelta": -0.016785187627779696,
+        "meanDelta": -0.00012645416666678955,
+        "worstDelta": 0.0006876833333336885,
+        "encodingReduction": 0.6969046604666965,
+        "timeReduction": 0.6224223776958151
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.009436519489589346,
+        "meanDelta": -0.0016415270833339823,
+        "worstDelta": -0.0013480666666665364,
+        "encodingReduction": 0.8022008468322325,
+        "timeReduction": 0.7040540398872075
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": -0.011679525995535345,
+        "meanDelta": -0.0025454354166670745,
+        "worstDelta": -0.002230249999999989,
+        "encodingReduction": 0.1998013883473303,
+        "timeReduction": 0.13616644841858627
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": -0.007407474007259163,
+        "meanDelta": -0.003097106250001147,
+        "worstDelta": -0.002460399999999807,
+        "encodingReduction": 0.37578743723538355,
+        "timeReduction": 0.32620180705008195
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.002472033496017323,
+        "meanDelta": -0.006093783333335434,
+        "worstDelta": -0.005952449999999665,
+        "encodingReduction": 0.5245449264017833,
+        "timeReduction": 0.452092357670585
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "superfast",
+        "seconds": 11.2497763,
+        "encoding": 8.2064131,
+        "validation": 3.0071578,
+        "bytes": 8250817,
+        "Mean": 0.986367602083332,
+        "WorstSecond": 0.9851670500000002,
+        "P05": 0.983333,
+        "Frames": 480,
+        "sha": "50D4C93DE26976E74A6FDDE9EF17BB1365C1D5D60FC968599998E4A68446F773"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "seconds": 13.0880216,
+        "encoding": 10.0111484,
+        "validation": 3.0413205,
+        "bytes": 8169504,
+        "Mean": 0.9893642791666662,
+        "WorstSecond": 0.9886591,
+        "P05": 0.98736,
+        "Frames": 480,
+        "sha": "46D5957803273D8774DC60873186D8DE195A55368D214426E3D7619E669BFADE"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "fast",
+        "seconds": 15.3029362,
+        "encoding": 12.3038407,
+        "validation": 2.9628476,
+        "bytes": 8134343,
+        "Mean": 0.9899159500000003,
+        "WorstSecond": 0.9888892499999998,
+        "P05": 0.988077,
+        "Frames": 480,
+        "sha": "BD82A12C5AF904AEB9987383097D5EA7353329E83584CB606E6C1786B2F60CA3"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "superfast",
+        "seconds": 5.2774943,
+        "encoding": 2.9190991,
+        "validation": 2.3229913,
+        "bytes": 8308138,
+        "Mean": 0.9908198583333334,
+        "WorstSecond": 0.9897714333333333,
+        "P05": 0.988401,
+        "Frames": 480,
+        "sha": "49D4EB03728BB96474FF438C854C41A4B0349D4B82E067A8B9B403AE8660D906"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "seconds": 7.5054019,
+        "encoding": 5.1021622,
+        "validation": 2.3678826,
+        "bytes": 8092321,
+        "Mean": 0.9923349312500006,
+        "WorstSecond": 0.9918071833333335,
+        "P05": 0.990591,
+        "Frames": 480,
+        "sha": "7BA92746D025AE18927093916C4FE37EC9CF464EA828F76D99B4D4F9479E41FA"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "fast",
+        "seconds": 9.5006185,
+        "encoding": 6.9466309,
+        "validation": 2.5171794,
+        "bytes": 8100183,
+        "Mean": 0.9918531437500003,
+        "WorstSecond": 0.9914320666666666,
+        "P05": 0.989762,
+        "Frames": 480,
+        "sha": "FB32A3AE4345D9BCCC0696117919FBF8B1FD23B735BC2C037F51F6A12586C81D"
+      },
+      {
+        "kind": "trial",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "medium",
+        "seconds": 17.4428435,
+        "encoding": 14.2771745,
+        "validation": 3.1297582,
+        "bytes": 8230471,
+        "Mean": 0.9924613854166674,
+        "WorstSecond": 0.9911194999999998,
+        "P05": 0.990129,
+        "Frames": 480,
+        "sha": "DC0ED221C6E753BA09CBBC7331E6EC954DB443F126810D3A7005795C27B80650"
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "fast",
+        "matched": true,
+        "paretoNoWorse": false,
+        "byteDelta": -0.015829956754601304,
+        "meanDelta": -0.0006082416666670643,
+        "worstDelta": 0.00031256666666679145,
+        "encodingReduction": 0.5134449817083906,
+        "timeReduction": 0.45532857071153565
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "matched": true,
+        "paretoNoWorse": false,
+        "byteDelta": -0.016785187627779696,
+        "meanDelta": -0.00012645416666678955,
+        "worstDelta": 0.0006876833333336885,
+        "encodingReduction": 0.6426350185745786,
+        "timeReduction": 0.5697145422419229
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.009436519489589346,
+        "meanDelta": -0.0016415270833339823,
+        "worstDelta": -0.0013480666666665364,
+        "encodingReduction": 0.7955408403812673,
+        "timeReduction": 0.6974407125764788
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": -0.011679525995535345,
+        "meanDelta": -0.0025454354166670745,
+        "worstDelta": -0.002230249999999989,
+        "encodingReduction": 0.1382159894452505,
+        "timeReduction": 0.12268110414451627
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": -0.007407474007259163,
+        "meanDelta": -0.003097106250001147,
+        "worstDelta": -0.002460399999999807,
+        "encodingReduction": 0.298800445424268,
+        "timeReduction": 0.24966238446157019
+      },
+      {
+        "kind": "pair",
+        "id": "motion-1080p60",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.002472033496017323,
+        "meanDelta": -0.006093783333335434,
+        "worstDelta": -0.005952449999999665,
+        "encodingReduction": 0.4252074806538225,
+        "timeReduction": 0.3550491753251125
+      },
+      {
+        "kind": "fixture",
+        "id": "mixed-1080p30",
+        "rawSha": null,
+        "sourceSha": "C8FB3119D507EF0316E82F809319630A84E5014B56109439A9F4639B162BFFAF",
+        "Width": 1920,
+        "Height": 1080,
+        "Fps": 30,
+        "Seconds": 12,
+        "AudioTracks": 1,
+        "rate": 8000000,
+        "threads": 4,
+        "frames": 360
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "medium",
+        "seconds": 11.3670624,
+        "encoding": 9.2188432,
+        "validation": 2.1147113,
+        "bytes": 6372083,
+        "Mean": 0.9983964027777781,
+        "WorstSecond": 0.9963897666666667,
+        "P05": 0.995503,
+        "Frames": 360,
+        "sha": "63E9CE5044E31267DF15E72836C809CFD43D0A67093DB4113D7569E02F189BD9"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "fast",
+        "seconds": 7.653596,
+        "encoding": 4.5441892,
+        "validation": 3.0671775,
+        "bytes": 18825898,
+        "Mean": 0.9999386972222223,
+        "WorstSecond": 0.9996509666666664,
+        "P05": 0.99967,
+        "Frames": 360,
+        "sha": "DDA48554A25BC5A3006D4458DBB25DE214C5B39D1D1CDAE461972BC7C8BF7002"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "seconds": 6.0418046,
+        "encoding": 3.0090598,
+        "validation": 2.993122,
+        "bytes": 18707556,
+        "Mean": 0.999910072222222,
+        "WorstSecond": 0.9995084999999999,
+        "P05": 0.999535,
+        "Frames": 360,
+        "sha": "1789B95773FCD2A0233A2DDD0A72D5FA54477FE45917C6036614808D5338464F"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "superfast",
+        "seconds": 4.8333188,
+        "encoding": 1.9500569,
+        "validation": 2.8487402,
+        "bytes": 18084152,
+        "Mean": 0.999896558333333,
+        "WorstSecond": 0.9995183666666667,
+        "P05": 0.999539,
+        "Frames": 360,
+        "sha": "B95254DB112F32682E74023DE2E9EEF0FBFE2ADD079B7372FA34AD16E103B56A"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "fast",
+        "seconds": 9.570636,
+        "encoding": 7.5493203,
+        "validation": 1.9850529,
+        "bytes": 6647811,
+        "Mean": 0.9973525555555549,
+        "WorstSecond": 0.9938893666666664,
+        "P05": 0.993276,
+        "Frames": 360,
+        "sha": "D9A138ACCFF00715C623D0B020E31E2126994309A556AB41904DE9E952F5BE5E"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "seconds": 8.5695184,
+        "encoding": 6.5458534,
+        "validation": 1.9843855,
+        "bytes": 6643309,
+        "Mean": 0.9972768055555558,
+        "WorstSecond": 0.9936610666666665,
+        "P05": 0.993074,
+        "Frames": 360,
+        "sha": "BBA51A593F4CFC33A327FACAF1DF41F9C6F5FE21E186ED8A64FE13F473B248AB"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "superfast",
+        "seconds": 7.2526585,
+        "encoding": 5.2044965,
+        "validation": 2.0133552,
+        "bytes": 6553513,
+        "Mean": 0.9964165944444443,
+        "WorstSecond": 0.9919646999999998,
+        "P05": 0.990784,
+        "Frames": 360,
+        "sha": "6E1358E18E868CBE1E2A2B37A74A61DDCED7A26482A4DB16786590E36E9497F0"
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 1.954433895478135,
+        "meanDelta": 0.0015422944444442033,
+        "worstDelta": 0.003261199999999742,
+        "encodingReduction": 0.5070759854121394,
+        "timeReduction": 0.3266865500799925
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 1.9358619465565656,
+        "meanDelta": 0.0015136694444438659,
+        "worstDelta": 0.0031187333333332345,
+        "encodingReduction": 0.673596813101236,
+        "timeReduction": 0.46848144336746145
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 1.8380283182124275,
+        "meanDelta": 0.0015001555555549384,
+        "worstDelta": 0.003128600000000037,
+        "encodingReduction": 0.7884705425947585,
+        "timeReduction": 0.5747961408217483
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.043271250547113116,
+        "meanDelta": -0.001043847222223171,
+        "worstDelta": -0.0025004000000002913,
+        "encodingReduction": 0.181098958272769,
+        "timeReduction": 0.15803787617106768
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.04256473118758808,
+        "meanDelta": -0.0011195972222223238,
+        "worstDelta": -0.0027287000000001393,
+        "encodingReduction": 0.28994850460196564,
+        "timeReduction": 0.24610967209962709
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.028472636028124665,
+        "meanDelta": -0.001979808333333777,
+        "worstDelta": -0.004425066666666866,
+        "encodingReduction": 0.435450154960874,
+        "timeReduction": 0.3619584159228333
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "superfast",
+        "seconds": 7.3784974,
+        "encoding": 5.2492541,
+        "validation": 2.093375,
+        "bytes": 6553513,
+        "Mean": 0.9964165944444443,
+        "WorstSecond": 0.9919646999999998,
+        "P05": 0.990784,
+        "Frames": 360,
+        "sha": "6E1358E18E868CBE1E2A2B37A74A61DDCED7A26482A4DB16786590E36E9497F0"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "seconds": 8.5638866,
+        "encoding": 6.5297162,
+        "validation": 1.9999587,
+        "bytes": 6643309,
+        "Mean": 0.9972768055555558,
+        "WorstSecond": 0.9936610666666665,
+        "P05": 0.993074,
+        "Frames": 360,
+        "sha": "BBA51A593F4CFC33A327FACAF1DF41F9C6F5FE21E186ED8A64FE13F473B248AB"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "fast",
+        "seconds": 9.656223,
+        "encoding": 7.5553214,
+        "validation": 2.066037,
+        "bytes": 6647811,
+        "Mean": 0.9973525555555549,
+        "WorstSecond": 0.9938893666666664,
+        "P05": 0.993276,
+        "Frames": 360,
+        "sha": "D9A138ACCFF00715C623D0B020E31E2126994309A556AB41904DE9E952F5BE5E"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "superfast",
+        "seconds": 4.9010835,
+        "encoding": 1.9778277,
+        "validation": 2.8901955,
+        "bytes": 18084152,
+        "Mean": 0.999896558333333,
+        "WorstSecond": 0.9995183666666667,
+        "P05": 0.999539,
+        "Frames": 360,
+        "sha": "B95254DB112F32682E74023DE2E9EEF0FBFE2ADD079B7372FA34AD16E103B56A"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "seconds": 6.0308417,
+        "encoding": 2.9889844,
+        "validation": 3.0089737,
+        "bytes": 18707556,
+        "Mean": 0.999910072222222,
+        "WorstSecond": 0.9995084999999999,
+        "P05": 0.999535,
+        "Frames": 360,
+        "sha": "1789B95773FCD2A0233A2DDD0A72D5FA54477FE45917C6036614808D5338464F"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "fast",
+        "seconds": 7.5997991,
+        "encoding": 4.5305737,
+        "validation": 3.0354472,
+        "bytes": 18825898,
+        "Mean": 0.9999386972222223,
+        "WorstSecond": 0.9996509666666664,
+        "P05": 0.99967,
+        "Frames": 360,
+        "sha": "DDA48554A25BC5A3006D4458DBB25DE214C5B39D1D1CDAE461972BC7C8BF7002"
+      },
+      {
+        "kind": "trial",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "medium",
+        "seconds": 11.5226261,
+        "encoding": 9.2649729,
+        "validation": 2.223607,
+        "bytes": 6372083,
+        "Mean": 0.9983964027777781,
+        "WorstSecond": 0.9963897666666667,
+        "P05": 0.995503,
+        "Frames": 360,
+        "sha": "63E9CE5044E31267DF15E72836C809CFD43D0A67093DB4113D7569E02F189BD9"
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 1.954433895478135,
+        "meanDelta": 0.0015422944444442033,
+        "worstDelta": 0.003261199999999742,
+        "encodingReduction": 0.5109997893248021,
+        "timeReduction": 0.340445569087762
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 1.9358619465565656,
+        "meanDelta": 0.0015136694444438659,
+        "worstDelta": 0.0031187333333332345,
+        "encodingReduction": 0.6773887595505002,
+        "timeReduction": 0.4766087480700255
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 1.8380283182124275,
+        "meanDelta": 0.0015001555555549384,
+        "worstDelta": 0.003128600000000037,
+        "encodingReduction": 0.7865263372761727,
+        "timeReduction": 0.5746556854778095
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.043271250547113116,
+        "meanDelta": -0.001043847222223171,
+        "worstDelta": -0.0025004000000002913,
+        "encodingReduction": 0.18452849441146235,
+        "timeReduction": 0.16197723364468097
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.04256473118758808,
+        "meanDelta": -0.0011195972222223238,
+        "worstDelta": -0.0027287000000001393,
+        "encodingReduction": 0.2952255478264809,
+        "timeReduction": 0.25677649125488855
+      },
+      {
+        "kind": "pair",
+        "id": "mixed-1080p30",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.028472636028124665,
+        "meanDelta": -0.001979808333333777,
+        "worstDelta": -0.004425066666666866,
+        "encodingReduction": 0.43343017225662905,
+        "timeReduction": 0.3596514079372931
+      },
+      {
+        "kind": "fixture",
+        "id": "high-rate-1080p120",
+        "rawSha": null,
+        "sourceSha": "4EDC8A6041B6AD2524FA3F3916F18FE8AF50BD3C39AFE3BBDFFEBED9E5F550B0",
+        "Width": 1920,
+        "Height": 1080,
+        "Fps": 120,
+        "Seconds": 4,
+        "AudioTracks": 1,
+        "rate": 8000000,
+        "threads": 4,
+        "frames": 480
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "medium",
+        "seconds": 15.6203363,
+        "encoding": 12.9144666,
+        "validation": 2.6669592,
+        "bytes": 4041300,
+        "Mean": 0.9873125625000007,
+        "WorstSecond": 0.9871946583333332,
+        "P05": 0.984861,
+        "Frames": 480,
+        "sha": "FA28C3365FD76371D755466F98D01EC10C6E3AE34F9011D6010762566E25F1F5"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "fast",
+        "seconds": 8.8113651,
+        "encoding": 6.6357847,
+        "validation": 2.1387444,
+        "bytes": 4064787,
+        "Mean": 0.9862456187500002,
+        "WorstSecond": 0.985752541666667,
+        "P05": 0.98483,
+        "Frames": 480,
+        "sha": "7A6D63F944D82867E8A268DF9784768BDF887FB2E1F922B7A62272ADE8F8A3AF"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "seconds": 7.047695,
+        "encoding": 4.868858,
+        "validation": 2.1429188,
+        "bytes": 4091062,
+        "Mean": 0.986445389583333,
+        "WorstSecond": 0.9857852250000003,
+        "P05": 0.984762,
+        "Frames": 480,
+        "sha": "9B132ED7B90679AFDD1102FCFC2A3FCB7E6E57C9F907F60875F47103C2BBBD8D"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "superfast",
+        "seconds": 5.3070162,
+        "encoding": 3.1158411,
+        "validation": 2.1513586,
+        "bytes": 4255593,
+        "Mean": 0.9841938249999995,
+        "WorstSecond": 0.9839482666666667,
+        "P05": 0.982785,
+        "Frames": 480,
+        "sha": "1B72EEBBF5C9D9A2A513D44B2F6E8D35E4C7CA31EAFE51CB2A1FC05A8D5FD0CE"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "fast",
+        "seconds": 17.9266311,
+        "encoding": 15.0198129,
+        "validation": 2.8688162,
+        "bytes": 4053665,
+        "Mean": 0.9858163916666667,
+        "WorstSecond": 0.9855236,
+        "P05": 0.983819,
+        "Frames": 480,
+        "sha": "B534ED8153B464749A10113076151E8C5DB5E2F4BDF3FE658E912CBBC3B0A3C8"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "seconds": 14.5206822,
+        "encoding": 11.5808764,
+        "validation": 2.8969046,
+        "bytes": 4066095,
+        "Mean": 0.9852475000000002,
+        "WorstSecond": 0.9850302083333335,
+        "P05": 0.983066,
+        "Frames": 480,
+        "sha": "A5AB5C7FE6688AF3EACA40E46CC401B6958E50F2EFFB1ED3D42BC6A8FFCECA65"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "superfast",
+        "seconds": 9.5004561,
+        "encoding": 7.021982,
+        "validation": 2.4407608,
+        "bytes": 4150085,
+        "Mean": 0.9802876833333333,
+        "WorstSecond": 0.9787045666666668,
+        "P05": 0.976596,
+        "Frames": 480,
+        "sha": "C04F272F7C438EF6C386D1A61068F575663093497441F297D4EA4E53B4DB5CAD"
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.0058117437458242716,
+        "meanDelta": -0.001066943750000493,
+        "worstDelta": -0.00144211666666616,
+        "encodingReduction": 0.48617431090804786,
+        "timeReduction": 0.43590426410985783
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "matched": true,
+        "paretoNoWorse": false,
+        "byteDelta": 0.012313364511419511,
+        "meanDelta": -0.0008671729166676023,
+        "worstDelta": -0.0014094333333328768,
+        "encodingReduction": 0.6229919399071426,
+        "timeReduction": 0.5488128511035963
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx264",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.05302575903793327,
+        "meanDelta": -0.003118737500001134,
+        "worstDelta": -0.003246391666666515,
+        "encodingReduction": 0.7587324977091969,
+        "timeReduction": 0.6602495555745493
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.0030596590206122265,
+        "meanDelta": -0.0014961708333339763,
+        "worstDelta": -0.001671058333333142,
+        "encodingReduction": -0.1630223194816267,
+        "timeReduction": -0.14764693638510207
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.0061354019746120425,
+        "meanDelta": -0.002065062500000492,
+        "worstDelta": -0.0021644499999996514,
+        "encodingReduction": 0.10326328150478947,
+        "timeReduction": 0.07039887483088314
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 0,
+        "codec": "libx265",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.026918318362902927,
+        "meanDelta": -0.007024879166667386,
+        "worstDelta": -0.008490091666666366,
+        "encodingReduction": 0.4562700715800372,
+        "timeReduction": 0.39178927280842224
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "superfast",
+        "seconds": 9.3533623,
+        "encoding": 6.8580376,
+        "validation": 2.4590023,
+        "bytes": 4150085,
+        "Mean": 0.9802876833333333,
+        "WorstSecond": 0.9787045666666668,
+        "P05": 0.976596,
+        "Frames": 480,
+        "sha": "C04F272F7C438EF6C386D1A61068F575663093497441F297D4EA4E53B4DB5CAD"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "seconds": 11.7615593,
+        "encoding": 8.8370818,
+        "validation": 2.8898238,
+        "bytes": 4066095,
+        "Mean": 0.9852475000000002,
+        "WorstSecond": 0.9850302083333335,
+        "P05": 0.983066,
+        "Frames": 480,
+        "sha": "A5AB5C7FE6688AF3EACA40E46CC401B6958E50F2EFFB1ED3D42BC6A8FFCECA65"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "fast",
+        "seconds": 13.1050978,
+        "encoding": 10.7380963,
+        "validation": 2.3267843,
+        "bytes": 4053665,
+        "Mean": 0.9858163916666667,
+        "WorstSecond": 0.9855236,
+        "P05": 0.983819,
+        "Frames": 480,
+        "sha": "B534ED8153B464749A10113076151E8C5DB5E2F4BDF3FE658E912CBBC3B0A3C8"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "superfast",
+        "seconds": 4.7650103,
+        "encoding": 2.7400581,
+        "validation": 1.9899756,
+        "bytes": 4255593,
+        "Mean": 0.9841938249999995,
+        "WorstSecond": 0.9839482666666667,
+        "P05": 0.982785,
+        "Frames": 480,
+        "sha": "1B72EEBBF5C9D9A2A513D44B2F6E8D35E4C7CA31EAFE51CB2A1FC05A8D5FD0CE"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "seconds": 6.8036722,
+        "encoding": 4.7594574,
+        "validation": 2.0094151,
+        "bytes": 4091062,
+        "Mean": 0.986445389583333,
+        "WorstSecond": 0.9857852250000003,
+        "P05": 0.984762,
+        "Frames": 480,
+        "sha": "9B132ED7B90679AFDD1102FCFC2A3FCB7E6E57C9F907F60875F47103C2BBBD8D"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "fast",
+        "seconds": 8.583635,
+        "encoding": 6.4536541,
+        "validation": 2.0951754,
+        "bytes": 4064787,
+        "Mean": 0.9862456187500002,
+        "WorstSecond": 0.985752541666667,
+        "P05": 0.98483,
+        "Frames": 480,
+        "sha": "7A6D63F944D82867E8A268DF9784768BDF887FB2E1F922B7A62272ADE8F8A3AF"
+      },
+      {
+        "kind": "trial",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "medium",
+        "seconds": 14.8013884,
+        "encoding": 12.3155629,
+        "validation": 2.4510107,
+        "bytes": 4041300,
+        "Mean": 0.9873125625000007,
+        "WorstSecond": 0.9871946583333332,
+        "P05": 0.984861,
+        "Frames": 480,
+        "sha": "FA28C3365FD76371D755466F98D01EC10C6E3AE34F9011D6010762566E25F1F5"
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.0058117437458242716,
+        "meanDelta": -0.001066943750000493,
+        "worstDelta": -0.00144211666666616,
+        "encodingReduction": 0.4759757103753658,
+        "timeReduction": 0.42007906501527936
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "veryfast",
+        "matched": true,
+        "paretoNoWorse": false,
+        "byteDelta": 0.012313364511419511,
+        "meanDelta": -0.0008671729166676023,
+        "worstDelta": -0.0014094333333328768,
+        "encodingReduction": 0.6135412210837721,
+        "timeReduction": 0.5403355404145735
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx264",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.05302575903793327,
+        "meanDelta": -0.003118737500001134,
+        "worstDelta": -0.003246391666666515,
+        "encodingReduction": 0.7775125568966076,
+        "timeReduction": 0.6780700451046876
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "fast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.0030596590206122265,
+        "meanDelta": -0.0014961708333339763,
+        "worstDelta": -0.001671058333333142,
+        "encodingReduction": 0.12808725129405163,
+        "timeReduction": 0.11460347868447263
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "veryfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.0061354019746120425,
+        "meanDelta": -0.002065062500000492,
+        "worstDelta": -0.0021644499999996514,
+        "encodingReduction": 0.28244596923783316,
+        "timeReduction": 0.20537459175113604
+      },
+      {
+        "kind": "pair",
+        "id": "high-rate-1080p120",
+        "rep": 1,
+        "codec": "libx265",
+        "preset": "superfast",
+        "matched": false,
+        "paretoNoWorse": false,
+        "byteDelta": 0.026918318362902927,
+        "meanDelta": -0.007024879166667386,
+        "worstDelta": -0.008490091666666366,
+        "encodingReduction": 0.4431405486143065,
+        "timeReduction": 0.36807534217533266
+      },
+      {
+        "kind": "summary",
+        "fixtures": 3,
+        "trials": 42,
+        "pairs": 36,
+        "interpretation": "fixed-rate screen only; no automatic codec or preset promotion"
+      }
+    ]
+  },
+  "sampling": {
+    "run": 45875335703,
+    "job": 140100860391,
+    "artifact": 15145261826,
+    "rows": [
+      {
+        "kind": "environment",
+        "commit": "d04b7a68dcb7d805a124c11218731d2f6b467f2c",
+        "ffmpeg": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers\r",
+        "grid": [
+          18,
+          26,
+          34
+        ],
+        "MeanFloor": 0.99,
+        "WorstFloor": 0.985,
+        "scope": "synthetic CFR silent, no release acceptance"
+      },
+      {
+        "kind": "audit",
+        "id": "motion",
+        "sourceSha": "BFD8086FB195B42730A9DE6A35F3FE2AC76634FCDA3DE968351D65D01F6B877E",
+        "features": [
+          {
+            "Second": 0,
+            "Spatial": 0.02954516441993464,
+            "Temporal": 0.031092133033769065
+          },
+          {
+            "Second": 1,
+            "Spatial": 0.030054508782679738,
+            "Temporal": 0.037722120098039214
+          },
+          {
+            "Second": 2,
+            "Spatial": 0.03128382863562092,
+            "Temporal": 0.04183602260348584
+          },
+          {
+            "Second": 3,
+            "Spatial": 0.031205107911220043,
+            "Temporal": 0.049480017701525054
+          },
+          {
+            "Second": 4,
+            "Spatial": 0.03227485872821351,
+            "Temporal": 0.05207354643246187
+          },
+          {
+            "Second": 5,
+            "Spatial": 0.032159117987472764,
+            "Temporal": 0.05110251565904139
+          },
+          {
+            "Second": 6,
+            "Spatial": 0.033190146718409586,
+            "Temporal": 0.05378965822440087
+          },
+          {
+            "Second": 7,
+            "Spatial": 0.032039122072440085,
+            "Temporal": 0.05591639433551198
+          },
+          {
+            "Second": 8,
+            "Spatial": 0.031222554125816992,
+            "Temporal": 0.05127825435729848
+          },
+          {
+            "Second": 9,
+            "Spatial": 0.03037513616557734,
+            "Temporal": 0.04083350354030501
+          },
+          {
+            "Second": 10,
+            "Spatial": 0.031846149918300655,
+            "Temporal": 0.04625204248366013
+          },
+          {
+            "Second": 11,
+            "Spatial": 0.030764910130718956,
+            "Temporal": 0.04707797181372549
+          }
+        ],
+        "featureSeconds": 0.0818863,
+        "full": [
+          {
+            "Q": 18,
+            "Bytes": 496716,
+            "Mean": 0.9971272048611107,
+            "Worst": 0.9968069166666665,
+            "Frames": 288,
+            "Seconds": 1.0102657,
+            "Encoding": 0.3972283
+          },
+          {
+            "Q": 26,
+            "Bytes": 260884,
+            "Mean": 0.9870097604166668,
+            "Worst": 0.986044625,
+            "Frames": 288,
+            "Seconds": 0.8664873,
+            "Encoding": 0.3504224
+          },
+          {
+            "Q": 34,
+            "Bytes": 160827,
+            "Mean": 0.9625538750000007,
+            "Worst": 0.9605912916666667,
+            "Frames": 288,
+            "Seconds": 0.872119,
+            "Encoding": 0.3239985
+          }
+        ],
+        "oracle": {
+          "Q": 18,
+          "Bytes": 496716,
+          "Mean": 0.9971272048611107,
+          "Worst": 0.9968069166666665,
+          "Frames": 288,
+          "Seconds": 1.0102657,
+          "Encoding": 0.3972283
+        },
+        "gridSeconds": 2.748872
+      },
+      {
+        "kind": "sample",
+        "id": "motion",
+        "method": "uniform",
+        "windows": [
+          1,
+          5,
+          9
+        ],
+        "extraction": 0.2715068,
+        "measured": [
+          {
+            "Q": 18,
+            "Bytes": 127490,
+            "Mean": 0.9971688194444445,
+            "Worst": 0.9968894166666668,
+            "Frames": 72,
+            "Seconds": 0.314182,
+            "Encoding": 0.1402437
+          },
+          {
+            "Q": 26,
+            "Bytes": 69507,
+            "Mean": 0.9878608750000001,
+            "Worst": 0.9867460416666667,
+            "Frames": 72,
+            "Seconds": 0.3241977,
+            "Encoding": 0.1429022
+          },
+          {
+            "Q": 34,
+            "Bytes": 44070,
+            "Mean": 0.9648091805555554,
+            "Worst": 0.9621170833333333,
+            "Frames": 72,
+            "Seconds": 0.3218081,
+            "Encoding": 0.1267657
+          }
+        ],
+        "selected": {
+          "Q": 18,
+          "Bytes": 127490,
+          "Mean": 0.9971688194444445,
+          "Worst": 0.9968894166666668,
+          "Frames": 72,
+          "Seconds": 0.314182,
+          "Encoding": 0.1402437
+        },
+        "audited": {
+          "Q": 18,
+          "Bytes": 496716,
+          "Mean": 0.9971272048611107,
+          "Worst": 0.9968069166666665,
+          "Frames": 288,
+          "Seconds": 1.0102657,
+          "Encoding": 0.3972283
+        },
+        "feasible": true,
+        "oracleMatch": true,
+        "searchSeconds": 1.2316946,
+        "searchPlusFinalSeconds": 2.2419602999999997,
+        "costScope": "replay with measured full audit; not independently timed live search"
+      },
+      {
+        "kind": "sample",
+        "id": "motion",
+        "method": "activity",
+        "windows": [
+          0,
+          3,
+          7
+        ],
+        "extraction": 0.2510613,
+        "measured": [
+          {
+            "Q": 18,
+            "Bytes": 146898,
+            "Mean": 0.9967191805555555,
+            "Worst": 0.9964632916666667,
+            "Frames": 72,
+            "Seconds": 0.3419736,
+            "Encoding": 0.1495335
+          },
+          {
+            "Q": 26,
+            "Bytes": 78350,
+            "Mean": 0.9867021666666665,
+            "Worst": 0.9861459166666666,
+            "Frames": 72,
+            "Seconds": 0.304033,
+            "Encoding": 0.1301605
+          },
+          {
+            "Q": 34,
+            "Bytes": 48981,
+            "Mean": 0.9629559305555557,
+            "Worst": 0.9608054999999999,
+            "Frames": 72,
+            "Seconds": 0.3024581,
+            "Encoding": 0.1234247
+          }
+        ],
+        "selected": {
+          "Q": 18,
+          "Bytes": 146898,
+          "Mean": 0.9967191805555555,
+          "Worst": 0.9964632916666667,
+          "Frames": 72,
+          "Seconds": 0.3419736,
+          "Encoding": 0.1495335
+        },
+        "audited": {
+          "Q": 18,
+          "Bytes": 496716,
+          "Mean": 0.9971272048611107,
+          "Worst": 0.9968069166666665,
+          "Frames": 288,
+          "Seconds": 1.0102657,
+          "Encoding": 0.3972283
+        },
+        "feasible": true,
+        "oracleMatch": true,
+        "searchSeconds": 1.2814123,
+        "searchPlusFinalSeconds": 2.291678,
+        "costScope": "replay with measured full audit; not independently timed live search"
+      },
+      {
+        "kind": "audit",
+        "id": "rare",
+        "sourceSha": "231D662010609E168D47DA52668B502F404098A77C18372A7F4D3A0F7C6A4FBF",
+        "features": [
+          {
+            "Second": 0,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 1,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 2,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 3,
+            "Spatial": 0.031248085171568626,
+            "Temporal": 0.0937708503540305
+          },
+          {
+            "Second": 4,
+            "Spatial": 0.03229953873910675,
+            "Temporal": 0.052021207788671024
+          },
+          {
+            "Second": 5,
+            "Spatial": 0,
+            "Temporal": 0.05585129016884532
+          },
+          {
+            "Second": 6,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 7,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 8,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 9,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 10,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 11,
+            "Spatial": 0,
+            "Temporal": 0
+          }
+        ],
+        "featureSeconds": 0.0588628,
+        "full": [
+          {
+            "Q": 18,
+            "Bytes": 97675,
+            "Mean": 0.9995179999999979,
+            "Worst": 0.9968279999999999,
+            "Frames": 288,
+            "Seconds": 0.6327313,
+            "Encoding": 0.201014
+          },
+          {
+            "Q": 26,
+            "Bytes": 56337,
+            "Mean": 0.9978844097222159,
+            "Worst": 0.9870310833333332,
+            "Frames": 288,
+            "Seconds": 0.6100758,
+            "Encoding": 0.1944744
+          },
+          {
+            "Q": 34,
+            "Bytes": 38353,
+            "Mean": 0.9941468784722206,
+            "Worst": 0.964951875,
+            "Frames": 288,
+            "Seconds": 0.5932146,
+            "Encoding": 0.1880572
+          }
+        ],
+        "oracle": {
+          "Q": 26,
+          "Bytes": 56337,
+          "Mean": 0.9978844097222159,
+          "Worst": 0.9870310833333332,
+          "Frames": 288,
+          "Seconds": 0.6100758,
+          "Encoding": 0.1944744
+        },
+        "gridSeconds": 1.8360216999999999
+      },
+      {
+        "kind": "sample",
+        "id": "rare",
+        "method": "uniform",
+        "windows": [
+          1,
+          5,
+          9
+        ],
+        "extraction": 0.1988605,
+        "measured": [
+          {
+            "Q": 18,
+            "Bytes": 3889,
+            "Mean": 0.9999953333333352,
+            "Worst": 0.999993,
+            "Frames": 72,
+            "Seconds": 0.1751175,
+            "Encoding": 0.0667397
+          },
+          {
+            "Q": 26,
+            "Bytes": 3574,
+            "Mean": 0.9999886666666669,
+            "Worst": 0.9999830000000002,
+            "Frames": 72,
+            "Seconds": 0.1760108,
+            "Encoding": 0.0625118
+          },
+          {
+            "Q": 34,
+            "Bytes": 3532,
+            "Mean": 0.9999886666666669,
+            "Worst": 0.9999830000000002,
+            "Frames": 72,
+            "Seconds": 0.1742076,
+            "Encoding": 0.0641259
+          }
+        ],
+        "selected": {
+          "Q": 34,
+          "Bytes": 3532,
+          "Mean": 0.9999886666666669,
+          "Worst": 0.9999830000000002,
+          "Frames": 72,
+          "Seconds": 0.1742076,
+          "Encoding": 0.0641259
+        },
+        "audited": {
+          "Q": 34,
+          "Bytes": 38353,
+          "Mean": 0.9941468784722206,
+          "Worst": 0.964951875,
+          "Frames": 288,
+          "Seconds": 0.5932146,
+          "Encoding": 0.1880572
+        },
+        "feasible": false,
+        "oracleMatch": false,
+        "searchSeconds": 0.7241964,
+        "searchPlusFinalSeconds": 1.3174109999999999,
+        "costScope": "replay with measured full audit; not independently timed live search"
+      },
+      {
+        "kind": "sample",
+        "id": "rare",
+        "method": "activity",
+        "windows": [
+          0,
+          3,
+          9
+        ],
+        "extraction": 0.1678304,
+        "measured": [
+          {
+            "Q": 18,
+            "Bytes": 51130,
+            "Mean": 0.9990734444444455,
+            "Worst": 0.9972273333333334,
+            "Frames": 72,
+            "Seconds": 0.1987586,
+            "Encoding": 0.0800591
+          },
+          {
+            "Q": 26,
+            "Bytes": 29734,
+            "Mean": 0.9957447638888889,
+            "Worst": 0.9872512916666666,
+            "Frames": 72,
+            "Seconds": 0.2000702,
+            "Encoding": 0.0794378
+          },
+          {
+            "Q": 34,
+            "Bytes": 19765,
+            "Mean": 0.9879415,
+            "Worst": 0.9638415,
+            "Frames": 72,
+            "Seconds": 0.1888894,
+            "Encoding": 0.0732811
+          }
+        ],
+        "selected": {
+          "Q": 26,
+          "Bytes": 29734,
+          "Mean": 0.9957447638888889,
+          "Worst": 0.9872512916666666,
+          "Frames": 72,
+          "Seconds": 0.2000702,
+          "Encoding": 0.0794378
+        },
+        "audited": {
+          "Q": 26,
+          "Bytes": 56337,
+          "Mean": 0.9978844097222159,
+          "Worst": 0.9870310833333332,
+          "Frames": 288,
+          "Seconds": 0.6100758,
+          "Encoding": 0.1944744
+        },
+        "feasible": true,
+        "oracleMatch": true,
+        "searchSeconds": 0.8144114,
+        "searchPlusFinalSeconds": 1.4244872,
+        "costScope": "replay with measured full audit; not independently timed live search"
+      },
+      {
+        "kind": "audit",
+        "id": "mixed",
+        "sourceSha": "31FEFAE89B4B03E57C448AF9E3E6E3B92F80A9551DB2B06FDEADD7EE5438051F",
+        "features": [
+          {
+            "Second": 0,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 1,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 2,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 3,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 4,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 5,
+            "Spatial": 0,
+            "Temporal": 0
+          },
+          {
+            "Second": 6,
+            "Spatial": 0.03316504119008715,
+            "Temporal": 0.09616098175381263
+          },
+          {
+            "Second": 7,
+            "Spatial": 0.032028484136710236,
+            "Temporal": 0.05580278118191721
+          },
+          {
+            "Second": 8,
+            "Spatial": 0.031238723788126362,
+            "Temporal": 0.051312295751633985
+          },
+          {
+            "Second": 9,
+            "Spatial": 0.030370668232570806,
+            "Temporal": 0.04090456495098039
+          },
+          {
+            "Second": 10,
+            "Spatial": 0.031828916462418304,
+            "Temporal": 0.04623587282135076
+          },
+          {
+            "Second": 11,
+            "Spatial": 0.030797674972766885,
+            "Temporal": 0.04699116625816994
+          }
+        ],
+        "featureSeconds": 0.0576539,
+        "full": [
+          {
+            "Q": 18,
+            "Bytes": 253941,
+            "Mean": 0.9986150381944446,
+            "Worst": 0.9963704166666666,
+            "Frames": 288,
+            "Seconds": 0.6119518,
+            "Encoding": 0.2235801
+          },
+          {
+            "Q": 26,
+            "Bytes": 136029,
+            "Mean": 0.9935940763888893,
+            "Worst": 0.9853901666666666,
+            "Frames": 288,
+            "Seconds": 0.5693377,
+            "Encoding": 0.2016215
+          },
+          {
+            "Q": 34,
+            "Bytes": 87870,
+            "Mean": 0.9818446249999996,
+            "Worst": 0.9603002499999999,
+            "Frames": 288,
+            "Seconds": 0.5487018,
+            "Encoding": 0.1898406
+          }
+        ],
+        "oracle": {
+          "Q": 26,
+          "Bytes": 136029,
+          "Mean": 0.9935940763888893,
+          "Worst": 0.9853901666666666,
+          "Frames": 288,
+          "Seconds": 0.5693377,
+          "Encoding": 0.2016215
+        },
+        "gridSeconds": 1.7299913
+      },
+      {
+        "kind": "sample",
+        "id": "mixed",
+        "method": "uniform",
+        "windows": [
+          1,
+          5,
+          9
+        ],
+        "extraction": 0.1840726,
+        "measured": [
+          {
+            "Q": 18,
+            "Bytes": 45306,
+            "Mean": 0.9990196944444448,
+            "Worst": 0.9970590833333333,
+            "Frames": 72,
+            "Seconds": 0.2006657,
+            "Encoding": 0.0813837
+          },
+          {
+            "Q": 26,
+            "Bytes": 26070,
+            "Mean": 0.9958741944444441,
+            "Worst": 0.9876225833333333,
+            "Frames": 72,
+            "Seconds": 0.202372,
+            "Encoding": 0.0823211
+          },
+          {
+            "Q": 34,
+            "Bytes": 17634,
+            "Mean": 0.9879944583333339,
+            "Worst": 0.9639833750000001,
+            "Frames": 72,
+            "Seconds": 0.1912361,
+            "Encoding": 0.0763222
+          }
+        ],
+        "selected": {
+          "Q": 26,
+          "Bytes": 26070,
+          "Mean": 0.9958741944444441,
+          "Worst": 0.9876225833333333,
+          "Frames": 72,
+          "Seconds": 0.202372,
+          "Encoding": 0.0823211
+        },
+        "audited": {
+          "Q": 26,
+          "Bytes": 136029,
+          "Mean": 0.9935940763888893,
+          "Worst": 0.9853901666666666,
+          "Frames": 288,
+          "Seconds": 0.5693377,
+          "Encoding": 0.2016215
+        },
+        "feasible": true,
+        "oracleMatch": true,
+        "searchSeconds": 0.7783464,
+        "searchPlusFinalSeconds": 1.3476841,
+        "costScope": "replay with measured full audit; not independently timed live search"
+      },
+      {
+        "kind": "sample",
+        "id": "mixed",
+        "method": "activity",
+        "windows": [
+          0,
+          6,
+          9
+        ],
+        "extraction": 0.1846388,
+        "measured": [
+          {
+            "Q": 18,
+            "Bytes": 89621,
+            "Mean": 0.9983041111111111,
+            "Worst": 0.9970043333333334,
+            "Frames": 72,
+            "Seconds": 0.2251132,
+            "Encoding": 0.0974276
+          },
+          {
+            "Q": 26,
+            "Bytes": 50957,
+            "Mean": 0.9917949166666671,
+            "Worst": 0.9873538750000002,
+            "Frames": 72,
+            "Seconds": 0.2205196,
+            "Encoding": 0.0916043
+          },
+          {
+            "Q": 34,
+            "Bytes": 33631,
+            "Mean": 0.9768812361111107,
+            "Worst": 0.9645872083333332,
+            "Frames": 72,
+            "Seconds": 0.2150359,
+            "Encoding": 0.0867604
+          }
+        ],
+        "selected": {
+          "Q": 26,
+          "Bytes": 50957,
+          "Mean": 0.9917949166666671,
+          "Worst": 0.9873538750000002,
+          "Frames": 72,
+          "Seconds": 0.2205196,
+          "Encoding": 0.0916043
+        },
+        "audited": {
+          "Q": 26,
+          "Bytes": 136029,
+          "Mean": 0.9935940763888893,
+          "Worst": 0.9853901666666666,
+          "Frames": 288,
+          "Seconds": 0.5693377,
+          "Encoding": 0.2016215
+        },
+        "feasible": true,
+        "oracleMatch": true,
+        "searchSeconds": 0.9029614,
+        "searchPlusFinalSeconds": 1.4722990999999999,
+        "costScope": "replay with measured full audit; not independently timed live search"
+      },
+      {
+        "kind": "summary",
+        "completed": 3,
+        "interpretation": "research screen only; failed sample quality or speed is evidence, not a CI infrastructure failure"
+      }
+    ]
+  }
+}
