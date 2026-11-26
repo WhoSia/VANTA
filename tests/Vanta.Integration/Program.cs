@@ -16,6 +16,12 @@ if(args.Length==3&&args[0]=="--public-confirmation")
     await AccelerationCohortScreen.RunAsync(args[2],confirmationTimeout.Token,args[1]);
     return;
 }
+if(args.Length==2&&args[0]=="--synthetic-frontier")
+{
+    using var frontierTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(28));
+    await PresetFrontierScreen.RunAsync(null,args[1],frontierTimeout.Token);
+    return;
+}
 if(args.Length==3&&args[0]=="--preset-frontier")
 {
     using var frontierTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(24));
