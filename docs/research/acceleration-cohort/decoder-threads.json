@@ -1,0 +1,101 @@
+{
+  "environment": "Node 22.16.0, FFmpeg 7.1.5-0+deb13u1, Linux cpu quota 4",
+  "rows": [
+    {
+      "rep": 0,
+      "threads": 0,
+      "seconds": 0.24244063099999993,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 0,
+      "threads": 1,
+      "seconds": 0.2756549500000001,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 0,
+      "threads": 2,
+      "seconds": 0.25117811000000007,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 0,
+      "threads": 4,
+      "seconds": 0.226534719,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 1,
+      "threads": 1,
+      "seconds": 0.26306645300000014,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 1,
+      "threads": 2,
+      "seconds": 0.21358209399999986,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 1,
+      "threads": 4,
+      "seconds": 0.23249099900000011,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 1,
+      "threads": 0,
+      "seconds": 0.22967826700000024,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 2,
+      "threads": 2,
+      "seconds": 0.2768054359999996,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 2,
+      "threads": 4,
+      "seconds": 0.25378911199999993,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 2,
+      "threads": 0,
+      "seconds": 0.22616462200000023,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    },
+    {
+      "rep": 2,
+      "threads": 1,
+      "seconds": 0.2691828949999999,
+      "frames": 90,
+      "clockHash": "98940ee682090ede0c83d92c3c50050306e69320fa7c1dde05dafbbfe4c47e2f",
+      "sourceHash": "fe94e624b3765106c8d07941a4592b37054a3cff18f13217d7efc8ce8073d8ad"
+    }
+  ]
+}

@@ -1,0 +1,458 @@
+{
+  "head": "169b5a37b60e8cbbdda37f13f6e9c0e13de4908c",
+  "run": 45853326857,
+  "job": 140025105027,
+  "clocks": [
+    {
+      "rep": 0,
+      "reuse": false,
+      "seconds": 1.5953715,
+      "captureSeconds": 0.6209806,
+      "frames": 3597,
+      "scope": "validation-only"
+    },
+    {
+      "rep": 0,
+      "reuse": true,
+      "seconds": 1.3308889,
+      "captureSeconds": 0.6209806,
+      "frames": 3597,
+      "scope": "validation-only"
+    },
+    {
+      "rep": 1,
+      "reuse": true,
+      "seconds": 1.3112714,
+      "captureSeconds": 0.6209806,
+      "frames": 3597,
+      "scope": "validation-only"
+    },
+    {
+      "rep": 1,
+      "reuse": false,
+      "seconds": 1.5578471,
+      "captureSeconds": 0.6209806,
+      "frames": 3597,
+      "scope": "validation-only"
+    },
+    {
+      "rep": 2,
+      "reuse": false,
+      "seconds": 1.6223632,
+      "captureSeconds": 0.6209806,
+      "frames": 3597,
+      "scope": "validation-only"
+    },
+    {
+      "rep": 2,
+      "reuse": true,
+      "seconds": 1.4053659,
+      "captureSeconds": 0.6209806,
+      "frames": 3597,
+      "scope": "validation-only"
+    }
+  ],
+  "cost": [
+    {
+      "captureSeconds": 0.6209806,
+      "freshTotal": 4.775581799999999,
+      "reuseTotal": 4.6685068
+    }
+  ],
+  "resource": [
+    {
+      "rep": 0,
+      "combined": false,
+      "seconds": 1.7834288,
+      "processes": 12,
+      "cpuObserved": 12,
+      "exitCpu": 12,
+      "cpuSumObserved": 0.6875,
+      "maxChildSampledRss": 15470592,
+      "sha": "4BAF84E42635FA04D675EB963E89B1F67D1DC380D14A50C51C1729AD543DD2EA",
+      "rows": [
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15458304,
+          "ReportedPeakWorkingSetBytes": 15458304,
+          "CpuSeconds": 0.03125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 32,
+          "MaxSampledWorkingSetBytes": 15413248,
+          "ReportedPeakWorkingSetBytes": 15413248,
+          "CpuSeconds": 0.09375,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15470592,
+          "ReportedPeakWorkingSetBytes": 15470592,
+          "CpuSeconds": 0.03125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-video-clock",
+          "Samples": 6,
+          "MaxSampledWorkingSetBytes": 15429632,
+          "ReportedPeakWorkingSetBytes": 15867904,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 0
+        },
+        {
+          "Role": "source-video-clock",
+          "Samples": 5,
+          "MaxSampledWorkingSetBytes": 15462400,
+          "ReportedPeakWorkingSetBytes": 15462400,
+          "CpuSeconds": 0.03125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-audio-packets",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15425536,
+          "ReportedPeakWorkingSetBytes": 15425536,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "source-audio-packets",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15458304,
+          "ReportedPeakWorkingSetBytes": 15458304,
+          "CpuSeconds": 0.078125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-audio-packets",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15425536,
+          "ReportedPeakWorkingSetBytes": 15425536,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "source-audio-packets",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15421440,
+          "ReportedPeakWorkingSetBytes": 15421440,
+          "CpuSeconds": 0.078125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15437824,
+          "ReportedPeakWorkingSetBytes": 15437824,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15417344,
+          "ReportedPeakWorkingSetBytes": 15417344,
+          "CpuSeconds": 0.078125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 4,
+          "MaxSampledWorkingSetBytes": 15458304,
+          "ReportedPeakWorkingSetBytes": 15458304,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        }
+      ]
+    },
+    {
+      "rep": 0,
+      "combined": true,
+      "seconds": 1.4212771,
+      "processes": 7,
+      "cpuObserved": 7,
+      "exitCpu": 7,
+      "cpuSumObserved": 0.40625,
+      "maxChildSampledRss": 15474688,
+      "sha": "4BAF84E42635FA04D675EB963E89B1F67D1DC380D14A50C51C1729AD543DD2EA",
+      "rows": [
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15474688,
+          "ReportedPeakWorkingSetBytes": 15474688,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 32,
+          "MaxSampledWorkingSetBytes": 15433728,
+          "ReportedPeakWorkingSetBytes": 15433728,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15454208,
+          "ReportedPeakWorkingSetBytes": 15454208,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-strict-decode",
+          "Samples": 5,
+          "MaxSampledWorkingSetBytes": 15413248,
+          "ReportedPeakWorkingSetBytes": 15413248,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "source-video-clock",
+          "Samples": 6,
+          "MaxSampledWorkingSetBytes": 15417344,
+          "ReportedPeakWorkingSetBytes": 15417344,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-interleaved-audio",
+          "Samples": 4,
+          "MaxSampledWorkingSetBytes": 15413248,
+          "ReportedPeakWorkingSetBytes": 15413248,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "source-interleaved-audio",
+          "Samples": 4,
+          "MaxSampledWorkingSetBytes": 15421440,
+          "ReportedPeakWorkingSetBytes": 15421440,
+          "CpuSeconds": 0.09375,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        }
+      ]
+    },
+    {
+      "rep": 1,
+      "combined": true,
+      "seconds": 1.3913189,
+      "processes": 7,
+      "cpuObserved": 7,
+      "exitCpu": 7,
+      "cpuSumObserved": 0.390625,
+      "maxChildSampledRss": 15486976,
+      "sha": "4BAF84E42635FA04D675EB963E89B1F67D1DC380D14A50C51C1729AD543DD2EA",
+      "rows": [
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15441920,
+          "ReportedPeakWorkingSetBytes": 15441920,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 31,
+          "MaxSampledWorkingSetBytes": 15417344,
+          "ReportedPeakWorkingSetBytes": 15417344,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15486976,
+          "ReportedPeakWorkingSetBytes": 15486976,
+          "CpuSeconds": 0.03125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-strict-decode",
+          "Samples": 5,
+          "MaxSampledWorkingSetBytes": 15421440,
+          "ReportedPeakWorkingSetBytes": 15421440,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "source-video-clock",
+          "Samples": 6,
+          "MaxSampledWorkingSetBytes": 15450112,
+          "ReportedPeakWorkingSetBytes": 15884288,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 0
+        },
+        {
+          "Role": "output-interleaved-audio",
+          "Samples": 4,
+          "MaxSampledWorkingSetBytes": 15421440,
+          "ReportedPeakWorkingSetBytes": 15855616,
+          "CpuSeconds": 0.078125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 0
+        },
+        {
+          "Role": "source-interleaved-audio",
+          "Samples": 5,
+          "MaxSampledWorkingSetBytes": 15470592,
+          "ReportedPeakWorkingSetBytes": 15470592,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        }
+      ]
+    },
+    {
+      "rep": 1,
+      "combined": false,
+      "seconds": 1.7825248,
+      "processes": 12,
+      "cpuObserved": 12,
+      "exitCpu": 12,
+      "cpuSumObserved": 0.6875,
+      "maxChildSampledRss": 15695872,
+      "sha": "4BAF84E42635FA04D675EB963E89B1F67D1DC380D14A50C51C1729AD543DD2EA",
+      "rows": [
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15425536,
+          "ReportedPeakWorkingSetBytes": 15425536,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 32,
+          "MaxSampledWorkingSetBytes": 15400960,
+          "ReportedPeakWorkingSetBytes": 15400960,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffprobe.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15405056,
+          "ReportedPeakWorkingSetBytes": 15405056,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-video-clock",
+          "Samples": 6,
+          "MaxSampledWorkingSetBytes": 15396864,
+          "ReportedPeakWorkingSetBytes": 15831040,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 0
+        },
+        {
+          "Role": "source-video-clock",
+          "Samples": 6,
+          "MaxSampledWorkingSetBytes": 15413248,
+          "ReportedPeakWorkingSetBytes": 15413248,
+          "CpuSeconds": 0.078125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-audio-packets",
+          "Samples": 4,
+          "MaxSampledWorkingSetBytes": 15405056,
+          "ReportedPeakWorkingSetBytes": 15405056,
+          "CpuSeconds": 0,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "source-audio-packets",
+          "Samples": 4,
+          "MaxSampledWorkingSetBytes": 15409152,
+          "ReportedPeakWorkingSetBytes": 15409152,
+          "CpuSeconds": 0.03125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "output-audio-packets",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15421440,
+          "ReportedPeakWorkingSetBytes": 15421440,
+          "CpuSeconds": 0.078125,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "source-audio-packets",
+          "Samples": 4,
+          "MaxSampledWorkingSetBytes": 15695872,
+          "ReportedPeakWorkingSetBytes": 15904768,
+          "CpuSeconds": 0.109375,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 0
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15396864,
+          "ReportedPeakWorkingSetBytes": 15396864,
+          "CpuSeconds": 0.046875,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 3,
+          "MaxSampledWorkingSetBytes": 15462400,
+          "ReportedPeakWorkingSetBytes": 15462400,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        },
+        {
+          "Role": "ffmpeg.exe",
+          "Samples": 5,
+          "MaxSampledWorkingSetBytes": 15462400,
+          "ReportedPeakWorkingSetBytes": 15462400,
+          "CpuSeconds": 0.0625,
+          "CpuBasis": "exit-counter",
+          "CounterErrors": 1
+        }
+      ]
+    }
+  ]
+}

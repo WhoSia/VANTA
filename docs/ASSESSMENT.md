@@ -115,3 +115,7 @@ Batch admission passes correctness, not matched acceleration (0/4). Next decisio
 ## Fourth scenario snapshot
 
 Exact d2d8fa3 evidence: combined 8/8 matched faster, median 7.68%; two byte-identical same-setting scheduling wins; validation gate two losses. Research-only v4 computed, mandatory and owner gates separate. New tracing and source reuse unmeasured. See decision inputs-v4/results-v4/gates-v4. No release authorization.
+
+## Evidence update 169b5a3
+
+V4 reproduced. Snapshot and tracing correctness tests passed, source reuse initial-cost amortized gain small, direct-child measurement coverage incomplete for process trees. Keep combined/equal-settings research ahead; validation gate retired from performance search. No new 12000-scenario run; require fixed five-pair cohort evidence before next model update. Subjective v4 scores remain historical. No version change.
