@@ -38,3 +38,7 @@ Try H.264 with fast (or veryfast), automatic encoder threads and experimental sp
 ### Media scale coverage
 
 Target: hundreds of MB through tens of GB, typical 1080p, common fractional/integer rates and VFR, higher resolutions. See [scale evidence and limitations](docs/research/media-scale/README.md). Local FFmpeg 11 rate checks, physical ~297MB stress input and sparse 5/20GiB chunk offsets passed; new exact C# Windows rate/physical and Linux offset lanes pending. Sparse files do not demonstrate physical large-media throughput. Current supported formats remain restricted; no claim of universal media support yet.
+
+### Audio input expansion (pending exact CI)
+
+New staged source extends copy eligibility to mono/stereo MP3, AC-3, E-AC-3 and ALAC with valid timing, bitrate and layout. Adds decoded PCM verification before publication in addition to existing packet/timeline checks. MKV/Opus/PCM/FLAC and other unverified cases remain restricted. See [input compatibility evidence](docs/research/input-compatibility/README.md). Not yet a verified package.

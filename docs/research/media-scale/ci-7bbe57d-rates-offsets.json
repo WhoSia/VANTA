@@ -1,0 +1,644 @@
+{
+  "head": "7bbe57d7d5375a29e1e20d61b5c940af830297e8",
+  "run": 45871127136,
+  "rates": [
+    {
+      "kind": "environment",
+      "mode": "rates",
+      "commit": "7bbe57d7d5375a29e1e20d61b5c940af830297e8",
+      "ffmpeg": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers\r",
+      "cpus": 4,
+      "storageStress": "short frame-rate coverage"
+    },
+    {
+      "kind": "fixture",
+      "Id": "23.976",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "24000/1001",
+      "Seconds": 1,
+      "ExpectedFrames": 24,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 2024097,
+      "sourceSha": "73B6CED27894B6CD7EEDDD10E3FF245CCF5F46F713F63228FE0A2C55EC2092C2",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "23.976",
+      "baseline": {
+        "Bytes": 1086095,
+        "Sha": "8B71EB1FFF75C2794694DB2E54617E1CB467E44B9E8646695C31A06438EE68BA",
+        "Total": 0.9131263,
+        "Encoding": 0.3558662,
+        "Validation": 0.4866971,
+        "Frames": 24,
+        "Mean": 0.9985368333333334,
+        "Worst": 0.9985368333333334
+      },
+      "candidate": {
+        "Bytes": 1086095,
+        "Sha": "8B71EB1FFF75C2794694DB2E54617E1CB467E44B9E8646695C31A06438EE68BA",
+        "Total": 0.633124,
+        "Encoding": 0.3638936,
+        "Validation": 0.228817,
+        "Frames": 24,
+        "Mean": 0.9985368333333334,
+        "Worst": 0.9985368333333334
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.30664137042159445
+    },
+    {
+      "kind": "fixture",
+      "Id": "24",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "24",
+      "Seconds": 1,
+      "ExpectedFrames": 24,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 2025081,
+      "sourceSha": "01B4458F3252A1C2A1CF433D6072DE066DF9BBFCD4D59AA02548B938246FBBCF",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "24",
+      "baseline": {
+        "Bytes": 1085397,
+        "Sha": "5479DD6D7308B256C2CE362FEE6ADB12EAC6321AE326CB944A4C03F46617E900",
+        "Total": 0.8359762,
+        "Encoding": 0.3365019,
+        "Validation": 0.4599397,
+        "Frames": 24,
+        "Mean": 0.9985526666666664,
+        "Worst": 0.9985526666666664
+      },
+      "candidate": {
+        "Bytes": 1085397,
+        "Sha": "5479DD6D7308B256C2CE362FEE6ADB12EAC6321AE326CB944A4C03F46617E900",
+        "Total": 0.6369918,
+        "Encoding": 0.3562397,
+        "Validation": 0.2358777,
+        "Frames": 24,
+        "Mean": 0.9985526666666664,
+        "Worst": 0.9985526666666664
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.2380263935743625
+    },
+    {
+      "kind": "fixture",
+      "Id": "25",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "25",
+      "Seconds": 1,
+      "ExpectedFrames": 25,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 2132331,
+      "sourceSha": "77F477289546721E32C11C8B9C45992C28072172FADA5334EAB2A22146502B76",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "25",
+      "baseline": {
+        "Bytes": 1097968,
+        "Sha": "56E71C0B5291D4B1AA4DC7DE77BA69AB546361064F80A9A5A2C955BD5088341C",
+        "Total": 0.8693515,
+        "Encoding": 0.3481397,
+        "Validation": 0.4810235,
+        "Frames": 25,
+        "Mean": 0.9984453600000001,
+        "Worst": 0.9984453600000001
+      },
+      "candidate": {
+        "Bytes": 1097968,
+        "Sha": "56E71C0B5291D4B1AA4DC7DE77BA69AB546361064F80A9A5A2C955BD5088341C",
+        "Total": 0.6118176,
+        "Encoding": 0.3490587,
+        "Validation": 0.2221251,
+        "Frames": 25,
+        "Mean": 0.9984453600000001,
+        "Worst": 0.9984453600000001
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.29623679259770075
+    },
+    {
+      "kind": "fixture",
+      "Id": "29.97",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "30000/1001",
+      "Seconds": 1,
+      "ExpectedFrames": 30,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 2501478,
+      "sourceSha": "291B816965554B8FC2D0B35DAB54FE60B2D641BA5D97B13594E1DEAECE7D5C53",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "29.97",
+      "baseline": {
+        "Bytes": 1073313,
+        "Sha": "391594218DAFE7B173F9F23BBDD5E9EE1C476EDB033E2101090F70F64891F809",
+        "Total": 0.9122425,
+        "Encoding": 0.4043412,
+        "Validation": 0.4698136,
+        "Frames": 30,
+        "Mean": 0.9976249666666668,
+        "Worst": 0.9976249666666668
+      },
+      "candidate": {
+        "Bytes": 1073313,
+        "Sha": "391594218DAFE7B173F9F23BBDD5E9EE1C476EDB033E2101090F70F64891F809",
+        "Total": 0.6872303,
+        "Encoding": 0.4063658,
+        "Validation": 0.2409426,
+        "Frames": 30,
+        "Mean": 0.9976249666666668,
+        "Worst": 0.9976249666666668
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.24665831727857446
+    },
+    {
+      "kind": "fixture",
+      "Id": "30",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "30",
+      "Seconds": 1,
+      "ExpectedFrames": 30,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 2503502,
+      "sourceSha": "B6F327C1EF4971F7D84A0EC7EFB49140C5314BC4A06C89D8B6E1478BFE26B549",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "30",
+      "baseline": {
+        "Bytes": 1049264,
+        "Sha": "87D2C47CB681C9891A2BD92DFAD4ED69C9C30B79608CA6B7B6FC0BCEE9F0D142",
+        "Total": 0.9170287,
+        "Encoding": 0.4165881,
+        "Validation": 0.4607228,
+        "Frames": 30,
+        "Mean": 0.9975172333333333,
+        "Worst": 0.9975172333333333
+      },
+      "candidate": {
+        "Bytes": 1049264,
+        "Sha": "87D2C47CB681C9891A2BD92DFAD4ED69C9C30B79608CA6B7B6FC0BCEE9F0D142",
+        "Total": 0.6967546,
+        "Encoding": 0.4141401,
+        "Validation": 0.2420064,
+        "Frames": 30,
+        "Mean": 0.9975172333333333,
+        "Worst": 0.9975172333333333
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.2402041506443583
+    },
+    {
+      "kind": "fixture",
+      "Id": "50",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "50",
+      "Seconds": 1,
+      "ExpectedFrames": 50,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 3804441,
+      "sourceSha": "95A3184947075BE5252F7C260D071CA16DA20D16590292E1B8DE631691680432",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "50",
+      "baseline": {
+        "Bytes": 994758,
+        "Sha": "6F8E0251CF92D6BE8747C6C80ECD6EF821656210F150143C53A9D3FF3238B2C3",
+        "Total": 1.1375329,
+        "Encoding": 0.5878913,
+        "Validation": 0.5096466,
+        "Frames": 50,
+        "Mean": 0.9941266999999998,
+        "Worst": 0.9941266999999998
+      },
+      "candidate": {
+        "Bytes": 994758,
+        "Sha": "6F8E0251CF92D6BE8747C6C80ECD6EF821656210F150143C53A9D3FF3238B2C3",
+        "Total": 0.9289779,
+        "Encoding": 0.6069357,
+        "Validation": 0.2822156,
+        "Frames": 50,
+        "Mean": 0.9941266999999998,
+        "Worst": 0.9941266999999998
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.1833397521952992
+    },
+    {
+      "kind": "fixture",
+      "Id": "59.94",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "60000/1001",
+      "Seconds": 1,
+      "ExpectedFrames": 60,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 4528856,
+      "sourceSha": "2F60A2D12FD55ECE712A5E5BD282ADAE9B6EE5478734DA541F3396711EAB2350",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "59.94",
+      "baseline": {
+        "Bytes": 986565,
+        "Sha": "D8E8982A4DAE081FF27569D1F3F2A66574FADC6516C63E3D11AFB2B006FDE8BC",
+        "Total": 1.2467433,
+        "Encoding": 0.6845961,
+        "Validation": 0.5221836,
+        "Frames": 60,
+        "Mean": 0.9925556333333334,
+        "Worst": 0.9925556333333334
+      },
+      "candidate": {
+        "Bytes": 986565,
+        "Sha": "D8E8982A4DAE081FF27569D1F3F2A66574FADC6516C63E3D11AFB2B006FDE8BC",
+        "Total": 1.0704754,
+        "Encoding": 0.6943484,
+        "Validation": 0.3362276,
+        "Frames": 60,
+        "Mean": 0.9925556333333334,
+        "Worst": 0.9925556333333334
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.1413826727603028
+    },
+    {
+      "kind": "fixture",
+      "Id": "60",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "60",
+      "Seconds": 1,
+      "ExpectedFrames": 60,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 4526878,
+      "sourceSha": "9A6BA9B86C315BE8130CC36BDB8B4B7FC90D1A98DBDC640BA52980F482718539",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "60",
+      "baseline": {
+        "Bytes": 980612,
+        "Sha": "B8188D56DC94F2C3809380E594CE9823BF4E17203C43A85F5872A04FC68E699F",
+        "Total": 1.3730827,
+        "Encoding": 0.7660033,
+        "Validation": 0.5643658,
+        "Frames": 60,
+        "Mean": 0.9924736,
+        "Worst": 0.9924736
+      },
+      "candidate": {
+        "Bytes": 980612,
+        "Sha": "B8188D56DC94F2C3809380E594CE9823BF4E17203C43A85F5872A04FC68E699F",
+        "Total": 1.1343164,
+        "Encoding": 0.7536758,
+        "Validation": 0.3388359,
+        "Frames": 60,
+        "Mean": 0.9924736,
+        "Worst": 0.9924736
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.1738906913618533
+    },
+    {
+      "kind": "fixture",
+      "Id": "119.88",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "120000/1001",
+      "Seconds": 1,
+      "ExpectedFrames": 120,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 8055315,
+      "sourceSha": "29339BBC58D02BD60B023AF01DC2B52AEC844682FA02D11604704E419354F35D",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "119.88",
+      "baseline": {
+        "Bytes": 971455,
+        "Sha": "4765548E7C81D01D7B41AD8A64AD68346EC0A24EAB5D904E4EADF5EE169F82B3",
+        "Total": 1.924815,
+        "Encoding": 1.2257264,
+        "Validation": 0.657599,
+        "Frames": 120,
+        "Mean": 0.9866212000000001,
+        "Worst": 0.9866212000000001
+      },
+      "candidate": {
+        "Bytes": 971455,
+        "Sha": "4765548E7C81D01D7B41AD8A64AD68346EC0A24EAB5D904E4EADF5EE169F82B3",
+        "Total": 1.7493984,
+        "Encoding": 1.2256519,
+        "Validation": 0.4841012,
+        "Frames": 120,
+        "Mean": 0.9866212000000001,
+        "Worst": 0.9866212000000001
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.09113426485142728
+    },
+    {
+      "kind": "fixture",
+      "Id": "120",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "120",
+      "Seconds": 1,
+      "ExpectedFrames": 120,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 8051720,
+      "sourceSha": "013DE0AB6323B6799CC375FF1814B16A49BC84B5E5E43132AAD5B88A6FE69FC4",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "120",
+      "baseline": {
+        "Bytes": 970280,
+        "Sha": "DE28A8A98FAD2D7E858F93F7BB23EBEF117E05E7CC11F235D3160C0E1924021D",
+        "Total": 1.9243777,
+        "Encoding": 1.195112,
+        "Validation": 0.6895861,
+        "Frames": 120,
+        "Mean": 0.9866483833333333,
+        "Worst": 0.9866483833333333
+      },
+      "candidate": {
+        "Bytes": 970280,
+        "Sha": "DE28A8A98FAD2D7E858F93F7BB23EBEF117E05E7CC11F235D3160C0E1924021D",
+        "Total": 1.7676023,
+        "Encoding": 1.2396957,
+        "Validation": 0.484346,
+        "Frames": 120,
+        "Mean": 0.9866483833333333,
+        "Worst": 0.9866483833333333
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.08146810264949544
+    },
+    {
+      "kind": "fixture",
+      "Id": "VFR",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "120",
+      "Seconds": 1,
+      "ExpectedFrames": 56,
+      "Tracks": 1,
+      "Vfr": true,
+      "sourceBytes": 4159496,
+      "sourceSha": "71A80FC1EBAFF7F67DD5EF237A4C4170F1134D2A60693EEECBCD82B1DCC54B3D",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "VFR",
+      "baseline": {
+        "Bytes": 962829,
+        "Sha": "44030893911BAA58D644B6D44E16F582D391653CD95DAC62C36184FF5489DB86",
+        "Total": 1.1993919,
+        "Encoding": 0.6423134,
+        "Validation": 0.5177139,
+        "Frames": 56,
+        "Mean": 0.9921469285714284,
+        "Worst": 0.9921469285714284
+      },
+      "candidate": {
+        "Bytes": 962829,
+        "Sha": "44030893911BAA58D644B6D44E16F582D391653CD95DAC62C36184FF5489DB86",
+        "Total": 0.9738425,
+        "Encoding": 0.641338,
+        "Validation": 0.2925664,
+        "Frames": 56,
+        "Mean": 0.9921469285714284,
+        "Worst": 0.9921469285714284
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.18805312925658402
+    },
+    {
+      "kind": "fixture",
+      "Id": "portrait-60",
+      "Width": 1080,
+      "Height": 1920,
+      "Rate": "60",
+      "Seconds": 2,
+      "ExpectedFrames": 120,
+      "Tracks": 2,
+      "Vfr": false,
+      "sourceBytes": 9012193,
+      "sourceSha": "5EBC3872479FBEC3E57211F065B724D54F191674A329722C669037E03C8E8564",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "portrait-60",
+      "baseline": {
+        "Bytes": 2010956,
+        "Sha": "D68A9AB03EF9AE72DCF8A4AD0FCB0B4A12F4FED0247AE4EDC96759415368B929",
+        "Total": 2.228932,
+        "Encoding": 1.3430239,
+        "Validation": 0.8443681,
+        "Frames": 120,
+        "Mean": 0.9915308916666669,
+        "Worst": 0.9914462833333333
+      },
+      "candidate": {
+        "Bytes": 2010956,
+        "Sha": "D68A9AB03EF9AE72DCF8A4AD0FCB0B4A12F4FED0247AE4EDC96759415368B929",
+        "Total": 1.8955837,
+        "Encoding": 1.3394037,
+        "Validation": 0.5148674,
+        "Frames": 120,
+        "Mean": 0.9915308916666669,
+        "Worst": 0.9914462833333333
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.1495551681253623
+    },
+    {
+      "kind": "fixture",
+      "Id": "1440p-30",
+      "Width": 2560,
+      "Height": 1440,
+      "Rate": "30",
+      "Seconds": 2,
+      "ExpectedFrames": 60,
+      "Tracks": 0,
+      "Vfr": false,
+      "sourceBytes": 8301291,
+      "sourceSha": "DC0E413A6A489305D0913BCE37BFA98E134EDD24DA8877A82B26B8E1EB4E2AA1",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "1440p-30",
+      "baseline": {
+        "Bytes": 2074897,
+        "Sha": "1B88783F1FB1EACD3A57A6A501E26D2128912E41D984D16F87AF14377D329B18",
+        "Total": 2.0239724,
+        "Encoding": 1.253536,
+        "Validation": 0.7261009,
+        "Frames": 60,
+        "Mean": 0.99328735,
+        "Worst": 0.9925107
+      },
+      "candidate": {
+        "Bytes": 2074897,
+        "Sha": "1B88783F1FB1EACD3A57A6A501E26D2128912E41D984D16F87AF14377D329B18",
+        "Total": 1.7724638,
+        "Encoding": 1.2855976,
+        "Validation": 0.4460981,
+        "Frames": 60,
+        "Mean": 0.99328735,
+        "Worst": 0.9925107
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.12426483681299205
+    },
+    {
+      "kind": "fixture",
+      "Id": "4k-60",
+      "Width": 3840,
+      "Height": 2160,
+      "Rate": "60",
+      "Seconds": 2,
+      "ExpectedFrames": 120,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 35237099,
+      "sourceSha": "B79AEF5059EFDE95CE4B8F826102AAF9C94B3BBAC3E617E50AD7408B2D21202C",
+      "rate": 8000000,
+      "storageFiller": false
+    },
+    {
+      "kind": "pair",
+      "Id": "4k-60",
+      "baseline": {
+        "Bytes": 2008822,
+        "Sha": "08DB3067E3A9C909BA599A95CDF6DF27FDF24E963096215400A259828589D0FA",
+        "Total": 7.7946584,
+        "Encoding": 5.238056,
+        "Validation": 2.4975155,
+        "Frames": 120,
+        "Mean": 0.9821471500000002,
+        "Worst": 0.9821283166666668
+      },
+      "candidate": {
+        "Bytes": 2008822,
+        "Sha": "08DB3067E3A9C909BA599A95CDF6DF27FDF24E963096215400A259828589D0FA",
+        "Total": 6.7615187,
+        "Encoding": 4.9768054,
+        "Validation": 1.7321075,
+        "Frames": 120,
+        "Mean": 0.9821471500000002,
+        "Worst": 0.9821283166666668
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.13254457693745758
+    },
+    {
+      "kind": "summary",
+      "completed": 14,
+      "required": 14,
+      "scope": "one pair per fixture; coverage not speed acceptance"
+    }
+  ],
+  "offsets": [
+    {
+      "kind": "offset",
+      "index": 0,
+      "logicalBytes": 875184,
+      "sourceSha": "4A9ED184F7F1BF5ADDAB2CCE2E2215E8662963CA7A552DC301A5F6CA06FB26C3",
+      "outputSha": "328E42AF383A692E780BB8EE84C6CE36905B68CD9575D52E8C80AD613BA871D7",
+      "frames": 120,
+      "seconds": 1.1684716,
+      "scope": "sparse media offsets, not physical payload throughput"
+    },
+    {
+      "kind": "offset",
+      "index": 1,
+      "logicalBytes": 5369585064,
+      "sourceSha": "FC9E73967C3F77F38083C6416CF741A102F7D58EF09407FFE63638FB5F54A06C",
+      "outputSha": "328E42AF383A692E780BB8EE84C6CE36905B68CD9575D52E8C80AD613BA871D7",
+      "frames": 120,
+      "seconds": 0.7880945,
+      "scope": "sparse media offsets, not physical payload throughput"
+    },
+    {
+      "kind": "offset",
+      "index": 2,
+      "logicalBytes": 21475712424,
+      "sourceSha": "D47E2DF9B1322AEEDF423A451D2B534722BEE6E61AA78E44AF076B93D58DC380",
+      "outputSha": "328E42AF383A692E780BB8EE84C6CE36905B68CD9575D52E8C80AD613BA871D7",
+      "frames": 120,
+      "seconds": 0.7419518,
+      "scope": "sparse media offsets, not physical payload throughput"
+    },
+    {
+      "kind": "summary",
+      "completed": 3
+    }
+  ]
+}

@@ -384,3 +384,7 @@ Owner reports slow compression; no stage/hardware info yet. Synthetic cohort two
 ## Scale and input coverage
 
 Owner requires ordinary large files and 1080p through 120fps without hardware-specific prerequisites. 11 local rate fixtures preserve count/PTS/audio hash; 297MB physical CBR filler source compressed to 10.19MB, 11.38s verified proxy, not natural media ratio or C# timing. Sparse 5/20GiB true co64 media offsets independently decoded; not physical payload throughput. New scale lanes and bounded text capture. Mux proxy incomplete, retain faststart. Public external services failed; bounded transient retry, never bypass 403. Full generalization and ordinary input compatibility remain open.
+
+## Audio copy compatibility
+
+Small local 11-fixture plus delayed stereo and MKV follow-up show packet identity alone insufficient for decoded audio identity. Guarded new codecs add per-track decoded PCM hash and retain independent timeline, payload and metadata checks. Extra reads cost time; do not weaken checks or claim acceleration. Existing AAC paths unchanged. Scale rate and sparse-offset lanes passed exact 7bbe57d, physical pending. See docs/research/input-compatibility.

@@ -23,6 +23,30 @@ internal static class ExtendedAudioScreen
             Check(actual.Audio.Single()==original.Audio.Single()&&Hash(source)==before,"Extended metadata and source identity");
             Console.WriteLine($"EXTENDED_AUDIO {extension} {codec} ordinary copy passed");
         }
+        // Distinct stereo channels with delayed audio at fractional frame rate.
+        // ALAC edit-list trimming can vary across muxer versions: require
+        // either verified publication or a clean refusal, never weaken checks.
+        foreach(var (encoder,codec) in new[]{("libmp3lame","mp3"),("ac3","ac3"),("eac3","eac3"),("alac","alac")})
+        {
+            string source=Path.Combine(root,$"extended-delayed-{codec}.mp4"),output=Path.Combine(root,$"extended-delayed-{codec}-out.mp4");
+            var made=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-xerror","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=3","-itsoffset","0.15","-f","lavfi","-i","aevalsrc=0.04*sin(2*PI*440*t)|0.04*sin(2*PI*660*t):s=48000:d=2.85:c=stereo","-map","0:v","-map","1:a","-c:v","libx264","-preset","ultrafast","-threads","2","-pix_fmt","yuv420p","-c:a",encoder,source],ct);
+            Check(made.ExitCode==0&&string.IsNullOrWhiteSpace(made.Error),"Delayed stereo fixture");
+            string before=Hash(source);
+            try
+            {
+                await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,source,output,plan,ct,encoderThreads:2);
+            }
+            catch(InvalidDataException ex) when(codec=="alac"&&!File.Exists(output))
+            {
+                Check(Hash(source)==before&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Rejected ALAC cleanup");
+                Console.WriteLine("EXTENDED_AUDIO_DELAYED alac refused: "+ex.Message);
+                continue;
+            }
+            await SingleDecodeScreen.ReferenceAsync(tools,source,output,1,ct);
+            await DecodedAudioIdentity.ValidateAsync(tools.Ffmpeg,source,output,1,ct);
+            Check(Hash(source)==before,"Delayed source unchanged");
+            Console.WriteLine($"EXTENDED_AUDIO_DELAYED {codec} passed");
+        }
         // Compare different valid decoded audio; no fixture-specific assumption
         // about a particular muxer's edit-list behavior.
         string a=Path.Combine(root,"extended-mp3-mp4.mp4");

@@ -1,0 +1,301 @@
+{
+  "environment": "FFmpeg 7.1.5 Linux",
+  "matrix": [
+    {
+      "container": "mp4",
+      "encoder": "aac",
+      "sourcePackets": 95,
+      "outputPackets": 95,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mp4",
+      "encoder": "libmp3lame",
+      "sourcePackets": 85,
+      "outputPackets": 85,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mp4",
+      "encoder": "ac3",
+      "sourcePackets": 63,
+      "outputPackets": 63,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mp4",
+      "encoder": "eac3",
+      "sourcePackets": 63,
+      "outputPackets": 63,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mp4",
+      "encoder": "alac",
+      "sourcePackets": 24,
+      "outputPackets": 24,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mov",
+      "encoder": "alac",
+      "sourcePackets": 24,
+      "outputPackets": 24,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mov",
+      "encoder": "pcm_s16le",
+      "sourcePackets": 94,
+      "outputPackets": 94,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mkv",
+      "encoder": "aac",
+      "sourcePackets": 95,
+      "outputPackets": 95,
+      "audioError": 0.019167,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mkv",
+      "encoder": "libopus",
+      "sourcePackets": 101,
+      "outputPackets": 101,
+      "audioError": 0.007,
+      "pcmMatch": false,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mkv",
+      "encoder": "flac",
+      "sourcePackets": 21,
+      "outputPackets": 21,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    },
+    {
+      "container": "mp4",
+      "encoder": "libopus",
+      "sourcePackets": 101,
+      "outputPackets": 101,
+      "audioError": 0,
+      "pcmMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "videoError": "<=2e-16",
+      "packetHashesMatch": true,
+      "sourceUnchanged": true,
+      "strictDecode": true
+    }
+  ],
+  "delayed": [
+    {
+      "encoder": "libmp3lame",
+      "sourcePackets": 120,
+      "outputPackets": 120,
+      "pcmMatch": true,
+      "frames": [
+        90,
+        90
+      ],
+      "maxComparedAudioError": 0
+    },
+    {
+      "encoder": "ac3",
+      "sourcePackets": 90,
+      "outputPackets": 90,
+      "pcmMatch": true,
+      "frames": [
+        90,
+        90
+      ],
+      "maxComparedAudioError": 0
+    },
+    {
+      "encoder": "eac3",
+      "sourcePackets": 90,
+      "outputPackets": 90,
+      "pcmMatch": true,
+      "frames": [
+        90,
+        90
+      ],
+      "maxComparedAudioError": 0
+    },
+    {
+      "encoder": "alac",
+      "sourcePackets": 34,
+      "outputPackets": 33,
+      "pcmMatch": false,
+      "frames": [
+        90,
+        90
+      ],
+      "maxComparedAudioError": 0
+    }
+  ],
+  "mkv": [
+    {
+      "encoder": "aac",
+      "mode": "copyts-mp4",
+      "audioError": 0.000500000000000167,
+      "pcmMatch": false,
+      "packetHashesMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "strictDecode": true
+    },
+    {
+      "encoder": "aac",
+      "mode": "same-mkv",
+      "audioError": 0.019000000000000093,
+      "pcmMatch": true,
+      "packetHashesMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "strictDecode": true
+    },
+    {
+      "encoder": "libopus",
+      "mode": "copyts-mp4",
+      "audioError": 0,
+      "pcmMatch": false,
+      "packetHashesMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "strictDecode": true
+    },
+    {
+      "encoder": "libopus",
+      "mode": "same-mkv",
+      "audioError": 0.007000000000000117,
+      "pcmMatch": true,
+      "packetHashesMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "strictDecode": true
+    },
+    {
+      "encoder": "flac",
+      "mode": "copyts-mp4",
+      "audioError": 0,
+      "pcmMatch": true,
+      "packetHashesMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "strictDecode": true
+    },
+    {
+      "encoder": "flac",
+      "mode": "same-mkv",
+      "audioError": 0,
+      "pcmMatch": true,
+      "packetHashesMatch": true,
+      "frames": [
+        50,
+        50
+      ],
+      "strictDecode": true
+    }
+  ]
+}
