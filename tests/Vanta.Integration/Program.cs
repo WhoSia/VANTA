@@ -297,6 +297,7 @@ try
     Console.WriteLine("Overlap full validation and cancellation controls passed.");
     await SingleDecodeScreen.RunAsync(resolved,root,input,output,shifted,changed,vfr,vfrOut,plan,ct);
     await QuantizerScreen.RunAsync(resolved,root,ct);
+    await BatchBudgetScreen.RunAsync(resolved,root,[input,vfr,silent],ct);
     var longInput=Path.Combine(root,"long source.mp4");
     var longOutput=Path.Combine(root,"long compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=120","-f","lavfi","-i","sine=frequency=660:sample_rate=48000:duration=120","-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p","-c:a","aac",longInput);

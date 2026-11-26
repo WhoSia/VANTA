@@ -7,5 +7,7 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
     public TimeSpan? ConcurrentTimelineDecode {get;init;}
     // In single-decode research, TimelineCheck includes strict full output decode.
     public bool SingleDecodeValidation {get;init;}
+    // Requested encoder threads, not actual process threads or CPU affinity.
+    public int? RequestedEncoderThreads {get;init;}
     public TimeSpan Validation => OutputProbe+AudioHashCheck+(ConcurrentTimelineDecode??(TimelineCheck+FullDecode));
 }

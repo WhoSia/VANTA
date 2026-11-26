@@ -24,10 +24,15 @@ public sealed record BatchJob(string Input,string Output,Plan Plan,SourceStamp? 
 public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null,EncodeReport? Report=null);
 public static class BatchEncoder
 {
-    public static async Task<IReadOnlyList<BatchUpdate>> RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default,int? totalEncoderThreads=null)
+    public static Task<IReadOnlyList<BatchUpdate>> RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default,int? totalEncoderThreads=null)
+        =>RunCoreAsync(tools,jobs,parallelism,progress,ct,totalEncoderThreads,false);
+    internal static Task<IReadOnlyList<BatchUpdate>> RunAdaptiveResearchAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,int totalEncoderThreads,CancellationToken ct)
+        =>RunCoreAsync(tools,jobs,parallelism,progress,ct,totalEncoderThreads,true);
+    private static async Task<IReadOnlyList<BatchUpdate>> RunCoreAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct,int? totalEncoderThreads,bool adaptive)
     {
         if(parallelism is <1 or >2)throw new ArgumentOutOfRangeException(nameof(parallelism));
         var jobThreads=ThreadBudget.PerJob(totalEncoderThreads,parallelism);
+        var allocator=adaptive?new BatchThreadAllocator(totalEncoderThreads!.Value,parallelism,jobs.Count):null;
         var inputs=jobs.Select(j=>Path.GetFullPath(j.Input)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var outputs=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach(var j in jobs)
@@ -54,10 +59,11 @@ public static class BatchEncoder
                 EncodeReport report;
                 try
                 {
+                    using var lease=allocator?.Acquire();
                     report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                     {
                         if(x.Stage!="Complete")Notify(new(i,x.Stage,x.Fraction));
-                    }),encoderThreads:jobThreads,expectedSource:j.ExpectedSource);
+                    }),encoderThreads:lease?.Count??jobThreads,expectedSource:j.ExpectedSource);
                 }
                 catch(OperationCanceledException) when(token.IsCancellationRequested){Finish(new(i,"Canceled",null));return;}
                 catch(Exception ex){Finish(new(i,"Failed",null,ex.Message));return;}
