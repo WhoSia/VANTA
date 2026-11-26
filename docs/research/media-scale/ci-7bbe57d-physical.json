@@ -1,0 +1,105 @@
+{
+  "head": "7bbe57d7d5375a29e1e20d61b5c940af830297e8",
+  "run": 45871127136,
+  "job": 140086507824,
+  "rows": [
+    {
+      "kind": "environment",
+      "mode": "physical",
+      "commit": "7bbe57d7d5375a29e1e20d61b5c940af830297e8",
+      "ffmpeg": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers\r",
+      "cpus": 4,
+      "storageStress": "CBR filler, actual stored bytes; not representative natural footage"
+    },
+    {
+      "kind": "fixture",
+      "Id": "1080p60-300MB",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "60",
+      "Seconds": 120,
+      "ExpectedFrames": 7200,
+      "Tracks": 2,
+      "Vfr": false,
+      "sourceBytes": 364153415,
+      "sourceSha": "00C790B4F9CAD15528C430DE08D35754DC61CEE46299C080E0B42FA1B2454E67",
+      "rate": 8000000,
+      "storageFiller": true
+    },
+    {
+      "kind": "pair",
+      "Id": "1080p60-300MB",
+      "baseline": {
+        "Bytes": 123180826,
+        "Sha": "70C4D4FB6719EAA4979E938048E4C0F4FE712EA0A9F91DD5D923B3BE984BC672",
+        "Total": 112.5452315,
+        "Encoding": 78.1835087,
+        "Validation": 34.3029981,
+        "Frames": 7200,
+        "Mean": 0.9920182101388878,
+        "Worst": 0.9909959333333332
+      },
+      "candidate": {
+        "Bytes": 123180826,
+        "Sha": "70C4D4FB6719EAA4979E938048E4C0F4FE712EA0A9F91DD5D923B3BE984BC672",
+        "Total": 94.7835337,
+        "Encoding": 74.1022728,
+        "Validation": 20.6430881,
+        "Frames": 7200,
+        "Mean": 0.9920182101388878,
+        "Worst": 0.9909959333333332
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.157818306144761
+    },
+    {
+      "kind": "fixture",
+      "Id": "1080p30-1GB",
+      "Width": 1920,
+      "Height": 1080,
+      "Rate": "30",
+      "Seconds": 240,
+      "ExpectedFrames": 7200,
+      "Tracks": 1,
+      "Vfr": false,
+      "sourceBytes": 1202603329,
+      "sourceSha": "0AB5961F7C4C2C7A2D3C4CACB84844F4EA275348B67F591FCF17650CA3C356FF",
+      "rate": 8000000,
+      "storageFiller": true
+    },
+    {
+      "kind": "pair",
+      "Id": "1080p30-1GB",
+      "baseline": {
+        "Bytes": 243181919,
+        "Sha": "9F5B4948C6A4875BA58904BF2462C43D1BF4FE6D9FDA5D4C8A84539392AC113A",
+        "Total": 119.7197063,
+        "Encoding": 76.9201268,
+        "Validation": 42.762303,
+        "Frames": 7200,
+        "Mean": 0.9972257094444462,
+        "Worst": 0.9970417666666669
+      },
+      "candidate": {
+        "Bytes": 243181919,
+        "Sha": "9F5B4948C6A4875BA58904BF2462C43D1BF4FE6D9FDA5D4C8A84539392AC113A",
+        "Total": 106.7406892,
+        "Encoding": 78.5151775,
+        "Validation": 28.1877996,
+        "Frames": 7200,
+        "Mean": 0.9972257094444462,
+        "Worst": 0.9970417666666669
+      },
+      "exact": true,
+      "matched": true,
+      "timeReduction": 0.10841170180852666
+    },
+    {
+      "kind": "summary",
+      "completed": 2,
+      "required": 2,
+      "scope": "one pair per fixture; coverage not speed acceptance"
+    }
+  ]
+}
