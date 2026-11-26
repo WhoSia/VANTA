@@ -4,6 +4,7 @@ namespace Vanta.Core;
 public sealed record MediaDetails(MediaInfo Info,IReadOnlyList<StreamTiming> Timing,bool Supported,string Reason,VisualMetadata? Visual=null)
 {
     internal IReadOnlyList<AudioMetadata> Audio {get;init;}=[];
+    internal IReadOnlyList<int> AudioStreamIndices {get;init;}=[];
 }
 public static class Probe
 {
@@ -40,7 +41,7 @@ public static class Probe
         else if(audios.Any(s=>Str(s,"codec_name")!="aac" || !(Num(Str(s,"bit_rate"))>0))) reason="Only AAC audio with known bitrate is supported in copy mode";
         else if(audioMetadata.Any(a=>!a.Supported)) reason="Only AAC mono, stereo, 5.1 or 7.1 with known sample rate and supported channel layout is supported";
         else if(timing.Any(t=>!double.IsFinite(t.Start)||!double.IsFinite(t.Duration)||t.Duration<=0)) reason="Stream timing unavailable; cannot validate";
-        return new(info,timing,reason=="",reason,visual){Audio=Array.AsReadOnly(audioMetadata)};
+        return new(info,timing,reason=="",reason,visual){Audio=Array.AsReadOnly(audioMetadata),AudioStreamIndices=Array.AsReadOnly(audios.Select(s=>s.TryGetProperty("index",out var idx)&&idx.TryGetInt32(out int n)?n:-1).ToArray())};
     }
     private static string Str(JsonElement e,string key)=>e.TryGetProperty(key,out var v)?v.ToString():"";
     private static double Num(string s)=>double.TryParse(s,NumberStyles.Float,CultureInfo.InvariantCulture,out var v)&&double.IsFinite(v)?v:double.NaN;

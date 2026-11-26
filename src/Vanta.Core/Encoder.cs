@@ -6,7 +6,7 @@ public static class Encoder
     public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -15,6 +15,7 @@ public static class Encoder
             var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
         }
         ct.ThrowIfCancellationRequested();
+        if(interleavedAudioValidation&&!singleDecodeValidation)throw new ArgumentException("Interleaved audio research requires single-decode validation.");
         if(singleDecodeValidation&&(parallelDecodeValidation||fusedAudioValidation||parallelAudioHash||experimentalSplit||researchHardwareEncoder is not null))throw new ArgumentException("Single-decode research requires the independent continuous CPU validation baseline.");
         if(fusedAudioValidation&&parallelAudioHash)throw new ArgumentException("Choose one research audio validation path.");
         if(parallelDecodeValidation&&(experimentalSplit||fusedAudioValidation||parallelAudioHash||researchHardwareEncoder is not null))throw new ArgumentException("Parallel decode research requires the independent continuous CPU validation baseline.");
@@ -34,6 +35,7 @@ public static class Encoder
         stamp.RequireUnchanged(input);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
         var source=details.Info;
+        if(interleavedAudioValidation&&source.AudioTracks is <2 or >32)throw new NotSupportedException("Interleaved research requires 2–32 audio tracks.");
         PlanRules.Validate(plan,source);
         var dir=Path.GetDirectoryName(output)!;
         // ABR estimate only; CRF research has no bitrate-derived size contract.
@@ -80,13 +82,16 @@ public static class Encoder
             var outputProbe=Lap();
             TimeSpan timeline,decode,audioHash=TimeSpan.Zero;
             TimeSpan? overlap=null;
+            int? audioPending=null;
             Task CheckTimeline(CancellationToken token)=>PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,token,compareAudioPayloads:fusedAudioValidation);
             Task CheckDecode(CancellationToken token)=>Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],token);
             if(singleDecodeValidation)
             {
-                await PacketTimeline.ValidateSingleDecodeAsync(ffmpeg,ffprobe,input,temp,source.AudioTracks,ct);
+                if(interleavedAudioValidation)
+                    audioPending=await PacketTimeline.ValidateSingleDecodeInterleavedAsync(ffmpeg,ffprobe,input,temp,details.AudioStreamIndices,actualDetails.AudioStreamIndices,ct);
+                else await PacketTimeline.ValidateSingleDecodeAsync(ffmpeg,ffprobe,input,temp,source.AudioTracks,ct);
                 timeline=Lap();decode=TimeSpan.Zero;
-                if(source.AudioTracks>0){await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
+                if(source.AudioTracks>0&&!interleavedAudioValidation){await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
             }
             else if(parallelDecodeValidation)
             {
@@ -119,7 +124,7 @@ public static class Encoder
             stamp.RequireUnchanged(input);
             File.Move(temp,output,false);
             var publication=Lap();
-            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes){ConcurrentTimelineDecode=overlap,SingleDecodeValidation=singleDecodeValidation,RequestedEncoderThreads=encoderThreads};
+            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes){ConcurrentTimelineDecode=overlap,SingleDecodeValidation=singleDecodeValidation,RequestedEncoderThreads=encoderThreads,InterleavedAudioPeakPending=audioPending};
             // Publication is the commit point. A completion observer cannot turn
             // an already-published verified output into a failed encode.
             try { progress?.Report(new("Complete",1)); }

@@ -296,6 +296,7 @@ try
     }
     Console.WriteLine("Overlap full validation and cancellation controls passed.");
     await SingleDecodeScreen.RunAsync(resolved,root,input,output,shifted,changed,vfr,vfrOut,plan,ct);
+    await InterleavedAudioScreen.RunAsync(resolved,root,vfr,vfrOut,plan,ct);
     await QuantizerScreen.RunAsync(resolved,root,ct);
     await BatchBudgetScreen.RunAsync(resolved,root,[input,vfr,silent],ct);
     var longInput=Path.Combine(root,"long source.mp4");

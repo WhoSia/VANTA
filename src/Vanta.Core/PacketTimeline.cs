@@ -20,6 +20,11 @@ public static class PacketTimeline
         for(int i=0;i<audioTracks;i++)
             await CompareAsync(ffprobe,source,output,$"a:{i}",false,.002,origin,ct,false);
     }
+    internal static async Task<int> ValidateSingleDecodeInterleavedAsync(string ffmpeg,string ffprobe,string source,string output,IReadOnlyList<int> sourceAudio,IReadOnlyList<int> outputAudio,CancellationToken ct)
+    {
+        double origin=await CompareAsync(ffprobe,source,output,"v:0",true,.002,null,ct,false,ffmpeg);
+        return await InterleavedAudio.ValidateAsync(ffprobe,source,output,sourceAudio,outputAudio,origin,ct);
+    }
     private static Process OpenStrictDecoder(string exe,string path)
     {
         var psi=new ProcessStartInfo(exe){UseShellExecute=false,RedirectStandardOutput=true,RedirectStandardError=true,CreateNoWindow=true};
