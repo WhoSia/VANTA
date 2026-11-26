@@ -63,8 +63,8 @@ public partial class MainWindow : Window
         completedOutput=null;completedReport=null;RefreshResult();
     }
     private string ResultText(EncodeReport r)=>T(
-        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · {1-r.OutputBytes/(double)r.InputBytes:P1} actual savings · {r.Total.TotalSeconds:F1}s (validation {r.Validation.TotalSeconds:F1}s)",
-        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (검증 {r.Validation.TotalSeconds:F1}초)");
+        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · {1-r.OutputBytes/(double)r.InputBytes:P1} actual savings · {r.Total.TotalSeconds:F1}s (encoding {r.Encoding.TotalSeconds:F1}s, validation {r.Validation.TotalSeconds:F1}s)",
+        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (인코딩 {r.Encoding.TotalSeconds:F1}초, 검증 {r.Validation.TotalSeconds:F1}초)")+T($"\n{r.AppliedPlan?.Codec??"—"} · {r.AppliedPlan?.Preset??"—"} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · threads {r.RequestedEncoderThreads?.ToString()??"auto"}",$"\n{r.AppliedPlan?.Codec??"—"} · {UiLanguage.Preset(true,r.AppliedPlan?.Preset??"—")} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 스레드 {r.RequestedEncoderThreads?.ToString()??"자동"}");
     private void RefreshResult()
     {
         ResultPath.Text=completedOutput??"";
@@ -220,6 +220,21 @@ public partial class MainWindow : Window
     {
         if(RateChoicesBox.SelectedItem is string rate){RateBox.Text=rate;RateChoicesBox.SelectedIndex=-1;}
     }
+    private void OnSpeedFirst(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||encoding||TargetPending||media is null||activePlan is not Plan p||tools is null||!tools.Codecs.Contains("libx264"))return;
+        applying=true;
+        try
+        {
+            Plans.SelectedIndex=-1;
+            CodecBox.SelectedItem="libx264";PresetBox.SelectedValue="fast";
+            SplitBox.IsChecked=false;
+        }
+        finally{applying=false;}
+        RefreshEstimate();
+        SetStatus("H.264 fast selected; resolution and bitrate unchanged. Split disabled. Actual quality and size may differ. No encoding started.",
+            "H.264 빠르게 설정을 적용했습니다. 해상도와 비트레이트는 그대로이며 분할 압축은 해제했습니다. 실제 화질과 용량은 달라질 수 있습니다. 압축은 아직 시작하지 않았습니다.");
+    }
     private void OnMoreCompression(object sender,RoutedEventArgs e)
     {
         if(current is not null||media is null||activePlan is null)return;
@@ -235,6 +250,7 @@ public partial class MainWindow : Window
     {
         activePlan=null;
         if(MoreCompressionButton is not null)MoreCompressionButton.IsEnabled=false;
+        if(SpeedFirstButton is not null)SpeedFirstButton.IsEnabled=false;
         if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
         EncodeButton.IsEnabled=false;
         if(TargetPending)
@@ -252,6 +268,7 @@ public partial class MainWindow : Window
             Evidence.Text=T($"Pixel retention {v.PixelRetention:P1} · quality not measured · actual size may be much smaller or larger; not a limit",$"픽셀 유지 비율 {v.PixelRetention:P1} · 화질 미측정 · 실제 용량은 예산과 다를 수 있음");
             EncodeButton.IsEnabled=current is null&&!encoding;
             MoreCompressionButton.IsEnabled=EncodeButton.IsEnabled&&p.VideoBitsPerSecond>PlanRules.MinimumVideoRate;
+            SpeedFirstButton.IsEnabled=EncodeButton.IsEnabled&&tools?.Codecs.Contains("libx264")==true;
         }
         catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";}
     }

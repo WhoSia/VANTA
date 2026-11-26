@@ -70,7 +70,7 @@ public static class BatchEncoder
                 }
                 catch(OperationCanceledException) when(token.IsCancellationRequested){Finish(new(i,"Canceled",null));return;}
                 catch(Exception ex){Finish(new(i,"Failed",null,ex.Message));return;}
-                Finish(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",report));
+                Finish(new(i,"Complete",1,$"{report.OutputBytes/1e6:F2} MB · {1-report.OutputBytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (encoding {report.Encoding.TotalSeconds:F1}s, validation {report.Validation.TotalSeconds:F1}s)",report));
             });
         }
         catch(OperationCanceledException) when(ct.IsCancellationRequested){}

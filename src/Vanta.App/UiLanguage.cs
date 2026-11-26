@@ -80,6 +80,8 @@ internal static class UiLanguage
         ("Ui072","Compression progress","압축 진행률"),
         ("Ui073","Video queue","영상 대기열"),
         ("Ui074","Play output","결과 재생"),
+        ("Ui075","Speed first · H.264 fast","속도 우선 · H.264 빠르게"),
+        ("Ui076","Explicitly change codec and preset; keep height and video bitrate. Actual size and quality can change. Does not start compression.","코덱과 속도 설정만 변경하고 해상도와 비트레이트를 유지합니다. 실제 용량과 화질은 달라질 수 있으며 압축을 시작하지 않습니다."),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;

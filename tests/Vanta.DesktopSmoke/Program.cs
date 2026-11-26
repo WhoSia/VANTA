@@ -127,6 +127,18 @@ internal static class DesktopSmoke
             var split=Get<CheckBox>(main,"SplitBox");
             var encode=Get<Button>(main,"EncodeButton");
             Check(plans.Items.Count>0&&encode.IsEnabled,"Real source yields a usable plan");
+            var speed=Get<Button>(main,"SpeedFirstButton");
+            var oldHeight=height.Text;var oldRate=rate.Text;
+            split.IsChecked=true;
+            Check(speed.IsEnabled,"Speed shortcut available");
+            speed.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(codec.SelectedItem as string=="libx264"&&Get<ComboBox>(main,"PresetBox").SelectedValue as string=="fast"&&height.Text==oldHeight&&rate.Text==oldRate&&split.IsChecked==false&&plans.SelectedIndex==-1&&encode.IsEnabled,"Speed shortcut changes only codec/preset and clears split");
+            target.Text="invalid";
+            Check(!speed.IsEnabled,"Pending target disables speed shortcut");
+            speed.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(target.Text=="invalid"&&!encode.IsEnabled,"Speed shortcut cannot bypass target gate");
+            target.Clear();
+            plans.SelectedIndex=0;
             var planIndex=plans.SelectedIndex;
             var originalHeight=height.Text;var originalRate=rate.Text;
             language.SelectedIndex=1;
@@ -155,7 +167,7 @@ internal static class DesktopSmoke
             await encodingTask;
             language.SelectedIndex=0;
             Check(File.Exists(output)&&Get<Button>(main,"ResultFolderButton").IsEnabled&&Get<Button>(main,"CopyResultButton").IsEnabled&&Get<TextBlock>(main,"ResultPath").Text==output&&encode.IsEnabled,"Validated output reaches real desktop controls");
-            Check(Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Text.Contains("actual savings"),"Playable output and persistent actual summary");
+            Check(Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Text.Contains("actual savings")&&Get<TextBlock>(main,"ResultSummary").Text.Contains("encoding")&&Get<TextBlock>(main,"ResultSummary").Text.Contains("libx264"),"Playable output and persistent actual summary");
             var outputBytes=await File.ReadAllBytesAsync(output);
             await main.EncodeToAsync(output);
             Check((await File.ReadAllBytesAsync(output)).SequenceEqual(outputBytes),"Existing output remains unchanged");

@@ -9,6 +9,7 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
     public bool SingleDecodeValidation {get;init;}
     // Requested encoder threads, not actual process threads or CPU affinity.
     public int? RequestedEncoderThreads {get;init;}
+    public Plan? AppliedPlan {get;init;}
     // When set, per-track payload and timestamp checks are folded into TimelineCheck.
     public int? InterleavedAudioPeakPending {get;init;}
     // Wall time spent waiting for the research validation gate; included in Total, not Validation.
