@@ -13,3 +13,7 @@ Audio normalization intentionally reconstructs time from resampled sample count;
 ## Third screen changes
 
 All six raw SHA256 pins observed in run 45659393236; failed BBB raw acquisition was successful but normalized stage raised StopIteration. New explicit raw and normalized video checks, selected stream index, start PTS before fps; do not claim fix until rerun. Model and empirical review separate under docs/decision; native research lane separate from corpus and packaging. No source clip redistributed.
+
+## Offset-specific fixture path and fused validation screen
+
+Third run pinned six raw SHA256 values but BBB normalized video was absent; source reports start 15.75s. For nonzero video start, prepare video separately with explicit frame cap, audio separately with sample-based PTS and trim to video duration, then stream-copy mux. Normal zero-start lane unchanged. This intentionally rebases the tracks independently, can change original timing; no native support claim. New synthetic offset regression and actual pinned corpus rerun required. Audio-containing normalized fixtures now include continuous-fused research mode; separate streamhash is checked outside timed candidate path, with same full validation and SSIM gates. Never change production copy or default validation from this screen alone.
