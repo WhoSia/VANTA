@@ -31,7 +31,7 @@ public static class PacketTimeline
     {
         var fields=line.Split(' ',StringSplitOptions.RemoveEmptyEntries);
         if(fields.Length!=3||!long.TryParse(fields[0],NumberStyles.None,CultureInfo.InvariantCulture,out long n)||n!=expectedOrdinal||
-           !long.TryParse(fields[1],NumberStyles.AllowLeadingSign,CultureInfo.InvariantCulture,out long pts)||pts==long.MinValue)
+           !long.TryParse(fields[1],NumberStyles.AllowLeadingSign,CultureInfo.InvariantCulture,out long pts)||(pts is long.MinValue or long.MaxValue))
             throw new InvalidDataException("Invalid decoded frame ordinal or timestamp");
         var tb=fields[2].Split('/');
         if(tb.Length!=2||!int.TryParse(tb[0],NumberStyles.None,CultureInfo.InvariantCulture,out int numerator)||numerator<=0||

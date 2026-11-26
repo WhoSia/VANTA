@@ -13,7 +13,7 @@ internal static class SingleDecodeScreen
     {
         Check(Math.Abs(PacketTimeline.ParseStrictFrame("1 1001 1/30000",1)-.033367)<1e-12,"NTSC rational clock");
         Check(PacketTimeline.ParseStrictFrame("0 -1 1/1000",0)==-.001,"Negative clock");
-        foreach(string row in new[]{"1 0 1/30","0 -9223372036854775808 1/30","0 0 1/0","0 0 -1/30","0 N/A 1/30","0 1 1/30 junk",""})
+        foreach(string row in new[]{"1 0 1/30","0 -9223372036854775808 1/30","0 9223372036854775807 1/30","0 0 1/0","0 0 -1/30","0 N/A 1/30","0 1 1/30 junk",""})
         {
             bool rejected=false;
             try{PacketTimeline.ParseStrictFrame(row,0);}catch(InvalidDataException){rejected=true;}
