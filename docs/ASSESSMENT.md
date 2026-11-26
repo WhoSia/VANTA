@@ -119,3 +119,7 @@ Exact d2d8fa3 evidence: combined 8/8 matched faster, median 7.68%; two byte-iden
 ## Evidence update 169b5a3
 
 V4 reproduced. Snapshot and tracing correctness tests passed, source reuse initial-cost amortized gain small, direct-child measurement coverage incomplete for process trees. Keep combined/equal-settings research ahead; validation gate retired from performance search. No new 12000-scenario run; require fixed five-pair cohort evidence before next model update. Subjective v4 scores remain historical. No version change.
+
+## Owner report and cohort evidence
+
+Actual user-reported slowness increases value of encoder throughput and readable diagnostics; cannot identify cause without selected codec/preset and encoding/validation times. Synthetic cohort 2/3 screening groups qualify, 15/15 identical; real public repeated confirmation pending. Preserve noncompensatory gates. Do not count an owner complaint as acceptance or calibrate a probability from it.

@@ -376,3 +376,7 @@ New independent lanes e5d4e5c opt-in per-direct-child resource tracing (CPU exit
 ## Next predeclared acceptance screen
 
 Combined public 8/8 matched and faster but median 7.68%. Dedicated five-pair synthetic 720p/1080p/4K cohort tests same settings, independent full reference and exact SHA, separate trace pair. Local decoder-thread comparison does not justify manual decoder default. Source-clock reuse only 2.24% amortized across three long checks; retain research only. Record actual executable hashes/sizes because direct-child metrics may reflect wrappers. No global resource or promotion claim.
+
+## Actual encoding throughput is now a priority
+
+Owner reports slow compression; no stage/hardware info yet. Synthetic cohort two of three meets 15% median, all 15/15 outputs identical; no general release. Local 12 real AVC/HEVC preset outputs show speed/size tradeoff (motion H264 fast 41.31% less verified time, matched; mixed output 2.81x HEVC medium). Explicit speed-first action only, no changed default. Direct child trace now likely actual binary, still not tree aggregate. Public confirmation and fixed-rate frontier pending. See docs/research/preset-frontier.
