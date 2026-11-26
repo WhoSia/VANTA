@@ -6,7 +6,7 @@ public static class Encoder
     public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -15,6 +15,7 @@ public static class Encoder
             var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
         }
         ct.ThrowIfCancellationRequested();
+        if(sourceClockSnapshot is not null&&!singleDecodeValidation)throw new ArgumentException("Source clock research requires single-decode validation.");
         if(interleavedAudioValidation&&!singleDecodeValidation)throw new ArgumentException("Interleaved audio research requires single-decode validation.");
         if(singleDecodeValidation&&(parallelDecodeValidation||fusedAudioValidation||parallelAudioHash||experimentalSplit||researchHardwareEncoder is not null))throw new ArgumentException("Single-decode research requires the independent continuous CPU validation baseline.");
         if(fusedAudioValidation&&parallelAudioHash)throw new ArgumentException("Choose one research audio validation path.");
@@ -31,6 +32,7 @@ public static class Encoder
         using var sourceLease=new FileStream(input,FileMode.Open,FileAccess.Read,FileShare.Read);
         var stamp=SourceStamp.Capture(input);
         expectedSource?.RequireUnchanged(input);
+        sourceClockSnapshot?.RequireMetadata(ffprobe,sourceLease);
         var details=await Probe.InspectAsync(ffprobe,input,ct);
         stamp.RequireUnchanged(input);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
@@ -92,8 +94,8 @@ public static class Encoder
             if(singleDecodeValidation)
             {
                 if(interleavedAudioValidation)
-                    audioPending=await PacketTimeline.ValidateSingleDecodeInterleavedAsync(ffmpeg,ffprobe,input,temp,details.AudioStreamIndices,actualDetails.AudioStreamIndices,ct);
-                else await PacketTimeline.ValidateSingleDecodeAsync(ffmpeg,ffprobe,input,temp,source.AudioTracks,ct);
+                    audioPending=await PacketTimeline.ValidateSingleDecodeInterleavedAsync(ffmpeg,ffprobe,input,temp,details.AudioStreamIndices,actualDetails.AudioStreamIndices,ct,sourceClockSnapshot);
+                else await PacketTimeline.ValidateSingleDecodeAsync(ffmpeg,ffprobe,input,temp,source.AudioTracks,ct,sourceClockSnapshot);
                 timeline=Lap();decode=TimeSpan.Zero;
                 if(source.AudioTracks>0&&!interleavedAudioValidation){await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
             }

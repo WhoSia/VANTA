@@ -14,16 +14,72 @@ public static class PacketTimeline
     }
     // Research: output video timestamps and full audio/video decode in one strict FFmpeg pass.
     // Source timestamps and audio packet comparisons remain independent ffprobe reads.
-    internal static async Task ValidateSingleDecodeAsync(string ffmpeg,string ffprobe,string source,string output,int audioTracks,CancellationToken ct)
+    internal static async Task ValidateSingleDecodeAsync(string ffmpeg,string ffprobe,string source,string output,int audioTracks,CancellationToken ct,SourceClockSnapshot? snapshot=null)
     {
-        double origin=await CompareAsync(ffprobe,source,output,"v:0",true,.002,null,ct,false,ffmpeg);
+        double origin=await VideoOriginAsync(ffmpeg,ffprobe,source,output,ct,snapshot);
         for(int i=0;i<audioTracks;i++)
             await CompareAsync(ffprobe,source,output,$"a:{i}",false,.002,origin,ct,false);
     }
-    internal static async Task<int> ValidateSingleDecodeInterleavedAsync(string ffmpeg,string ffprobe,string source,string output,IReadOnlyList<int> sourceAudio,IReadOnlyList<int> outputAudio,CancellationToken ct)
+    internal static async Task<int> ValidateSingleDecodeInterleavedAsync(string ffmpeg,string ffprobe,string source,string output,IReadOnlyList<int> sourceAudio,IReadOnlyList<int> outputAudio,CancellationToken ct,SourceClockSnapshot? snapshot=null)
     {
-        double origin=await CompareAsync(ffprobe,source,output,"v:0",true,.002,null,ct,false,ffmpeg);
+        double origin=await VideoOriginAsync(ffmpeg,ffprobe,source,output,ct,snapshot);
         return await InterleavedAudio.ValidateAsync(ffprobe,source,output,sourceAudio,outputAudio,origin,ct);
+    }
+    // Capture the same independent decoded-frame oracle used by the baseline.
+    internal static async Task<SourceClockSnapshot> CaptureSourceClockAsync(string ffprobe,string source,CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        source=Path.GetFullPath(source);ffprobe=Path.GetFullPath(ffprobe);
+        using var lease=new FileStream(source,FileMode.Open,FileAccess.Read,FileShare.Read);
+        if(lease.Length>SourceClockSnapshot.MaxSourceBytes)throw new NotSupportedException("Source clock research byte limit");
+        var stamp=SourceStamp.Capture(source);var toolStamp=SourceStamp.Capture(ffprobe);
+        byte[] before=await SourceClockSnapshot.HashAsync(lease,ct);
+        var frames=new List<double>();
+        using var p=Open(ffprobe,source,"v:0",true,false);
+        await using var resource=ProcessResourceTrace.Track(p,"source-clock-capture");
+        var stderr=p.StandardError.ReadToEndAsync();
+        try
+        {
+            while(await ReadAsync(p.StandardOutput,"best_effort_timestamp_time",ct) is double time)
+            {
+                if(frames.Count>=SourceClockSnapshot.MaxFrames)throw new NotSupportedException("Source clock research frame limit");
+                frames.Add(time);
+            }
+            await p.WaitForExitAsync(ct);
+            if(p.ExitCode!=0||frames.Count==0||!string.IsNullOrWhiteSpace(await stderr))throw new InvalidDataException("Independent source clock unavailable");
+        }
+        finally{await StopAsync(p,stderr);}
+        stamp.RequireUnchanged(source);toolStamp.RequireUnchanged(ffprobe);
+        byte[] after=await SourceClockSnapshot.HashAsync(lease,ct);
+        if(!before.AsSpan().SequenceEqual(after))throw new IOException("Source changed during clock capture");
+        return new SourceClockSnapshot(source,ffprobe,stamp,toolStamp,before,frames.ToArray());
+    }
+    private static async Task<double> VideoOriginAsync(string ffmpeg,string ffprobe,string source,string output,CancellationToken ct,SourceClockSnapshot? snapshot)
+    {
+        if(snapshot is null)return await CompareAsync(ffprobe,source,output,"v:0",true,.002,null,ct,false,ffmpeg);
+        ct.ThrowIfCancellationRequested();
+        using var lease=new FileStream(source,FileMode.Open,FileAccess.Read,FileShare.Read);
+        await snapshot.RequireUnchangedAsync(ffprobe,lease,ct);
+        using var p=OpenStrictDecoder(ffmpeg,output);
+        await using var resource=ProcessResourceTrace.Track(p,"output-strict-decode");
+        var stderr=p.StandardError.ReadToEndAsync();
+        double? origin=null;int count=0;
+        try
+        {
+            while(await ReadStrictAsync(p.StandardOutput,count,ct) is double time)
+            {
+                if(count>=snapshot.Count)throw new InvalidDataException("Additional decoded output frame");
+                double delta=time-snapshot.At(count);origin??=delta;
+                if(!double.IsFinite(delta)||Math.Abs(delta-origin.Value)>.002)throw new InvalidDataException($"Snapshot timestamp drift at {count}");
+                count++;
+            }
+            await p.WaitForExitAsync(ct);
+            if(p.ExitCode!=0||count!=snapshot.Count||count==0||!string.IsNullOrWhiteSpace(await stderr))
+                throw new InvalidDataException("Snapshot output decode or frame count failed");
+        }
+        finally{await StopAsync(p,stderr);}
+        await snapshot.RequireUnchangedAsync(ffprobe,lease,ct);
+        return origin!.Value;
     }
     private static Process OpenStrictDecoder(string exe,string path)
     {
