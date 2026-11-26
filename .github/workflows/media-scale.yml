@@ -1,0 +1,102 @@
+name: Media scale coverage
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/Vanta.Integration/ScaleScreen.cs'
+      - 'tests/scale/**'
+      - '.github/workflows/media-scale.yml'
+      - 'src/Vanta.Core/BoundedProcessText.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: media-scale-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [rates, physical]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Resolve FFmpeg
+        shell: pwsh
+        run: |
+          if (!(Get-Command ffmpeg -ErrorAction SilentlyContinue) -or !(Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            $installed = $false
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+              choco install ffmpeg --yes --no-progress
+              if ($LASTEXITCODE -eq 0) { $installed = $true; break }
+              if ($attempt -lt 3) { Start-Sleep -Seconds (5 * $attempt) }
+            }
+            if (!$installed) { throw 'FFmpeg installation failed after bounded retries' }
+            $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path
+            $env:Path >> $env:GITHUB_PATH
+          }
+          ffmpeg -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
+          ffprobe -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: Prefer direct executable pair from installed Chocolatey package
+        shell: pwsh
+        run: |
+          if ($env:ChocolateyInstall) {
+            $package = Join-Path $env:ChocolateyInstall 'lib/ffmpeg/tools'
+            if (Test-Path $package) {
+              $pairs = @(Get-ChildItem $package -Recurse -File -Filter ffmpeg.exe | Where-Object { Test-Path (Join-Path $_.Directory.FullName 'ffprobe.exe') })
+              if ($pairs.Count -eq 1) {
+                "VANTA_FFMPEG_DIR=$($pairs[0].Directory.FullName)" >> $env:GITHUB_ENV
+                Write-Host 'Using uniquely paired executable under installed package'
+              } else { Write-Host 'No unique direct package pair; resource readings remain direct-child only' }
+            }
+          }
+      - name: Verify scale workload
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --scale ${{ matrix.mode }} artifacts/media-scale/results.jsonl
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: VANTA-scale-${{ matrix.mode }}
+          path: artifacts/media-scale/
+          if-no-files-found: error
+          retention-days: 14
+  offsets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Prepare matching FFmpeg pair and sparse fixtures
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          mkdir -p artifacts/media-scale "$RUNNER_TEMP/vanta-offsets"
+          cd "$RUNNER_TEMP/vanta-offsets"
+          ffmpeg -v error -xerror -nostdin -n -f lavfi -i 'testsrc2=s=640x360:r=60000/1001:d=2' -f lavfi -i 'sine=frequency=440:sample_rate=48000:duration=2' -map 0:v -map 1:a -c:v libx264 -preset ultrafast -threads 2 -c:a aac base.mp4
+          node "$GITHUB_WORKSPACE/tests/scale/sparse-offset.mjs" base.mp4 large5.mp4 5 | tee "$GITHUB_WORKSPACE/artifacts/media-scale/offset-fixture5.json"
+          node "$GITHUB_WORKSPACE/tests/scale/sparse-offset.mjs" base.mp4 large20.mp4 20 | tee "$GITHUB_WORKSPACE/artifacts/media-scale/offset-fixture20.json"
+      - name: Verify ordinary C# engine at 64-bit file offsets
+        shell: bash
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --scale-offset "$RUNNER_TEMP/vanta-offsets/base.mp4" "$RUNNER_TEMP/vanta-offsets/large5.mp4" "$RUNNER_TEMP/vanta-offsets/large20.mp4" artifacts/media-scale/results.jsonl
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: VANTA-scale-sparse-offsets
+          path: artifacts/media-scale/
+          if-no-files-found: error
+          retention-days: 14

@@ -22,12 +22,22 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Initialize evidence directory
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/preset-frontier | Out-Null
+          "commit=$env:GITHUB_SHA" | Set-Content artifacts/preset-frontier/attempt.txt
       - name: Resolve FFmpeg
         shell: pwsh
         run: |
           if (!(Get-Command ffmpeg -ErrorAction SilentlyContinue) -or !(Get-Command ffprobe -ErrorAction SilentlyContinue)) {
-            choco install ffmpeg --yes --no-progress
-            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+            $installed = $false
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+              choco install ffmpeg --yes --no-progress
+              if ($LASTEXITCODE -eq 0) { $installed = $true; break }
+              if ($attempt -lt 3) { Start-Sleep -Seconds (5 * $attempt) }
+            }
+            if (!$installed) { throw 'FFmpeg installation failed after bounded retries' }
             $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path
             $env:Path >> $env:GITHUB_PATH
           }

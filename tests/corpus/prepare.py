@@ -9,6 +9,7 @@ import tempfile
 import time
 import urllib.request
 import urllib.parse
+import urllib.error
 
 ROOT = pathlib.Path(__file__).resolve().parent
 HOSTS = {"upload.wikimedia.org", "svs.gsfc.nasa.gov"}
@@ -40,7 +41,7 @@ class SafeRedirect(urllib.request.HTTPRedirectHandler):
         require_url(newurl)
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
-def acquire(item, path):
+def _acquire_once(item, path):
     require_url(item["url"])
     if path.exists():
         raise FileExistsError(path)
@@ -49,8 +50,10 @@ def acquire(item, path):
     temp = path.with_suffix(path.suffix + ".partial")
     sha256 = hashlib.sha256()
     sha1 = hashlib.sha1() if item.get("sha1") else None
+    owned = False
     try:
         with opener.open(request, timeout=30) as response, temp.open("xb") as output:
+            owned = True
             require_url(response.geturl())
             size = 0
             while True:
@@ -74,7 +77,23 @@ def acquire(item, path):
         temp.rename(path)
         return raw_hash
     finally:
-        temp.unlink(missing_ok=True)
+        if owned:
+            temp.unlink(missing_ok=True)
+
+def acquire(item, path):
+    """Retry temporary service failures, never access denials or bad pins."""
+    for attempt in range(3):
+        try:
+            return _acquire_once(item, path)
+        except urllib.error.HTTPError as error:
+            if error.code not in (429, 500, 502, 503, 504) or attempt == 2:
+                raise
+            error.close()
+        except (urllib.error.URLError, TimeoutError):
+            if attempt == 2:
+                raise
+        time.sleep(2 * (attempt + 1))
+    raise AssertionError("Unreachable acquisition state")
 
 def normalize(item, raw, dest, meta=None):
     if meta is None:
@@ -194,7 +213,7 @@ def main():
             record["raw_bytes"] = raw.stat().st_size
             record["raw_probe"] = probe(raw)
             if item.get("fixture_clock") == "ordinal-cfr":
-                if not args.local and record["raw_sha256"] != item.get("sha256"):
+                if record["raw_sha256"] != item.get("sha256"):
                     raise ValueError("Ordinal clock policy requires the pinned source")
                 record["raw_decode_diagnostic"] = diagnose_video(raw)
                 print("CORPUS_DIAGNOSTIC", item["id"], json.dumps(record["raw_decode_diagnostic"]), flush=True)

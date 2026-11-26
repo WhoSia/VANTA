@@ -13,7 +13,16 @@ public static class ProcessRunner
         var output=onOutputLine is null?BoundedProcessText.ReadOutputAsync(p.StandardOutput):DrainLinesAsync(p.StandardOutput,onOutputLine);
         var error=BoundedProcessText.ReadDiagnosticAsync(p.StandardError);
         try { await p.WaitForExitAsync(ct); }
-        catch(OperationCanceledException) { try { if(!p.HasExited) p.Kill(entireProcessTree:true); } catch(InvalidOperationException) {} await p.WaitForExitAsync(); await Task.WhenAll(output,error); throw; }
+        catch(OperationCanceledException)
+        {
+            try { if(!p.HasExited) p.Kill(entireProcessTree:true); } catch(InvalidOperationException) {}
+            await p.WaitForExitAsync();
+            // Join both drains; a capture failure must not turn a canceled job
+            // into an unrelated output overflow or observer failure.
+            try{await Task.WhenAll(output,error);}catch(Exception) when(ct.IsCancellationRequested){}
+            throw;
+        }
+        await Task.WhenAll(output,error);
         return new(p.ExitCode,await output,await error);
     }
     private static async Task<string> DrainLinesAsync(StreamReader reader,Action<string> onLine)

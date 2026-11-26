@@ -208,7 +208,7 @@ public static class PacketTimeline
                 if(x is null || y is null) throw new InvalidDataException($"Timestamp count mismatch: {selector}");
                 double delta=y.Value-x.Value;
                 origin??=delta;
-                if(Math.Abs(delta-origin.Value)>tolerance) throw new InvalidDataException($"Timestamp drift in {selector} at {count}");
+                if(!double.IsFinite(delta)||!double.IsFinite(origin.Value)||Math.Abs(delta-origin.Value)>tolerance) throw new InvalidDataException($"Timestamp drift in {selector} at {count}");
                 count++;
             }
             await a.WaitForExitAsync(ct); await b.WaitForExitAsync(ct);

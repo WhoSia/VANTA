@@ -35,4 +35,23 @@ with tempfile.TemporaryDirectory() as directory:
                 raise AssertionError("oversize source accepted")
             except ValueError:
                 assert not dest.exists() and not dest.with_suffix(".bin.partial").exists()
-print("Streaming acquisition pin, content and cleanup tests passed.")
+    partial = dest.with_suffix(".bin.partial")
+    partial.write_bytes(b"preexisting partial")
+    with patch.object(prepare.urllib.request, "build_opener", return_value=Opener()):
+        try:
+            prepare.acquire(item, dest)
+            raise AssertionError("existing partial was overwritten")
+        except FileExistsError:
+            assert partial.read_bytes() == b"preexisting partial" and not dest.exists()
+    partial.unlink()
+    from urllib.error import HTTPError
+    for code, expected in ((503, 3), (403, 1)):
+        with patch.object(prepare, "_acquire_once", side_effect=HTTPError(URL,code,"test",None,None)) as acquire, patch.object(prepare.time,"sleep") as sleep:
+            try:
+                prepare.acquire(item,dest)
+                raise AssertionError("HTTP error swallowed")
+            except HTTPError:
+                assert acquire.call_count == expected and sleep.call_count == expected-1
+    with patch.object(prepare, "_acquire_once", side_effect=[HTTPError(URL,504,"test",None,None),item["sha256"]]) as acquire, patch.object(prepare.time,"sleep"):
+        assert prepare.acquire(item,dest)==item["sha256"] and acquire.call_count==2
+print("Streaming acquisition pin, content, retry and cleanup tests passed.")

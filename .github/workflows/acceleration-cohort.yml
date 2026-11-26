@@ -26,8 +26,13 @@ jobs:
         shell: pwsh
         run: |
           if (!(Get-Command ffmpeg -ErrorAction SilentlyContinue) -or !(Get-Command ffprobe -ErrorAction SilentlyContinue)) {
-            choco install ffmpeg --yes --no-progress
-            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+            $installed = $false
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+              choco install ffmpeg --yes --no-progress
+              if ($LASTEXITCODE -eq 0) { $installed = $true; break }
+              if ($attempt -lt 3) { Start-Sleep -Seconds (5 * $attempt) }
+            }
+            if (!$installed) { throw 'FFmpeg installation failed after bounded retries' }
             $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path
             $env:Path >> $env:GITHUB_PATH
           }
