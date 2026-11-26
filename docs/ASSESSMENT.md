@@ -111,3 +111,7 @@ Provisional four-axis (user value, speed potential, integrity confidence, testab
 ## 2026-11-27 evidence-based update
 
 Batch admission passes correctness, not matched acceleration (0/4). Next decision must use same per-job thread requests; validation gate is untested and may worsen throughput. Combined single-decode/audio join proxy improves validation cost, full C# comparison pending. Do not infer whole-job savings from component ratios or add two ratios. Source-clock packet-only hypothesis falsified for unfiltered packets on valid trimmed MP4; filtered approach still unproven. Four-axis subjective screen (user value, speed potential, integrity confidence, testability): combined validator (.88,.87,.83,.94), equal-settings schedule experiment (.83,.69,.94,.95), validation gate (.78,.61,.90,.91), raw source packet-only substitution (.70,.75,.30,.83), independently observed source snapshot reuse (.70,.68,.78,.80). Hard integrity veto prevents raw packet-only routing despite speed potential. Existing v3 scenario remains last reproduced; not a new 12000-run snapshot.
+
+## Fourth scenario snapshot
+
+Exact d2d8fa3 evidence: combined 8/8 matched faster, median 7.68%; two byte-identical same-setting scheduling wins; validation gate two losses. Research-only v4 computed, mandatory and owner gates separate. New tracing and source reuse unmeasured. See decision inputs-v4/results-v4/gates-v4. No release authorization.

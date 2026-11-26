@@ -1,0 +1,234 @@
+{
+  "schema": 1,
+  "kind": "fourth subjective research-only scenario snapshot, evidence through d2d8fa3; not calibrated probabilities",
+  "axes": [
+    "user_impact",
+    "coverage",
+    "workflow_speed_potential",
+    "integrity_gain",
+    "failure_reduction",
+    "rollback_ease",
+    "implementation_feasibility",
+    "maintenance_ease",
+    "distribution_ease",
+    "decision_relevance",
+    "testability",
+    "time_efficiency"
+  ],
+  "groups": [
+    "product",
+    "safety",
+    "delivery",
+    "learning"
+  ],
+  "profiles": {
+    "balanced": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "reliability": [
+      0.2,
+      0.45,
+      0.2,
+      0.15
+    ],
+    "shipping": [
+      0.35,
+      0.2,
+      0.35,
+      0.1
+    ],
+    "discovery": [
+      0.2,
+      0.2,
+      0.15,
+      0.45
+    ]
+  },
+  "candidates": [
+    {
+      "id": "combined_validation_followup",
+      "gate": "research",
+      "center": [
+        0.94,
+        0.91,
+        0.85,
+        0.87,
+        0.79,
+        0.96,
+        0.92,
+        0.89,
+        0.97,
+        0.95,
+        0.95,
+        0.89
+      ],
+      "uncertainty": 0.1,
+      "evidence": "actual 8/8 matched and faster, mean 11.72%, median 7.68%; only 2/8 >=15%; multi-track negative controls passed"
+    },
+    {
+      "id": "equal_settings_batch_followup",
+      "gate": "research",
+      "center": [
+        0.89,
+        0.88,
+        0.82,
+        0.83,
+        0.79,
+        0.94,
+        0.9,
+        0.87,
+        0.96,
+        0.88,
+        0.91,
+        0.85
+      ],
+      "uncertainty": 0.13,
+      "evidence": "2/2 byte-identical batch wins, 20.20%/30.18%; validation gate both slower"
+    },
+    {
+      "id": "source_clock_reuse",
+      "gate": "research",
+      "center": [
+        0.7,
+        0.64,
+        0.68,
+        0.77,
+        0.7,
+        0.92,
+        0.82,
+        0.78,
+        0.94,
+        0.91,
+        0.87,
+        0.78
+      ],
+      "uncertainty": 0.18,
+      "evidence": "independent source oracle retained, bounded exact-byte snapshot; actual capture and reuse costs pending"
+    },
+    {
+      "id": "resource_trace",
+      "gate": "research",
+      "center": [
+        0.81,
+        0.83,
+        0.63,
+        0.85,
+        0.8,
+        0.96,
+        0.88,
+        0.84,
+        0.97,
+        0.95,
+        0.91,
+        0.84
+      ],
+      "uncertainty": 0.13,
+      "evidence": "per-child CPU/RSS opt-in code staged; actual counters and observation overhead unknown"
+    },
+    {
+      "id": "adaptive_rate_distortion",
+      "gate": "research",
+      "center": [
+        0.95,
+        0.91,
+        0.83,
+        0.77,
+        0.68,
+        0.92,
+        0.84,
+        0.85,
+        0.95,
+        0.97,
+        0.94,
+        0.85
+      ],
+      "uncertainty": 0.16,
+      "evidence": "live C# five vs 17 verified probes selects identical measured q24; representative transfer and total cost still open"
+    },
+    {
+      "id": "native_audio_compatibility",
+      "gate": "research",
+      "center": [
+        0.97,
+        0.94,
+        0.22,
+        0.84,
+        0.87,
+        0.72,
+        0.67,
+        0.7,
+        0.84,
+        0.93,
+        0.85,
+        0.58
+      ],
+      "uncertainty": 0.15,
+      "evidence": "three WebM originals rejected; AAC surround validated; timing and payload constraints remain"
+    },
+    {
+      "id": "external_encoder_benchmark",
+      "gate": "research",
+      "center": [
+        0.85,
+        0.86,
+        0.82,
+        0.55,
+        0.5,
+        0.95,
+        0.73,
+        0.85,
+        0.95,
+        0.94,
+        0.84,
+        0.65
+      ],
+      "uncertainty": 0.16,
+      "evidence": "no actual competing application comparison"
+    },
+    {
+      "id": "preview_and_diagnostics",
+      "gate": "research",
+      "center": [
+        0.92,
+        0.89,
+        0.25,
+        0.72,
+        0.8,
+        0.9,
+        0.79,
+        0.84,
+        0.94,
+        0.84,
+        0.9,
+        0.78
+      ],
+      "uncertainty": 0.14,
+      "evidence": "verified result UX, no sample preview or per-job opt-in diagnostic"
+    },
+    {
+      "id": "rust_kernel_integration",
+      "gate": "research",
+      "center": [
+        0.57,
+        0.45,
+        0.3,
+        0.55,
+        0.5,
+        0.75,
+        0.67,
+        0.52,
+        0.5,
+        0.86,
+        0.85,
+        0.62
+      ],
+      "uncertainty": 0.18,
+      "evidence": "8.6-13.7x hot cache kernel, no whole-workflow gain or Windows ABI evidence"
+    }
+  ],
+  "seed": 20261127,
+  "samples": 12000
+}

@@ -13,3 +13,7 @@ Preserve first inputs/results unchanged. New inputs-v2.json/results-v2.json use 
 ## Third snapshot
 
 Only eligible research is ranked; required, owner, blocked and retired gates are separately recorded and validated. 12 axes, 12000 scenarios, seed 20261126. Subjective inputs, not probabilities; changed candidate set invalidates longitudinal rank comparisons. No release authorization.
+
+## Fourth snapshot
+
+12 axes, 12000 scenarios, seed 20261127, research-only inputs through d2d8fa3. Combined validation and equal-settings batch empirical gains, source reuse and resource tracing still unverified. Gate routing separate, prior snapshots preserved; ranks not longitudinally comparable after candidate changes. Subjective inputs not success probabilities.

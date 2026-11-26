@@ -25,3 +25,6 @@ jobs:
           node docs/decision/verify-gates.mjs
           node docs/decision/model.mjs docs/decision/inputs-v3.json > decision-v3-actual.json
           node docs/decision/verify-snapshot.mjs decision-v3-actual.json docs/decision/results-v3.json
+          node docs/decision/model.mjs docs/decision/inputs-v4.json > decision-v4-actual.json
+          node docs/decision/verify-snapshot.mjs decision-v4-actual.json docs/decision/results-v4.json
+          node docs/decision/verify-gates-v4.mjs

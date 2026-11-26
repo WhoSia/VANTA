@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "evidenceHead": "d2d8fa3c356a2f76fc81b25366893cb64a50046f",
+  "required": [
+    {
+      "id": "integrity_release",
+      "state": "open",
+      "reason": "15% whole-job acceleration criterion and representative evidence not met"
+    },
+    {
+      "id": "snapshot_and_resource_exact_ci",
+      "state": "pending",
+      "reason": "new source-clock and tracing code unverified"
+    }
+  ],
+  "owner": [
+    {
+      "id": "desktop_acceptance",
+      "state": "open",
+      "reason": "owner PC acceptance remains open"
+    }
+  ],
+  "blocked": [
+    {
+      "id": "hardware_codec_performance",
+      "state": "hardware-required",
+      "reason": "no functioning hardware encoder in CI"
+    }
+  ],
+  "retired": [
+    {
+      "id": "raw_source_packet_only",
+      "reason": "trimmed MP4 98 packets vs 62 decoded frames"
+    },
+    {
+      "id": "validation_gate",
+      "reason": "same-settings negative speed in both trials; retain regression, no default"
+    },
+    {
+      "id": "segmented_tuning",
+      "reason": "repeated unmatched/negative acceleration"
+    },
+    {
+      "id": "python_full_rewrite",
+      "reason": "outside production, no consistent runtime advantage"
+    },
+    {
+      "id": "benchmark_quality_reuse",
+      "reason": "46/64 cache hits, implemented; preserve regression"
+    }
+  ],
+  "researchIds": [
+    "combined_validation_followup",
+    "equal_settings_batch_followup",
+    "source_clock_reuse",
+    "resource_trace",
+    "adaptive_rate_distortion",
+    "native_audio_compatibility",
+    "external_encoder_benchmark",
+    "preview_and_diagnostics",
+    "rust_kernel_integration"
+  ]
+}
