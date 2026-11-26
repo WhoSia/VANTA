@@ -7,6 +7,7 @@ internal static class BatchBudgetScreen
     private static void Check(bool ok,string message){if(!ok)throw new Exception(message);}
     private static string Hash(string path){using var f=File.OpenRead(path);return Convert.ToHexString(SHA256.HashData(f));}
     private sealed class IgnoreProgress:IProgress<BatchUpdate>{public void Report(BatchUpdate value){}}
+    private sealed class CallbackProgress(Action<BatchUpdate> action):IProgress<BatchUpdate>{public void Report(BatchUpdate value)=>action(value);}
     internal static async Task RunAsync(Toolchain tools,string root,string[] sources,CancellationToken ct)
     {
         var budget=new BatchThreadAllocator(5,2,3);
@@ -69,7 +70,22 @@ internal static class BatchBudgetScreen
         var cancelJobs=sources.Select((src,i)=>new BatchJob(src,Path.Combine(root,$"adaptive-canceled-{i}.mp4"),plan)).ToArray();
         var canceledResult=await BatchEncoder.RunAdaptiveResearchAsync(tools,cancelJobs,2,new IgnoreProgress(),5,canceled.Token);
         Check(canceledResult.All(x=>x.Stage=="Canceled")&&cancelJobs.All(x=>!File.Exists(x.Output)),"Pre-canceled adaptive jobs not published");
+        // Failed admission must return its lease so the next queued job can run.
+        var failureJobs=sources.Select((src,i)=>new BatchJob(src,Path.Combine(root,$"adaptive-failure-{i}.mp4"),i==0?plan with {Height=181}:plan)).ToArray();
+        var failedResult=await BatchEncoder.RunAdaptiveResearchAsync(tools,failureJobs,2,new IgnoreProgress(),5,ct);
+        Check(failedResult[0].Stage=="Failed"&&!File.Exists(failureJobs[0].Output)&&failedResult.Skip(1).All(x=>x.Stage=="Complete"),"Failed adaptive job releases budget to subsequent jobs");
+        foreach(var job in failureJobs.Skip(1))File.Delete(job.Output);
+        using(var activeCancel=CancellationTokenSource.CreateLinkedTokenSource(ct))
+        {
+            int started=0;
+            var activeJobs=sources.Select((src,i)=>new BatchJob(src,Path.Combine(root,$"adaptive-active-cancel-{i}.mp4"),plan)).ToArray();
+            var result=await BatchEncoder.RunAdaptiveResearchAsync(tools,activeJobs,2,new CallbackProgress(x=>
+            {
+                if(x.Stage=="Encoding"){Interlocked.Increment(ref started);activeCancel.Cancel();}
+            }),5,activeCancel.Token);
+            Check(started>0&&result.All(x=>x.Stage=="Canceled")&&activeJobs.All(x=>!File.Exists(x.Output)),"Active adaptive cancellation joins workers and publishes nothing");
+        }
         Check(sources.Select(Hash).SequenceEqual(before)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Batch source and cleanup");
-        Console.WriteLine("Batch thread admission lease, tail, actual encoder, quality and pre-cancel controls passed.");
+        Console.WriteLine("Batch thread admission lease, tail, actual encoder, quality, failed-job lease return and active/pre-cancel controls passed.");
     }
 }
