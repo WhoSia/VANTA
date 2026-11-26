@@ -52,6 +52,12 @@ if(args.Length==5&&args[0]=="--scale-offset")
     await ScaleScreen.RunOffsetsAsync(args[1..4],args[4],offsetTimeout.Token);
     return;
 }
+if(args.Length==1&&args[0]=="--ten-bit")
+{
+    using var bitDepthTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(3));
+    await TenBitSdrScreen.RunAsync(bitDepthTimeout.Token);
+    return;
+}
 if(args.Length!=0)throw new ArgumentException("Unexpected integration-test arguments.");
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);

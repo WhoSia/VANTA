@@ -51,6 +51,8 @@ jobs:
         run: dotnet run --project tests/Vanta.DesktopSmoke/Vanta.DesktopSmoke.csproj -c Release -- --media
       - name: FFmpeg integration
         run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release
+      - name: Ten-bit SDR research and HDR refusal
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --ten-bit
       - name: Publish framework-dependent Windows x64 preview
         run: dotnet publish src/Vanta.App/Vanta.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/VANTA
       - name: Include and check dependency launcher

@@ -6,7 +6,7 @@ public static class Encoder
     public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -33,10 +33,12 @@ public static class Encoder
         var stamp=SourceStamp.Capture(input);
         expectedSource?.RequireUnchanged(input);
         sourceClockSnapshot?.RequireMetadata(ffprobe,sourceLease);
-        var details=await Probe.InspectAsync(ffprobe,input,ct);
+        var details=await Probe.InspectResearchAsync(ffprobe,input,ct,tenBitSdr);
         stamp.RequireUnchanged(input);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
         var source=details.Info;
+        if(tenBitSdr&&(details.PixelFormat!="yuv420p10le"||plan.Codec!="libx265"||experimentalSplit||researchHardwareEncoder is not null||plan.Height!=source.Height))
+            throw new NotSupportedException("10-bit SDR research requires full-resolution continuous software HEVC.");
         bool extendedAudio=details.Audio.Any(a=>a.Codec!="aac");
         if(extendedAudio&&experimentalSplit)throw new NotSupportedException("Extended audio copy requires continuous encoding.");
         if(interleavedAudioValidation&&(source.AudioTracks is <1 or >32))throw new NotSupportedException("Combined packet research requires 1–32 audio tracks.");
@@ -48,6 +50,7 @@ public static class Encoder
         var common=new List<string>{"-hide_banner","-nostdin","-n","-xerror","-i",input,"-map","0:V:0"};
         if(researchHardwareEncoder is null)common.AddRange(["-c:v",plan.Codec,"-preset",plan.Preset,researchCrf.HasValue?"-crf":"-b:v",(researchCrf.HasValue?(long)researchCrf.Value:plan.VideoBitsPerSecond).ToString(CultureInfo.InvariantCulture)]);
         else common.AddRange(HardwareEncoderPolicy.Arguments(researchHardwareEncoder,plan));
+        if(tenBitSdr)common.AddRange(["-pix_fmt","yuv420p10le","-profile:v","main10"]);
         common.AddRange(["-fps_mode","passthrough"]);
         if(encoderThreads is int threads)common.AddRange(["-threads",threads.ToString(CultureInfo.InvariantCulture)]);
         if(plan.Height!=source.Height) common.AddRange(["-vf",$"scale=-2:{plan.Height}"]);
@@ -78,12 +81,13 @@ public static class Encoder
             using var validationLease=await ValidationLease.EnterAsync(validationGate,ct);
             if(validationGate is not null)admissionWait=Lap();
             progress?.Report(new("Validating",null));
-            var actualDetails=await Probe.InspectAsync(ffprobe,temp,ct);
+            var actualDetails=await Probe.InspectResearchAsync(ffprobe,temp,ct,tenBitSdr);
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
             if(actual.Height!=plan.Height || actual.Codec!=(plan.Codec=="libx265"?"hevc":"h264")) throw new InvalidDataException("Output codec or height mismatch");
             if(details.Visual is null||actualDetails.Visual is null)throw new InvalidDataException("Visual metadata unavailable");
             details.Visual.ValidateOutput(actualDetails.Visual);
+            if(actualDetails.PixelFormat!=details.PixelFormat)throw new InvalidDataException("Pixel format or bit depth changed");
             AudioMetadata.ValidateOutput(details.Audio,actualDetails.Audio);
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
