@@ -33,6 +33,8 @@ public static class Encoder
         var source=details.Info;
         PlanRules.Validate(plan,source);
         var dir=Path.GetDirectoryName(output)!;
+        // ABR estimate only; CRF research has no bitrate-derived size contract.
+        using var reservation=researchCrf.HasValue?null:ScratchBudget.Shared.Reserve(dir,plan.EstimateBytes(source),experimentalSplit);
         var temp=Path.Combine(dir,$".vanta-{Guid.NewGuid():N}.mp4");
         var common=new List<string>{"-hide_banner","-nostdin","-n","-xerror","-i",input,"-map","0:V:0","-c:v",plan.Codec,"-preset",plan.Preset,researchCrf.HasValue?"-crf":"-b:v",(researchCrf.HasValue?(long)researchCrf.Value:plan.VideoBitsPerSecond).ToString(CultureInfo.InvariantCulture),"-fps_mode","passthrough"};
         if(encoderThreads is int threads)common.AddRange(["-threads",threads.ToString(CultureInfo.InvariantCulture)]);
