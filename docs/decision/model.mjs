@@ -27,7 +27,7 @@ function calculate(d) {
  const dominates=(a,b)=>a.center.every((x,i)=>x>=b.center[i])&&a.center.some((x,i)=>x>b.center[i]);
  return {schema:1,samples:d.samples,seed:d.seed,interpretation:"scenario sensitivity, not calibrated probabilities; required gates override ranking",rows:rows.sort((a,b)=>b.mean-a.mean),pairwise:pair.map(row=>row.map(x=>x/d.samples)),pairwiseIds:d.candidates.map(c=>c.id),centralPareto:d.candidates.filter(a=>!d.candidates.some(b=>dominates(b,a))).map(c=>c.id),scenarioPerfectInformationGap:bestSum/d.samples-Math.max(...means.map(x=>x/d.samples))};
 }
-const data=JSON.parse(fs.readFileSync(new URL("./inputs.json",import.meta.url),"utf8"));
+const data=JSON.parse(fs.readFileSync(process.argv[2]??new URL("./inputs.json",import.meta.url),"utf8"));
 const result=calculate(data);
 assert.deepEqual(result,calculate(data));
 for(const row of result.rows){assert.ok(Math.abs(row.ranks.reduce((a,b)=>a+b,0)-1)<1e-9);assert.ok(row.q05<=row.q95);assert.ok(row.meanRegret>=0);}

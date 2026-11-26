@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
 const actual=JSON.parse(fs.readFileSync(process.argv[2],"utf8"));
-const expected=JSON.parse(fs.readFileSync(new URL("./results.json",import.meta.url),"utf8"));
+const expected=JSON.parse(fs.readFileSync(process.argv[3]??new URL("./results.json",import.meta.url),"utf8"));
 function compare(a,b){
  if(typeof a==="number"&&typeof b==="number"){assert.ok(Number.isFinite(a)&&Math.abs(a-b)<1e-10,`numeric mismatch ${a} ${b}`);return;}
  if(a===null||b===null||typeof a!=="object"||typeof b!=="object"){assert.equal(a,b);return;}

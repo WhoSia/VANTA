@@ -1,0 +1,24 @@
+name: Decision snapshot verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/decision/**'
+      - '.github/workflows/decision.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify historical and current scenarios
+        run: |
+          node docs/decision/model.mjs > decision-v1-actual.json
+          node docs/decision/verify-snapshot.mjs decision-v1-actual.json
+          node docs/decision/model.mjs docs/decision/inputs-v2.json > decision-v2-actual.json
+          node docs/decision/verify-snapshot.mjs decision-v2-actual.json docs/decision/results-v2.json
