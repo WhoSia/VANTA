@@ -36,6 +36,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
           ffprobe -version
           if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: Offset fixture regression
+        run: python tests/corpus/test_offset.py
       - name: Acquire and prepare public inputs
         shell: pwsh
         run: python tests/corpus/prepare.py --work "$env:RUNNER_TEMP/vanta-corpus" --report artifacts/corpus-report

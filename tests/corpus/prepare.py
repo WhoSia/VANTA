@@ -5,6 +5,7 @@ import json
 import pathlib
 import subprocess
 import sys
+import tempfile
 import urllib.request
 import urllib.parse
 
@@ -78,13 +79,42 @@ def normalize(item, raw, dest):
     h = min(item["height"], video["height"])
     fps = item["fps"]
     vf = f"setpts=PTS-STARTPTS,scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2,fps={fps},setsar=1"
-    run("ffmpeg", "-v", "error", "-xerror", "-nostdin", "-n", "-i", str(raw), "-t", str(item["seconds"]),
-        "-map", f"0:{video['index']}", "-map", "0:a:0?", "-vf", vf, "-af", "aresample=48000,asetpts=N/SR/TB",
-        "-r", str(fps), "-fps_mode", "cfr",
-        "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-g", str(fps), "-keyint_min", str(fps),
-        "-sc_threshold", "0", "-x264-params", "open-gop=0", "-threads", "4", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-ac", "2", "-ar", "48000", "-b:a", "128k", "-map_metadata", "-1",
-        "-map_chapters", "-1", "-video_track_timescale", "90000", str(dest))
+    # An offset input may lose all video under a shared output duration limit
+    # (observed on the pinned BBB Ogg input in FFmpeg 9.1). Prepare the
+    # explicitly modified fixture streams independently; never use this in
+    # the production audio-copy path.
+    start = video.get("start_time")
+    if start not in (None, "N/A") and abs(float(start)) > .002:
+        with tempfile.TemporaryDirectory(prefix="vanta-offset-", dir=dest.parent) as tmp:
+            tmp = pathlib.Path(tmp)
+            vid, aud = tmp / "video.mp4", tmp / "audio.m4a"
+            run("ffmpeg", "-v", "error", "-xerror", "-nostdin", "-n", "-i", str(raw),
+                "-map", f"0:{video['index']}", "-an", "-vf", vf, "-frames:v", str(item["seconds"] * fps),
+                "-r", str(fps), "-fps_mode", "cfr", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+                "-g", str(fps), "-keyint_min", str(fps), "-sc_threshold", "0", "-x264-params", "open-gop=0",
+                "-threads", "4", "-pix_fmt", "yuv420p", "-map_metadata", "-1", "-map_chapters", "-1",
+                "-video_track_timescale", "90000", str(vid))
+            vmeta = next(s for s in probe(vid)["streams"] if s["codec_type"] == "video")
+            duration = int(vmeta["nb_frames"]) / fps
+            if duration <= 0:
+                raise ValueError("Offset video normalization yielded no frames")
+            if any(s["codec_type"] == "audio" for s in meta["streams"]):
+                run("ffmpeg", "-v", "error", "-xerror", "-nostdin", "-n", "-i", str(raw),
+                    "-map", "0:a:0", "-vn", "-af", f"aresample=48000,asetpts=N/SR/TB,atrim=duration={duration:.9f}",
+                    "-c:a", "aac", "-ac", "2", "-ar", "48000", "-b:a", "128k",
+                    "-map_metadata", "-1", "-map_chapters", "-1", str(aud))
+                run("ffmpeg", "-v", "error", "-xerror", "-nostdin", "-n", "-i", str(vid), "-i", str(aud),
+                    "-map", "0:v:0", "-map", "1:a:0", "-c", "copy", "-video_track_timescale", "90000", str(dest))
+            else:
+                vid.rename(dest)
+    else:
+        run("ffmpeg", "-v", "error", "-xerror", "-nostdin", "-n", "-i", str(raw), "-t", str(item["seconds"]),
+            "-map", f"0:{video['index']}", "-map", "0:a:0?", "-vf", vf, "-af", "aresample=48000,asetpts=N/SR/TB",
+            "-r", str(fps), "-fps_mode", "cfr",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-g", str(fps), "-keyint_min", str(fps),
+            "-sc_threshold", "0", "-x264-params", "open-gop=0", "-threads", "4", "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-ac", "2", "-ar", "48000", "-b:a", "128k", "-map_metadata", "-1",
+            "-map_chapters", "-1", "-video_track_timescale", "90000", str(dest))
     normalized = probe(dest)
     videos = [s for s in normalized['streams'] if s['codec_type'] == 'video']
     if len(videos) != 1:
