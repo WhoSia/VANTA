@@ -27,6 +27,9 @@ internal static class QuantizerScreen
         Check(reversed.ObservedReversal&&reversed.Observations.Count==5&&reversed.Best is not null,"Observed nonmonotone curve uses remaining budget");
         var infeasible=await QuantizerSearch.RunAsync(18,34,.99,1,5,(q,_)=>Task.FromResult(new QualityObservation(q,1,100)),ct);
         Check(infeasible.Best is null,"Measured byte budget may be infeasible");
+        // An unseen feasible island is deliberately not claimed detectable.
+        var hidden=await QuantizerSearch.RunAsync(18,34,.99,null,5,(q,_)=>Task.FromResult(new QualityObservation(q,q==26?1:.98,50000-q)),ct);
+        Check(hidden.Best is null&&hidden.Observations.Count==2&&hidden.StopReason.Contains("monotonicity"),"Unobserved reversal limitation remains explicit");
         bool invalid=false;
         try{await QuantizerSearch.RunAsync(18,34,.99,null,5,(q,_)=>Task.FromResult(new QualityObservation(q,double.NaN,100)),ct);}
         catch(InvalidDataException){invalid=true;}

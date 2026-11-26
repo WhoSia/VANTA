@@ -303,6 +303,7 @@ try
     await Encoder.EncodeAsync("ffmpeg","ffprobe",longInput,longOutput,plan,ct);
     Check(File.Exists(longOutput),"Long output absent");
     Console.WriteLine("120-second NTSC-rate timeline passed.");
+    await SingleDecodeScreen.LongCompareAsync(resolved,longInput,longOutput,ct);
     await TimestampParsingScreen.RunAsync(resolved.Ffprobe,longInput,ct);
     await AudioHashScreen.RunAsync(resolved.Ffmpeg,longInput,longOutput,vfr,vfrOut,input,changed,ct);
     for(int repeat=0;repeat<2;repeat++)

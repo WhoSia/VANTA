@@ -9,6 +9,26 @@ internal static class SingleDecodeScreen
         var r=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-xerror","-nostdin","-i",output,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);
         Check(r.ExitCode==0&&string.IsNullOrWhiteSpace(r.Error),"Independent strict full decode rejected candidate");
     }
+    internal static async Task LongCompareAsync(Toolchain tools,string source,string output,CancellationToken ct)
+    {
+        // Reuse the already verified 120s HEVC output; no extra encode or SSIM.
+        // Both lanes include identical independent streamhash and audio timing.
+        for(int rep=0;rep<3;rep++)
+        foreach(bool single in rep%2==0?new[]{false,true}:new[]{true,false})
+        {
+            var sw=System.Diagnostics.Stopwatch.StartNew();
+            if(single)
+                await PacketTimeline.ValidateSingleDecodeAsync(tools.Ffmpeg,tools.Ffprobe,source,output,1,ct);
+            else
+            {
+                await PacketTimeline.ValidateAsync(tools.Ffprobe,source,output,1,ct);
+                var r=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-xerror","-nostdin","-i",output,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);
+                Check(r.ExitCode==0&&string.IsNullOrWhiteSpace(r.Error),"Long baseline strict decode");
+            }
+            await Encoder.ValidateAudioAsync(tools.Ffmpeg,source,output,ct);
+            Console.WriteLine("SINGLE_DECODE_LONG "+System.Text.Json.JsonSerializer.Serialize(new {rep,single,seconds=sw.Elapsed.TotalSeconds,codec="hevc",duration=120,tracks=1,scope="validation-only"}));
+        }
+    }
     internal static async Task RunAsync(Toolchain tools,string root,string input,string output,string shifted,string changed,string vfr,string vfrOut,Plan plan,CancellationToken ct)
     {
         Check(Math.Abs(PacketTimeline.ParseStrictFrame("1 1001 1/30000",1)-.033367)<1e-12,"NTSC rational clock");
