@@ -11,7 +11,7 @@ internal static class PublicCorpusScreen
         return Convert.ToHexString(SHA256.HashData(file)).ToLowerInvariant();
     }
     private static string Str(JsonElement e,string key)=>e.GetProperty(key).GetString()!;
-    private static async Task<(int Frames,double Mean,double Minimum,double WorstSecond,double P05)> Quality(Toolchain tools,string source,string output,double fps,CancellationToken ct)
+    internal static async Task<(int Frames,double Mean,double Minimum,double WorstSecond,double P05)> Quality(Toolchain tools,string source,string output,double fps,CancellationToken ct)
     {
         int frames=0, bucketCount=0;
         double sum=0,min=1,bucketSum=0,worst=1;
