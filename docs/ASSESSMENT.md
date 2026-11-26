@@ -127,3 +127,7 @@ Actual user-reported slowness increases value of encoder throughput and readable
 ## Scale is a required gate
 
 Do not rank ordinary file-size/rate coverage against optional acceleration as if interchangeable. Reproduced synthetic acceleration 2/3 groups, public lanes blocked by external services. Local rate/physical/sparse evidence is limited; exact new C# scale CI pending. Prioritize independent scale verification, broad input compatibility and actual throughput. No new 12000-scenario snapshot; v5 retained, no probability inference or release authorization.
+
+## New hard-gate evidence
+
+10-bit SDR is an eligibility research lane, not a default. HDR synthetic tag preservation is not HDR fidelity. Windows AC3 sample mismatch blocks ordinary eligibility regardless of local passing fixture. H264 fast matched 2/2 repeated 1080p60 proxy pairs, separate content diversity gate remains. Keep v5 scores as prior subjective assessment; no new scenario simulation.

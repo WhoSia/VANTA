@@ -42,3 +42,7 @@ Target: hundreds of MB through tens of GB, typical 1080p, common fractional/inte
 ### Audio input expansion (pending exact CI)
 
 After Windows AC-3 decoded-sample mismatch, ordinary copy eligibility is restricted to AAC and mono/stereo MP3 with valid timing, bitrate and layout; AC-3, E-AC-3 and ALAC remain research-only. Adds decoded PCM verification before publication in addition to existing packet/timeline checks. MKV/Opus/PCM/FLAC and other unverified cases remain restricted. See [input compatibility evidence](docs/research/input-compatibility/README.md). Not yet a verified package.
+
+### Ten-bit research
+
+Internal full-resolution software HEVC Main10 research for explicitly tagged BT.709 SDR, with strict pixel format and color metadata checks. Not enabled in ordinary desktop compression; PQ/HLG and other HDR support remain unverified. See [research evidence](docs/research/ten-bit-and-throughput/README.md).

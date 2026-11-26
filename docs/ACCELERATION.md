@@ -388,3 +388,7 @@ Owner requires ordinary large files and 1080p through 120fps without hardware-sp
 ## Audio copy compatibility
 
 Small local 11-fixture plus delayed stereo and MKV follow-up show packet identity alone insufficient for decoded audio identity. Guarded new codecs add per-track decoded PCM hash and retain independent timeline, payload and metadata checks. Extra reads cost time; do not weaken checks or claim acceleration. Existing AAC paths unchanged. Scale rate and sparse-offset lanes passed exact 7bbe57d, physical pending. See docs/research/input-compatibility.
+
+## 1080p60 actual encoder throughput
+
+Two alternating same-content proxy pairs H264 fast vs HEVC medium at 8Mbps, four requested threads, 51.88% and 53.56% less encode+validation proxy time, both matched bytes/mean/worst SSIM. Not full C# or general content acceptance. 10-bit SDR research guarded, HDR not enabled. Windows AC3 decoded PCM mismatch requires quarantine; MP3 pending full rerun. See docs/research/ten-bit-and-throughput.

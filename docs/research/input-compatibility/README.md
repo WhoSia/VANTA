@@ -7,3 +7,7 @@ ea5952b stages ordinary audio-copy eligibility for AAC existing layouts plus MP3
 Exact 7bbe57d media-scale CI 45871127136 rates job 140086507277 passed: all 14 pairs matched and exact bytes, 14 faster; 8 at or above 15%. One pair per fixture, not speed acceptance. 1080p120 8.15%, 4K60 13.25% time reduction. Linux offsets job 140086507739 passed: three logical sizes 875184,5369585064,21475712424 bytes, 120 frames, identical output SHA and unchanged full source SHA. Sparse not physical data throughput. Physical lane still in progress at record time. Public confirmation 45871127123 and preset frontier 45871127112 again failed on NASA 403 (no access bypass); no benchmark fabricated. Windows CI still running; preserve useful run before promoting staged commits. No owner question needed.
 
 Reproduction: `python docs/research/input-compatibility/screen.py` combines the same fixture/encoding commands and comparisons from the three local runs into one temporary-directory script. Authored after those runs; this combined script has not itself been executed. Run on a trusted FFmpeg pair. No application dependency.
+
+## Windows counterexample supersedes broad eligibility proposal
+
+Exact 6f0d82c Windows 45872326864 failed after MP3 passed, AC3 decoded samples changed. ee537f6 quarantines AC3/EAC3/ALAC as research-only, retains all payload and PCM gates and requires safe refusal for known mismatches. Ordinary MP3 candidate still pending full CI (including delayed stereo). No output accepted on mismatched PCM.

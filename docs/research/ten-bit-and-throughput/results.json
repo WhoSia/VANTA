@@ -1,0 +1,118 @@
+{
+  "environment": "FFmpeg 7.1.5-0+deb13u1 Linux",
+  "initialBitDepthAttempts": {
+    "trials": 6,
+    "missingTransferAndPrimaries": true,
+    "pqAndHlgSourceIdentical": true,
+    "excludedFromHdrEvidence": true
+  },
+  "bitdepth": [
+    {
+      "scene": "sdr",
+      "codec": "libx265",
+      "encoding": 1.537832948,
+      "verified": 2.369198528,
+      "frames": 60,
+      "bytes": 112339,
+      "pix": "yuv420p10le",
+      "transfer": "bt709",
+      "primaries": "bt709",
+      "profile": "Main 10",
+      "mean": 0.9899399333333334,
+      "sourceSha": "c413ec2fcf3802d445fe4d4a39f6c5b447b76f120bfb0fa7faa5d75d43d7df78",
+      "outputSha": "c2fffd73fb3a03cde25c03ef001ac1d853ee13f2f2048c87a25e4d1e9ee98a23"
+    },
+    {
+      "scene": "pq",
+      "codec": "libx265",
+      "encoding": 1.2921545400000005,
+      "verified": 2.081681746,
+      "frames": 60,
+      "bytes": 108489,
+      "pix": "yuv420p10le",
+      "transfer": "smpte2084",
+      "primaries": "bt2020",
+      "profile": "Main 10",
+      "mean": 0.9910279999999999,
+      "sourceSha": "f09ad5e7bd4572d8ce68d8824e92ebd1af1c2c948a56f63087c68075af668e72",
+      "outputSha": "dea61d5095e17e0edeab6c4eebcc800f6f9afd42b79e433014256e2546bdb885"
+    },
+    {
+      "scene": "hlg",
+      "codec": "libx265",
+      "encoding": 0.9168864460000005,
+      "verified": 1.6442954960000007,
+      "frames": 60,
+      "bytes": 108499,
+      "pix": "yuv420p10le",
+      "transfer": "arib-std-b67",
+      "primaries": "bt2020",
+      "profile": "Main 10",
+      "mean": 0.9910279999999999,
+      "sourceSha": "37a608e27c8e75743643f375cd0b717c2dd56b411edac3f6be389d218c9e1f5a",
+      "outputSha": "d85222fda73a34bd1422f372bc77800154e5de531a28e4a7ba0901d1b4f17bf2"
+    }
+  ],
+  "gradient": {
+    "sourceDistinctLuma": 499,
+    "sourceNonMultipleOfFour": 43200,
+    "outputDistinctLuma": 485,
+    "outputNonMultipleOfFour": 43336,
+    "lumaSamples": 57600,
+    "reportedFrames": 60
+  },
+  "throughput": [
+    {
+      "rep": 0,
+      "codec": "libx265",
+      "preset": "medium",
+      "encoding": 8.666620894,
+      "verified": 11.093128440000001,
+      "bytes": 3082317,
+      "mean": 0.9921379277777774,
+      "worst": 0.9913653500000004,
+      "frames": 180,
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "outputSha": "6f3ed8a21edbd7144b4f95531d675f1e7df8b87ac1640dbc271c3d13cdff15a4"
+    },
+    {
+      "rep": 0,
+      "codec": "libx264",
+      "preset": "fast",
+      "encoding": 3.733601316,
+      "verified": 5.338483784,
+      "bytes": 3019657,
+      "mean": 0.9918591111111114,
+      "worst": 0.9914925666666666,
+      "frames": 180,
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "outputSha": "5b46c7f5142331b026dc76df8d316f1962d35eaa06c2f50332830dfd982c14d4"
+    },
+    {
+      "rep": 1,
+      "codec": "libx264",
+      "preset": "fast",
+      "encoding": 3.9862011450000003,
+      "verified": 5.701186569,
+      "bytes": 3019657,
+      "mean": 0.9918591111111114,
+      "worst": 0.9914925666666666,
+      "frames": 180,
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "outputSha": "5b46c7f5142331b026dc76df8d316f1962d35eaa06c2f50332830dfd982c14d4"
+    },
+    {
+      "rep": 1,
+      "codec": "libx265",
+      "preset": "medium",
+      "encoding": 9.740472232,
+      "verified": 12.275928224,
+      "bytes": 3082317,
+      "mean": 0.9921379277777774,
+      "worst": 0.9913653500000004,
+      "frames": 180,
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "outputSha": "6f3ed8a21edbd7144b4f95531d675f1e7df8b87ac1640dbc271c3d13cdff15a4"
+    }
+  ]
+}
