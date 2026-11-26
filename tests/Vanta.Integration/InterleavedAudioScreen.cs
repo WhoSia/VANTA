@@ -37,10 +37,10 @@ internal static class InterleavedAudioScreen
         Check(limit,"Bounded interleave refusal classification");
         int retries=0;
         Task Retry(){retries++;return Task.CompletedTask;}
-        var peak=await PacketTimeline.AudioFallbackAsync(()=>Task.FromResult(1),Retry,ct);
-        Check(peak==1&&retries==0,"Successful interleave must not retry");
-        peak=await PacketTimeline.AudioFallbackAsync(()=>Task.FromException<int>(new AudioInterleaveLimitException()),Retry,ct);
-        Check(peak is null&&retries==1,"Limit must run complete independent retry");
+        var fallbackPeak=await PacketTimeline.AudioFallbackAsync(()=>Task.FromResult(1),Retry,ct);
+        Check(fallbackPeak==1&&retries==0,"Successful interleave must not retry");
+        fallbackPeak=await PacketTimeline.AudioFallbackAsync(()=>Task.FromException<int>(new AudioInterleaveLimitException()),Retry,ct);
+        Check(fallbackPeak is null&&retries==1,"Limit must run complete independent retry");
         bool mismatch=false;
         try{await PacketTimeline.AudioFallbackAsync(()=>Task.FromException<int>(new InvalidDataException("Mismatch")),Retry,ct);}
         catch(InvalidDataException){mismatch=true;}
