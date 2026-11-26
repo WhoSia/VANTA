@@ -9,3 +9,7 @@ Run node docs/decision/model.mjs; output is deterministic from inputs.json. resu
 ## Second snapshot — 2026-11-26
 
 Preserve first inputs/results unchanged. New inputs-v2.json/results-v2.json use the same 12 axes, 4 profiles and 12000 scenarios, seed 20261127, evidence through b4ea48c. Corpus derivative ready, not native BBB support. Changed candidate set and seed mean rank/utility differences are not longitudinal measurements. User acceptance separate. New overlap and corpus preparation experiments not promoted. Python full rewrite low value after controlled launch-cost screen; scores are expert judgments, not inferred from the timing ratios. Verify: node docs/decision/model.mjs docs/decision/inputs-v2.json > decision-v2-actual.json; node docs/decision/verify-snapshot.mjs decision-v2-actual.json docs/decision/results-v2.json.
+
+## Third snapshot
+
+Only eligible research is ranked; required, owner, blocked and retired gates are separately recorded and validated. 12 axes, 12000 scenarios, seed 20261126. Subjective inputs, not probabilities; changed candidate set invalidates longitudinal rank comparisons. No release authorization.

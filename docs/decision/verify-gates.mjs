@@ -1,0 +1,10 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+const read=n=>JSON.parse(fs.readFileSync(new URL(n,import.meta.url),"utf8"));
+const data=read("./inputs-v3.json"),gate=read("./gates-v3.json");
+assert.deepEqual(gate.researchIds,data.candidates.map(c=>c.id));
+assert.ok(data.candidates.every(c=>c.gate==="research"));
+const all=[...gate.required,...gate.owner,...gate.blocked,...gate.retired,...data.candidates].map(c=>c.id);
+assert.equal(new Set(all).size,all.length);
+assert.ok(gate.required.length>0&&gate.owner.length>0&&gate.blocked.length>0);
+console.log("Research-only routing verified; release and owner gates independent.");

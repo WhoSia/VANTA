@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "evidenceHead": "fe93b9b81bfa8edbfd5b92855af547bea483f9c3",
+  "required": [
+    {
+      "id": "integrity_release",
+      "state": "open",
+      "reason": "15% acceleration target, integrity, exact CI and representative paired runs remain required"
+    },
+    {
+      "id": "new_quantizer_exact_ci",
+      "state": "pending",
+      "reason": "C# adaptive search and independent oracle must execute"
+    }
+  ],
+  "owner": [
+    {
+      "id": "desktop_acceptance",
+      "state": "open",
+      "reason": "actual user Windows acceptance not performed"
+    }
+  ],
+  "blocked": [
+    {
+      "id": "hardware_codec_performance",
+      "state": "hardware-required",
+      "reason": "all six CI GPU initialization attempts failed"
+    }
+  ],
+  "retired": [
+    {
+      "id": "python_full_rewrite",
+      "reason": "outside production, no consistent Node advantage"
+    },
+    {
+      "id": "overlap_validation",
+      "reason": "screen completed, mean 3.89%; regression retained"
+    }
+  ],
+  "researchIds": [
+    "adaptive_rate_distortion",
+    "single_decode_followup",
+    "resource_admission",
+    "native_audio_compatibility",
+    "external_encoder_benchmark",
+    "preview_and_diagnostics",
+    "benchmark_quality_reuse",
+    "rust_kernel_integration",
+    "segmented_tuning"
+  ]
+}
