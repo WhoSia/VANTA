@@ -58,6 +58,12 @@ if(args.Length==1&&args[0]=="--ten-bit")
     await TenBitSdrScreen.RunAsync(bitDepthTimeout.Token);
     return;
 }
+if(args.Length==2&&args[0]=="--sample-search")
+{
+    using var sampleTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(12));
+    await SampleSearchScreen.RunAsync(args[1],sampleTimeout.Token);
+    return;
+}
 if(args.Length!=0)throw new ArgumentException("Unexpected integration-test arguments.");
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);
