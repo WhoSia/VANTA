@@ -28,10 +28,13 @@ public static class BatchEncoder
         =>RunCoreAsync(tools,jobs,parallelism,progress,ct,totalEncoderThreads,false);
     internal static Task<IReadOnlyList<BatchUpdate>> RunAdaptiveResearchAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,int totalEncoderThreads,CancellationToken ct)
         =>RunCoreAsync(tools,jobs,parallelism,progress,ct,totalEncoderThreads,true);
-    private static async Task<IReadOnlyList<BatchUpdate>> RunCoreAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct,int? totalEncoderThreads,bool adaptive)
+    internal static Task<IReadOnlyList<BatchUpdate>> RunGatedResearchAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,IProgress<BatchUpdate> progress,int totalEncoderThreads,CancellationToken ct)
+        =>RunCoreAsync(tools,jobs,2,progress,ct,totalEncoderThreads,false,true);
+    private static async Task<IReadOnlyList<BatchUpdate>> RunCoreAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct,int? totalEncoderThreads,bool adaptive,bool serializeValidation=false)
     {
         if(parallelism is <1 or >2)throw new ArgumentOutOfRangeException(nameof(parallelism));
         var jobThreads=ThreadBudget.PerJob(totalEncoderThreads,parallelism);
+        using var validationGate=serializeValidation?new SemaphoreSlim(1,1):null;
         var allocator=adaptive?new BatchThreadAllocator(totalEncoderThreads!.Value,parallelism,jobs.Count):null;
         var inputs=jobs.Select(j=>Path.GetFullPath(j.Input)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var outputs=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -60,10 +63,10 @@ public static class BatchEncoder
                 try
                 {
                     using var lease=allocator?.Acquire();
-                    report=await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
+                    report=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                     {
                         if(x.Stage!="Complete")Notify(new(i,x.Stage,x.Fraction));
-                    }),encoderThreads:lease?.Count??jobThreads,expectedSource:j.ExpectedSource);
+                    }),encoderThreads:lease?.Count??jobThreads,expectedSource:j.ExpectedSource,validationGate:validationGate);
                 }
                 catch(OperationCanceledException) when(token.IsCancellationRequested){Finish(new(i,"Canceled",null));return;}
                 catch(Exception ex){Finish(new(i,"Failed",null,ex.Message));return;}
