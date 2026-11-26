@@ -1,0 +1,59 @@
+name: Acceleration cohort
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/Vanta.Integration/AccelerationCohortScreen.cs'
+      - '.github/workflows/acceleration-cohort.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: acceleration-cohort-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  cohort:
+    runs-on: windows-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Resolve FFmpeg
+        shell: pwsh
+        run: |
+          if (!(Get-Command ffmpeg -ErrorAction SilentlyContinue) -or !(Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+            $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path
+            $env:Path >> $env:GITHUB_PATH
+          }
+          ffmpeg -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
+          ffprobe -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: Prefer direct executable pair from installed Chocolatey package
+        shell: pwsh
+        run: |
+          if ($env:ChocolateyInstall) {
+            $package = Join-Path $env:ChocolateyInstall 'lib/ffmpeg/tools'
+            if (Test-Path $package) {
+              $pairs = @(Get-ChildItem $package -Recurse -File -Filter ffmpeg.exe | Where-Object { Test-Path (Join-Path $_.Directory.FullName 'ffprobe.exe') })
+              if ($pairs.Count -eq 1) {
+                "VANTA_FFMPEG_DIR=$($pairs[0].Directory.FullName)" >> $env:GITHUB_ENV
+                Write-Host 'Using uniquely paired executable under installed package'
+              } else { Write-Host 'No unique direct package pair; resource readings remain direct-child only' }
+            }
+          }
+      - name: Run independent five-pair cohorts
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --acceleration-cohort artifacts/acceleration-cohort/results.jsonl
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: VANTA-acceleration-cohort-evidence
+          path: artifacts/acceleration-cohort/
+          if-no-files-found: error
+          retention-days: 14

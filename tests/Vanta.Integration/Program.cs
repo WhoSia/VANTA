@@ -10,6 +10,12 @@ if(args.Length==7&&args[0]=="-v"&&args[1]=="error"&&args[2]=="-show_format"&&arg
         Console.Error.WriteLine("Synthetic error-level probe diagnostic");
     return;
 }
+if(args.Length==2&&args[0]=="--acceleration-cohort")
+{
+    using var cohortTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(24));
+    await AccelerationCohortScreen.RunAsync(args[1],cohortTimeout.Token);
+    return;
+}
 if(args.Length==3&&args[0]=="--corpus")
 {
     using var corpusTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(24));
