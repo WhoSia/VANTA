@@ -1,0 +1,210 @@
+{
+  "environment": "Linux FFmpeg 7.1.5-0+deb13u1, Node 22.16.0, 4 CPU cgroup quota",
+  "rates": [
+    {
+      "rate": "24000/1001",
+      "frames": 24,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.636947941,
+      "verifiedSeconds": 1.466735303,
+      "sourceBytes": 1577981,
+      "outputBytes": 1094173,
+      "sourceSha": "75fc014daa8882e91baeb8c3569899a4279a409f34de8d77f8a6a2734f06e5bf",
+      "outputSha": "c0fc33d55f24ba4c2b6a458a16e9f56c8fc2f3ed2bff98b3becbfaab9d2b600e"
+    },
+    {
+      "rate": "24",
+      "frames": 24,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.5153252870000001,
+      "verifiedSeconds": 1.2218544149999997,
+      "sourceBytes": 1579318,
+      "outputBytes": 1087762,
+      "sourceSha": "633a01361d61a28bf5d35bd33c335b25a2fbe8d4adfb204728aba2114e0fc9ce",
+      "outputSha": "2cf005990f619e07ae6af07fbe5e281feca1f7ad61c138e54aafa51feb2c2c6d"
+    },
+    {
+      "rate": "25",
+      "frames": 25,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.5499009619999997,
+      "verifiedSeconds": 1.3301671589999997,
+      "sourceBytes": 1667758,
+      "outputBytes": 1085973,
+      "sourceSha": "e8d46c22e056fb9d5b5eb09cdff0e1f707cf661cfd408586271f6bc3d6abe6d4",
+      "outputSha": "5061b44718ccf1d7c8c9da051c1f948a7cdcff0d97512c12255d668d4ba84cf0"
+    },
+    {
+      "rate": "30000/1001",
+      "frames": 30,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.5678577529999993,
+      "verifiedSeconds": 1.428738225,
+      "sourceBytes": 1946993,
+      "outputBytes": 1043449,
+      "sourceSha": "3dd8e753425443a739d512c9ec11b8049095b0540b20c2991ec569ee3f36be45",
+      "outputSha": "55abfa8a78146bc5d286d336c0c5bf196775489c43d49732573379dc2a631851"
+    },
+    {
+      "rate": "30",
+      "frames": 30,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.5749865599999994,
+      "verifiedSeconds": 1.3256374720000004,
+      "sourceBytes": 1950541,
+      "outputBytes": 1046394,
+      "sourceSha": "5864d6bf41b4d231eca5197ee984681444cde961585512a27e564c2066d44934",
+      "outputSha": "c75a824c10129e0d3ef15ac1c7daca5e526566b3099eaf71fb3dad94154863d4"
+    },
+    {
+      "rate": "50",
+      "frames": 50,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.8154219490000001,
+      "verifiedSeconds": 1.614814281,
+      "sourceBytes": 2944327,
+      "outputBytes": 984621,
+      "sourceSha": "a1aa111dad6163d13c2c39b92c06d3031c7d6140322ed68048e38da370278f58",
+      "outputSha": "a9e4e0a2fb05a8662ab002b503a35313119c553ea0ad87f2a4ed717721dfe44a"
+    },
+    {
+      "rate": "60000/1001",
+      "frames": 60,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.8366835039999996,
+      "verifiedSeconds": 1.6658690339999993,
+      "sourceBytes": 3505344,
+      "outputBytes": 977212,
+      "sourceSha": "f518f5c08c4dbf2bae7ad95bca6b083035481d46768a04340db7281f2b19dbb1",
+      "outputSha": "136a703737da08c828a618f955f6a714d24dc20f219f343991dec2d0557a5748"
+    },
+    {
+      "rate": "60",
+      "frames": 60,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.8023580769999998,
+      "verifiedSeconds": 1.638154036,
+      "sourceBytes": 3500343,
+      "outputBytes": 973500,
+      "sourceSha": "63a4ba7d17398ee716ac4de17b9903e8860d3cb2598f0192a49262449df2d16c",
+      "outputSha": "e0bd47ac785e1bbeefc6eba603d9b8dfcb820023184f3135ce04e26f8a115ad8"
+    },
+    {
+      "rate": "120000/1001",
+      "frames": 120,
+      "maxPtsError": 0,
+      "encodeSeconds": 1.469342475,
+      "verifiedSeconds": 2.893247042,
+      "sourceBytes": 5865633,
+      "outputBytes": 964488,
+      "sourceSha": "13d6c45c06046b7d54970755b5ef6df163c745a79e421a26c4dc3d9def3edb21",
+      "outputSha": "5a58c077bfd4ebdf1d88776398fbaa0a6a356917d024a1e14eae7312503cdbcc"
+    },
+    {
+      "rate": "120",
+      "frames": 120,
+      "maxPtsError": 0,
+      "encodeSeconds": 1.3548505830000004,
+      "verifiedSeconds": 2.4395877119999994,
+      "sourceBytes": 5862302,
+      "outputBytes": 966066,
+      "sourceSha": "9562640c3e48dbd543ce6a4064c766a7cb36b79a2297fa3633753345a4776b3a",
+      "outputSha": "2f14f90c1b3a4113b95895e6e4dd3b3d589ec32aff450869c75371ab4e9295ff"
+    },
+    {
+      "rate": "vfr",
+      "frames": 56,
+      "maxPtsError": 0,
+      "encodeSeconds": 0.9797442099999999,
+      "verifiedSeconds": 1.762349186999999,
+      "sourceBytes": 3174777,
+      "outputBytes": 885564,
+      "sourceSha": "0650a18c8808047e14253348ea24995904b660de2b120bf61a08e720e7df8cc7",
+      "outputSha": "07bc52298e7cf9ef4c6d5fd0e2394846bc99456c8ae77ba218c22f76eafcb183"
+    }
+  ],
+  "physical": {
+    "scope": "local H264 CBR filler input, not natural footage or full C# engine",
+    "width": 1920,
+    "height": 1080,
+    "fps": 60,
+    "duration": 10,
+    "sourceBytes": 297135053,
+    "outputBytes": 10190738,
+    "encodeSeconds": 7.078604576000001,
+    "verifiedSeconds": 11.380913929999998,
+    "frames": 600,
+    "maxPtsError": 0,
+    "meanSsim": 0.992173121666666,
+    "worstSecondSsim": 0.9919146666666669,
+    "sourceSha256": "da86ec542f7acbe9080bd203ae5814951776415acc1cecba4df8673f6a75133e",
+    "outputSha256": "62cfa768dcdb2df0537030442661a7effb09f7a22a642df849f803f68280270b"
+  },
+  "sparse": [
+    {
+      "logicalBytes": 5369585045,
+      "offsetShift": 5368709120,
+      "sourceBytes": 875165,
+      "allocatedBytes": 880640,
+      "chunkEntries": 190,
+      "sourceSha256": "add3afffd4f9bf9f33bd1d22b4082933830214483444a224524bad1304cc032a",
+      "framemd5Sha256": "c591e241e06bd1dd0707e4b5f3cecd1f7094f45d24051929a37b8ad87b6827de"
+    },
+    {
+      "logicalBytes": 21475712405,
+      "offsetShift": 21474836480,
+      "sourceBytes": 875165,
+      "allocatedBytes": 880640,
+      "chunkEntries": 190,
+      "sourceSha256": "add3afffd4f9bf9f33bd1d22b4082933830214483444a224524bad1304cc032a",
+      "framemd5Sha256": "c591e241e06bd1dd0707e4b5f3cecd1f7094f45d24051929a37b8ad87b6827de"
+    }
+  ],
+  "mux": {
+    "planned": 9,
+    "completed": 4,
+    "status": "execution timeout; no winner",
+    "rows": [
+      {
+        "rep": 0,
+        "mode": "faststart",
+        "wall": 0.34733391400000074,
+        "synced": 0.4422185470000004,
+        "bytes": 297135053,
+        "inputBytes": 297135053,
+        "inputSha": "da86ec542f7acbe9080bd203ae5814951776415acc1cecba4df8673f6a75133e",
+        "decodedSha": "e1c6f3b704145dd4be571b24984849dff9252d322a75c6a33509493a3111f11e"
+      },
+      {
+        "rep": 0,
+        "mode": "tail",
+        "wall": 0.6643419779999986,
+        "synced": 0.7587416649999995,
+        "bytes": 297135053,
+        "inputBytes": 297135053,
+        "inputSha": "da86ec542f7acbe9080bd203ae5814951776415acc1cecba4df8673f6a75133e",
+        "decodedSha": "e1c6f3b704145dd4be571b24984849dff9252d322a75c6a33509493a3111f11e"
+      },
+      {
+        "rep": 0,
+        "mode": "reserve",
+        "wall": 0.6303221709999998,
+        "synced": 0.722613900999997,
+        "bytes": 298171076,
+        "inputBytes": 297135053,
+        "inputSha": "da86ec542f7acbe9080bd203ae5814951776415acc1cecba4df8673f6a75133e",
+        "decodedSha": "e1c6f3b704145dd4be571b24984849dff9252d322a75c6a33509493a3111f11e"
+      },
+      {
+        "rep": 1,
+        "mode": "tail",
+        "wall": 0.37644434999999793,
+        "synced": 0.4693861849999994,
+        "bytes": 297135053,
+        "inputBytes": 297135053,
+        "inputSha": "da86ec542f7acbe9080bd203ae5814951776415acc1cecba4df8673f6a75133e",
+        "decodedSha": "e1c6f3b704145dd4be571b24984849dff9252d322a75c6a33509493a3111f11e"
+      }
+    ]
+  }
+}

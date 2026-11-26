@@ -268,7 +268,7 @@ public partial class MainWindow : Window
             Evidence.Text=T($"Pixel retention {v.PixelRetention:P1} · quality not measured · actual size may be much smaller or larger; not a limit",$"픽셀 유지 비율 {v.PixelRetention:P1} · 화질 미측정 · 실제 용량은 예산과 다를 수 있음");
             EncodeButton.IsEnabled=current is null&&!encoding;
             MoreCompressionButton.IsEnabled=EncodeButton.IsEnabled&&p.VideoBitsPerSecond>PlanRules.MinimumVideoRate;
-            SpeedFirstButton.IsEnabled=EncodeButton.IsEnabled&&tools?.Codecs.Contains("libx264")==true;
+            if(SpeedFirstButton is not null)SpeedFirstButton.IsEnabled=EncodeButton.IsEnabled&&tools?.Codecs.Contains("libx264")==true;
         }
         catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";}
     }

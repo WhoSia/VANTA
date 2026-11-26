@@ -380,3 +380,7 @@ Combined public 8/8 matched and faster but median 7.68%. Dedicated five-pair syn
 ## Actual encoding throughput is now a priority
 
 Owner reports slow compression; no stage/hardware info yet. Synthetic cohort two of three meets 15% median, all 15/15 outputs identical; no general release. Local 12 real AVC/HEVC preset outputs show speed/size tradeoff (motion H264 fast 41.31% less verified time, matched; mixed output 2.81x HEVC medium). Explicit speed-first action only, no changed default. Direct child trace now likely actual binary, still not tree aggregate. Public confirmation and fixed-rate frontier pending. See docs/research/preset-frontier.
+
+## Scale and input coverage
+
+Owner requires ordinary large files and 1080p through 120fps without hardware-specific prerequisites. 11 local rate fixtures preserve count/PTS/audio hash; 297MB physical CBR filler source compressed to 10.19MB, 11.38s verified proxy, not natural media ratio or C# timing. Sparse 5/20GiB true co64 media offsets independently decoded; not physical payload throughput. New scale lanes and bounded text capture. Mux proxy incomplete, retain faststart. Public external services failed; bounded transient retry, never bypass 403. Full generalization and ordinary input compatibility remain open.

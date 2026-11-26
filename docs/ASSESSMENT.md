@@ -123,3 +123,7 @@ V4 reproduced. Snapshot and tracing correctness tests passed, source reuse initi
 ## Owner report and cohort evidence
 
 Actual user-reported slowness increases value of encoder throughput and readable diagnostics; cannot identify cause without selected codec/preset and encoding/validation times. Synthetic cohort 2/3 screening groups qualify, 15/15 identical; real public repeated confirmation pending. Preserve noncompensatory gates. Do not count an owner complaint as acceptance or calibrate a probability from it.
+
+## Scale is a required gate
+
+Do not rank ordinary file-size/rate coverage against optional acceleration as if interchangeable. Reproduced synthetic acceleration 2/3 groups, public lanes blocked by external services. Local rate/physical/sparse evidence is limited; exact new C# scale CI pending. Prioritize independent scale verification, broad input compatibility and actual throughput. No new 12000-scenario snapshot; v5 retained, no probability inference or release authorization.

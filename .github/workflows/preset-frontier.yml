@@ -58,6 +58,8 @@ jobs:
               } else { Write-Host 'No unique direct package pair; resource readings remain direct-child only' }
             }
           }
+      - name: Verify acquisition retry and pin controls
+        run: python -S tests/corpus/test_acquire.py
       - name: Acquire pinned public fixtures
         shell: pwsh
         run: |
