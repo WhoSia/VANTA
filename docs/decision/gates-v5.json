@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "evidenceHead": "389c2685e4451edc8a28f8c13facde65f2a6e96d",
+  "required": [
+    {
+      "id": "integrity_release",
+      "state": "open",
+      "reason": "2/3 synthetic groups meet screening target; actual public repeat, representative resource evidence and desktop acceptance still open"
+    },
+    {
+      "id": "new_speed_controls_ci",
+      "state": "pending",
+      "reason": "new WPF shortcut/result diagnostics and public lanes require exact CI"
+    }
+  ],
+  "owner": [
+    {
+      "id": "desktop_acceptance",
+      "state": "open",
+      "reason": "owner is using VANTA and reports slow compression; actual full acceptance still open"
+    }
+  ],
+  "blocked": [
+    {
+      "id": "hardware_codec_performance",
+      "state": "hardware-required",
+      "reason": "no functioning hardware encoder in CI"
+    }
+  ],
+  "retired": [
+    {
+      "id": "raw_source_packet_only",
+      "reason": "trimmed MP4 98 packets vs 62 decoded frames"
+    },
+    {
+      "id": "validation_gate",
+      "reason": "same-settings negative speed in both trials; retain regression, no default"
+    },
+    {
+      "id": "segmented_tuning",
+      "reason": "repeated unmatched/negative acceleration"
+    },
+    {
+      "id": "python_full_rewrite",
+      "reason": "outside production, no consistent runtime advantage"
+    },
+    {
+      "id": "benchmark_quality_reuse",
+      "reason": "46/64 cache hits, implemented; preserve regression"
+    }
+  ],
+  "researchIds": [
+    "encoder_preset_frontier",
+    "combined_validation_followup",
+    "equal_settings_batch_followup",
+    "source_clock_reuse",
+    "resource_trace",
+    "adaptive_rate_distortion",
+    "native_audio_compatibility",
+    "external_encoder_benchmark",
+    "preview_and_diagnostics",
+    "rust_kernel_integration"
+  ]
+}

@@ -17,3 +17,7 @@ Only eligible research is ranked; required, owner, blocked and retired gates are
 ## Fourth snapshot
 
 12 axes, 12000 scenarios, seed 20261127, research-only inputs through d2d8fa3. Combined validation and equal-settings batch empirical gains, source reuse and resource tracing still unverified. Gate routing separate, prior snapshots preserved; ranks not longitudinally comparable after candidate changes. Subjective inputs not success probabilities.
+
+## Fifth snapshot
+
+Owner reports slow actual compression, without hardware, source or settings details. Exact 389c268 synthetic evidence, 15/15 byte-identical, 2/3 groups qualify. Prioritize real encoder preset frontier; keep separate combined validation confirmation. 12 axes, 12000 scenarios, same seed 20261127. Candidate set changed, no longitudinal rank inference. Subjective utilities, not measured probabilities. New speed control and public tests pending; owner acceptance open.
