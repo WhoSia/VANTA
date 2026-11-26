@@ -17,3 +17,7 @@ All six raw SHA256 pins observed in run 45659393236; failed BBB raw acquisition 
 ## Offset-specific fixture path and fused validation screen
 
 Third run pinned six raw SHA256 values but BBB normalized video was absent; source reports start 15.75s. For nonzero video start, prepare video separately with explicit frame cap, audio separately with sample-based PTS and trim to video duration, then stream-copy mux. Normal zero-start lane unchanged. This intentionally rebases the tracks independently, can change original timing; no native support claim. New synthetic offset regression and actual pinned corpus rerun required. Audio-containing normalized fixtures now include continuous-fused research mode; separate streamhash is checked outside timed candidate path, with same full validation and SSIM gates. Never change production copy or default validation from this screen alone.
+
+## Explicit ordinal-clock animation derivative
+
+The pinned BBB input failed the strict raw framemd5 mux with non-monotonic output DTS (378 then 1) in 45803488770. This does not prove that only one frame can be decoded. For this one named and hash-verified source, attempt a CFR derivative assigning decoded frame ordinal N to time N/fps, independently prepared audio, exact target frame count, and existing normalized metadata checks. Preserve the raw diagnostic even if this derivative succeeds; timing_preserved=false, never native acceptance. No fallback applies to arbitrary production inputs. The actual Ogg result remains pending.

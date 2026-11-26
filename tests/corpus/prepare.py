@@ -83,8 +83,14 @@ def normalize(item, raw, dest):
     # (observed on the pinned BBB Ogg input in FFmpeg 9.1). Prepare the
     # explicitly modified fixture streams independently; never use this in
     # the production audio-copy path.
+    ordinal = item.get("fixture_clock") == "ordinal-cfr"
+    if ordinal:
+        # An explicit, source-specific research derivative. Ignore the broken
+        # timestamp sequence, not decoded frame content. Never use this for
+        # native compatibility or on arbitrary inputs.
+        vf = f"settb=1/{fps},setpts=N,scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2,setsar=1"
     start = video.get("start_time")
-    if start not in (None, "N/A") and abs(float(start)) > .002:
+    if ordinal or (start not in (None, "N/A") and abs(float(start)) > .002):
         with tempfile.TemporaryDirectory(prefix="vanta-offset-", dir=dest.parent) as tmp:
             tmp = pathlib.Path(tmp)
             vid, aud = tmp / "video.mp4", tmp / "audio.m4a"
@@ -99,7 +105,10 @@ def normalize(item, raw, dest):
             if len(video_streams) != 1:
                 raise ValueError(f"Offset video-only encode yielded {len(video_streams)} video streams")
             vmeta = video_streams[0]
-            duration = int(vmeta["nb_frames"]) / fps
+            frame_count = int(vmeta["nb_frames"])
+            if ordinal and frame_count != item["seconds"] * fps:
+                raise ValueError(f"Ordinal fixture requires exactly {item['seconds'] * fps} frames, got {frame_count}")
+            duration = frame_count / fps
             if duration <= 0:
                 raise ValueError("Offset video normalization yielded no frames")
             if any(s["codec_type"] == "audio" for s in meta["streams"]):
@@ -170,6 +179,12 @@ def main():
             print("CORPUS_RAW", item["id"], record["raw_sha256"], flush=True)
             record["raw_bytes"] = raw.stat().st_size
             record["raw_probe"] = probe(raw)
+            if item.get("fixture_clock") == "ordinal-cfr":
+                if not args.local and record["raw_sha256"] != item.get("sha256"):
+                    raise ValueError("Ordinal clock policy requires the pinned source")
+                record["raw_decode_diagnostic"] = diagnose_video(raw)
+                print("CORPUS_DIAGNOSTIC", item["id"], json.dumps(record["raw_decode_diagnostic"]), flush=True)
+                record["timing_preserved"] = False
             _, record["fixture_probe"] = normalize(item, raw, dest)
             record["fixture_sha256"] = digest(dest)
             if digest(raw) != record["raw_sha256"]:

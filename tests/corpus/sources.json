@@ -11,7 +11,9 @@
     "width": 1280,
     "height": 720,
     "fps": 24,
-    "sha256": "1a86a4af685a5285d593b7d3ee9d8e23f3c63c5ba3f86bd191c97157c12a237a"
+    "sha256": "1a86a4af685a5285d593b7d3ee9d8e23f3c63c5ba3f86bd191c97157c12a237a",
+    "fixture_clock": "ordinal-cfr",
+    "fixture_clock_reason": "Original diagnostic in 45803488770: rawvideo output DTS 378 then 1, strict mux failed; derivative assigns timestamps by decoded frame order, not original timing."
   },
   {
     "id": "waterfall-portrait",
