@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'tests/Vanta.Integration/PresetFrontierScreen.cs'
+      - 'tests/Vanta.Integration/MotionSearchScreen.cs'
+      - 'tests/Vanta.Integration/Program.cs'
+      - 'src/Vanta.Core/Encoder.cs'
       - 'src/Vanta.Core/Compression.cs'
       - '.github/workflows/synthetic-frontier.yml'
   workflow_dispatch:
