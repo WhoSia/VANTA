@@ -18,3 +18,5 @@ ffmpeg -v error -xerror -nostdin -i edit.mp4 -f null -
 ```
 
 No GPU hardware, external application benchmark, actual per-process resource counters or new release acceptance in this increment.
+
+Reproduce local combined proxy: `node docs/research/combined-validation/screen.mjs`. Equivalent to the executed local script (template strings converted to concatenation only). Timings and media bytes can vary by build/environment. Does not run VANTA C#; no deployment dependency.
