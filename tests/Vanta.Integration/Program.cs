@@ -10,6 +10,18 @@ if(args.Length==7&&args[0]=="-v"&&args[1]=="error"&&args[2]=="-show_format"&&arg
         Console.Error.WriteLine("Synthetic error-level probe diagnostic");
     return;
 }
+if(args.Length==3&&args[0]=="--public-confirmation")
+{
+    using var confirmationTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(28));
+    await AccelerationCohortScreen.RunAsync(args[2],confirmationTimeout.Token,args[1]);
+    return;
+}
+if(args.Length==3&&args[0]=="--preset-frontier")
+{
+    using var frontierTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(24));
+    await PresetFrontierScreen.RunAsync(args[1],args[2],frontierTimeout.Token);
+    return;
+}
 if(args.Length==2&&args[0]=="--acceleration-cohort")
 {
     using var cohortTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(24));
