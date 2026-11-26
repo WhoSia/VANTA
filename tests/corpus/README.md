@@ -29,3 +29,7 @@ Download pins computed in same streamed pass; raw metadata reused, final source 
 ## Single-decode candidate and benchmark time reduction
 
 Exact 26d9101 public CI successful. Next exploratory matrix continuous medium fixed threads, continuous auto, fast, single-decode, and audio-containing fused. Aligned/overlap comparisons retired prospectively from this screen, not deleted from ordinary integration tests. Single-decode uses separate source timeline, strict FFmpeg output decoded timestamp stats and full decode in one pass, separate audio checks. Untimed independent original-path oracle on every candidate output. Quality memo per source by output SHA256, not filename/size/codec; preserve expected frame count and output integrity checks for every trial; log hit/miss. SSIM computation skipped only for byte-identical output in same source/metric run. No production caching. No speed claim until exact next CI.
+
+## Combined candidate
+
+Audio-containing fixtures add continuous-combined (same encoding settings, single strict output decode and interleaved packet/hash verification). Compare vs continuous baseline and directly vs continuous-single-decode and continuous-fused with incremental-pair rows. Keep independent old packet/timeline + full strict decode + streamhash oracle; cache only identical-output metric results. Record peak pending packet records. No production change.

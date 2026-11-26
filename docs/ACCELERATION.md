@@ -364,3 +364,7 @@ Exact 8f4ba94 actual HEVC 120s validation-only median serial 1.3908663s vs singl
 ## Multi-audio demux elimination
 
 Prior 8f4ba94 public lane now passed: single decode 12/12 matched and faster, mean 6.27%; fused 8/8 matched and faster, mean 7.14%, one >=15% joint in each. Multiple independent audio scans scale with track count. Candidate uses one audio packet scan per file, tracks mapped by actual indices, bounded per-track FIFO joins with payload hashes and shared video clock. Proxy local 2/4 tracks median packet-validation time reductions 54.66%/77.37%, not full workflow. Tests of full combined validator pending, no promotion. See docs/research/interleaved-audio. Existing reference retained.
+
+## Combined validator and equal-settings scheduling
+
+Prior batch Windows CI passed but every original speed pair unmatched because changing encoder threads changed quality. Same-settings scheduling controls and validation gate now added, admission wait separately logged. Combined validator supports one-track corpus comparisons in addition to multi-track tests. Local same-output Node proxy 24 timings, 61.14%/72.65% median validation-only reduction for 1/4 audio tracks. Preserve independent reference. Source packet-only replacement rejected by edit-list counterexample; independent source decoded clock retained. See docs/research/combined-validation. No production default change.

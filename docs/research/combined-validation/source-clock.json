@@ -1,0 +1,66 @@
+{
+  "ffmpeg": "7.1.5-0+deb13u1",
+  "strictDecode": true,
+  "rows": [
+    {
+      "name": "full",
+      "sha256": "98092cacf0e3a44567c4d27b52716fcc845bd8ee4213bad2a70bea8742babbfd",
+      "packetCount": 150,
+      "decodedFrames": 150,
+      "firstPacketPts": [
+        0,
+        0.133333,
+        0.066667,
+        0.033333,
+        0.1,
+        0.266667,
+        0.2,
+        0.166667
+      ],
+      "firstFramePts": [
+        0,
+        0.033333,
+        0.066667,
+        0.1,
+        0.133333,
+        0.166667,
+        0.2,
+        0.233333
+      ],
+      "discardPackets": 0,
+      "sortedEqualsFrames": true,
+      "nonDiscardCount": 150,
+      "sortedNonDiscardEqualsFrames": true
+    },
+    {
+      "name": "edit",
+      "sha256": "9b69a52b719f5ee28d4df2ef2759a7f5d36014253538a2c10f5576bddfd4cd57",
+      "packetCount": 98,
+      "decodedFrames": 62,
+      "firstPacketPts": [
+        -1.2,
+        -1.066667,
+        -1.133333,
+        -1.166667,
+        -1.1,
+        -0.933333,
+        -1,
+        -1.033333
+      ],
+      "firstFramePts": [
+        0,
+        0.033333,
+        0.066667,
+        0.1,
+        0.133333,
+        0.166667,
+        0.2,
+        0.233333
+      ],
+      "discardPackets": 36,
+      "sortedEqualsFrames": false,
+      "nonDiscardCount": 62,
+      "sortedNonDiscardEqualsFrames": true
+    }
+  ]
+}

@@ -1,0 +1,347 @@
+{
+  "head": "4a5782b685f919b2d63ca714627e7823cbdbfc77",
+  "run": 45836762718,
+  "job": 139967576969,
+  "batches": [
+    {
+      "rep": 0,
+      "mode": "serial",
+      "seconds": 2.349964,
+      "totalRequestedBudget": 5,
+      "parallelism": 1
+    },
+    {
+      "rep": 0,
+      "mode": "fixed",
+      "seconds": 1.7302025,
+      "totalRequestedBudget": 5,
+      "parallelism": 2
+    },
+    {
+      "rep": 0,
+      "mode": "adaptive",
+      "seconds": 1.709118,
+      "totalRequestedBudget": 5,
+      "parallelism": 2
+    },
+    {
+      "rep": 1,
+      "mode": "adaptive",
+      "seconds": 1.7560913,
+      "totalRequestedBudget": 5,
+      "parallelism": 2
+    },
+    {
+      "rep": 1,
+      "mode": "fixed",
+      "seconds": 1.7057253,
+      "totalRequestedBudget": 5,
+      "parallelism": 2
+    },
+    {
+      "rep": 1,
+      "mode": "serial",
+      "seconds": 2.3174856,
+      "totalRequestedBudget": 5,
+      "parallelism": 1
+    }
+  ],
+  "jobs": [
+    {
+      "rep": 0,
+      "mode": "serial",
+      "index": 0,
+      "threads": 5,
+      "bytes": 195095,
+      "seconds": 0.8156239,
+      "Mean": 0.9908839600000001,
+      "WorstSecond": 0.9811223666666667,
+      "Frames": 150,
+      "sha": "B0769CB302640C769DA201C209F80FBA4C0DBB96FCF01D0206A3D3A868EE42B1"
+    },
+    {
+      "rep": 0,
+      "mode": "serial",
+      "index": 1,
+      "threads": 5,
+      "bytes": 573899,
+      "seconds": 1.0412169,
+      "Mean": 0.995794736111111,
+      "WorstSecond": 0.9864848333333334,
+      "Frames": 216,
+      "sha": "5413524A7B761A24D9C19E74C3785A55B665C6FCD4DFD575AD6AC761B1085FF9"
+    },
+    {
+      "rep": 0,
+      "mode": "serial",
+      "index": 2,
+      "threads": 5,
+      "bytes": 83454,
+      "seconds": 0.4925502,
+      "Mean": 0.9882236777777779,
+      "WorstSecond": 0.9820430666666666,
+      "Frames": 90,
+      "sha": "28F221994780692AA4FB407954FDECAE68E5C420EE3DC02A86B7A84F2D40252E"
+    },
+    {
+      "rep": 0,
+      "mode": "fixed",
+      "index": 0,
+      "threads": 2,
+      "bytes": 197989,
+      "seconds": 1.14296,
+      "Mean": 0.9916351133333337,
+      "WorstSecond": 0.9841217333333335,
+      "Frames": 150,
+      "sha": "346798FC3D138F753DCBDAAE00ABD2986F9938B2DEE5F004B0DC6819EA0891A6"
+    },
+    {
+      "rep": 0,
+      "mode": "fixed",
+      "index": 1,
+      "threads": 2,
+      "bytes": 574613,
+      "seconds": 1.3975345,
+      "Mean": 0.995776902777778,
+      "WorstSecond": 0.9859425555555554,
+      "Frames": 216,
+      "sha": "32EBB9CDC47865890DBEF0C652079FF8B4F8CAE2C5DEDABFD6761859F88442BA"
+    },
+    {
+      "rep": 0,
+      "mode": "fixed",
+      "index": 2,
+      "threads": 2,
+      "bytes": 85363,
+      "seconds": 0.5869289,
+      "Mean": 0.9894754666666665,
+      "WorstSecond": 0.9849800666666667,
+      "Frames": 90,
+      "sha": "44B72F0882DA61FD438EF5C8E76A64BC107B1BE99EE1CBBCDDDBAB840F8D7940"
+    },
+    {
+      "rep": 0,
+      "mode": "adaptive",
+      "index": 0,
+      "threads": 2,
+      "bytes": 197989,
+      "seconds": 1.1446624,
+      "Mean": 0.9916351133333337,
+      "WorstSecond": 0.9841217333333335,
+      "Frames": 150,
+      "sha": "346798FC3D138F753DCBDAAE00ABD2986F9938B2DEE5F004B0DC6819EA0891A6"
+    },
+    {
+      "rep": 0,
+      "mode": "adaptive",
+      "index": 1,
+      "threads": 3,
+      "bytes": 573680,
+      "seconds": 1.3839148,
+      "Mean": 0.9956979675925924,
+      "WorstSecond": 0.9855255555555557,
+      "Frames": 216,
+      "sha": "43AC65CC6C43F54CBB3BE54EA86E588B686D54F0EA395EAB2D6D3BD1FA94D966"
+    },
+    {
+      "rep": 0,
+      "mode": "adaptive",
+      "index": 2,
+      "threads": 2,
+      "bytes": 85363,
+      "seconds": 0.5639237,
+      "Mean": 0.9894754666666665,
+      "WorstSecond": 0.9849800666666667,
+      "Frames": 90,
+      "sha": "44B72F0882DA61FD438EF5C8E76A64BC107B1BE99EE1CBBCDDDBAB840F8D7940"
+    },
+    {
+      "rep": 1,
+      "mode": "adaptive",
+      "index": 0,
+      "threads": 2,
+      "bytes": 197989,
+      "seconds": 1.183473,
+      "Mean": 0.9916351133333337,
+      "WorstSecond": 0.9841217333333335,
+      "Frames": 150,
+      "sha": "346798FC3D138F753DCBDAAE00ABD2986F9938B2DEE5F004B0DC6819EA0891A6"
+    },
+    {
+      "rep": 1,
+      "mode": "adaptive",
+      "index": 1,
+      "threads": 3,
+      "bytes": 573680,
+      "seconds": 1.4328966,
+      "Mean": 0.9956979675925924,
+      "WorstSecond": 0.9855255555555557,
+      "Frames": 216,
+      "sha": "43AC65CC6C43F54CBB3BE54EA86E588B686D54F0EA395EAB2D6D3BD1FA94D966"
+    },
+    {
+      "rep": 1,
+      "mode": "adaptive",
+      "index": 2,
+      "threads": 2,
+      "bytes": 85363,
+      "seconds": 0.5723442,
+      "Mean": 0.9894754666666665,
+      "WorstSecond": 0.9849800666666667,
+      "Frames": 90,
+      "sha": "44B72F0882DA61FD438EF5C8E76A64BC107B1BE99EE1CBBCDDDBAB840F8D7940"
+    },
+    {
+      "rep": 1,
+      "mode": "fixed",
+      "index": 0,
+      "threads": 2,
+      "bytes": 197989,
+      "seconds": 1.1170097,
+      "Mean": 0.9916351133333337,
+      "WorstSecond": 0.9841217333333335,
+      "Frames": 150,
+      "sha": "346798FC3D138F753DCBDAAE00ABD2986F9938B2DEE5F004B0DC6819EA0891A6"
+    },
+    {
+      "rep": 1,
+      "mode": "fixed",
+      "index": 1,
+      "threads": 2,
+      "bytes": 574613,
+      "seconds": 1.4391957,
+      "Mean": 0.995776902777778,
+      "WorstSecond": 0.9859425555555554,
+      "Frames": 216,
+      "sha": "32EBB9CDC47865890DBEF0C652079FF8B4F8CAE2C5DEDABFD6761859F88442BA"
+    },
+    {
+      "rep": 1,
+      "mode": "fixed",
+      "index": 2,
+      "threads": 2,
+      "bytes": 85363,
+      "seconds": 0.5883421,
+      "Mean": 0.9894754666666665,
+      "WorstSecond": 0.9849800666666667,
+      "Frames": 90,
+      "sha": "44B72F0882DA61FD438EF5C8E76A64BC107B1BE99EE1CBBCDDDBAB840F8D7940"
+    },
+    {
+      "rep": 1,
+      "mode": "serial",
+      "index": 0,
+      "threads": 5,
+      "bytes": 195095,
+      "seconds": 0.8015149,
+      "Mean": 0.9908839600000001,
+      "WorstSecond": 0.9811223666666667,
+      "Frames": 150,
+      "sha": "B0769CB302640C769DA201C209F80FBA4C0DBB96FCF01D0206A3D3A868EE42B1"
+    },
+    {
+      "rep": 1,
+      "mode": "serial",
+      "index": 1,
+      "threads": 5,
+      "bytes": 573899,
+      "seconds": 1.0264509,
+      "Mean": 0.995794736111111,
+      "WorstSecond": 0.9864848333333334,
+      "Frames": 216,
+      "sha": "5413524A7B761A24D9C19E74C3785A55B665C6FCD4DFD575AD6AC761B1085FF9"
+    },
+    {
+      "rep": 1,
+      "mode": "serial",
+      "index": 2,
+      "threads": 5,
+      "bytes": 83454,
+      "seconds": 0.4891551,
+      "Mean": 0.9882236777777779,
+      "WorstSecond": 0.9820430666666666,
+      "Frames": 90,
+      "sha": "28F221994780692AA4FB407954FDECAE68E5C420EE3DC02A86B7A84F2D40252E"
+    }
+  ],
+  "pairs": [
+    {
+      "rep": 0,
+      "mode": "fixed",
+      "matched": false,
+      "timeReduction": 0.2637323380273059
+    },
+    {
+      "rep": 0,
+      "mode": "adaptive",
+      "matched": false,
+      "timeReduction": 0.27270460313434586
+    },
+    {
+      "rep": 1,
+      "mode": "fixed",
+      "matched": false,
+      "timeReduction": 0.2639758797206765
+    },
+    {
+      "rep": 1,
+      "mode": "adaptive",
+      "matched": false,
+      "timeReduction": 0.2422428428465747
+    }
+  ],
+  "reason": [
+    {
+      "rep": 0,
+      "mode": "fixed",
+      "failures": [
+        {
+          "index": 2,
+          "bytes": 0.02287487717784642,
+          "mean": 0.0012517888888886608,
+          "worst": 0.0029370000000000784,
+          "frames": 0
+        }
+      ]
+    },
+    {
+      "rep": 0,
+      "mode": "adaptive",
+      "failures": [
+        {
+          "index": 2,
+          "bytes": 0.02287487717784642,
+          "mean": 0.0012517888888886608,
+          "worst": 0.0029370000000000784,
+          "frames": 0
+        }
+      ]
+    },
+    {
+      "rep": 1,
+      "mode": "fixed",
+      "failures": [
+        {
+          "index": 2,
+          "bytes": 0.02287487717784642,
+          "mean": 0.0012517888888886608,
+          "worst": 0.0029370000000000784,
+          "frames": 0
+        }
+      ]
+    },
+    {
+      "rep": 1,
+      "mode": "adaptive",
+      "failures": [
+        {
+          "index": 2,
+          "bytes": 0.02287487717784642,
+          "mean": 0.0012517888888886608,
+          "worst": 0.0029370000000000784,
+          "frames": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "node": "v22.16.0",
+  "ffmpeg": "7.1.5-0+deb13u1",
+  "scope": "local validation-only buffered proxy",
+  "order": [
+    "baseline,single,fused,combined",
+    "single,fused,combined,baseline",
+    "fused,combined,baseline,single"
+  ],
+  "evidence": [
+    {
+      "tracks": 1,
+      "sourceSha256": "b60a442120de7f9b79fe8687b07995f266d4a823c1c41580b5442242ec636723",
+      "outputSha256": "178537bc833eae0991dc9ebc7e1575e35cbd6fbee7819e17d14e2570c972cb23",
+      "frames": 72,
+      "packets": 142,
+      "times": {
+        "baseline": [
+          0.47516098099999987,
+          0.428051602,
+          0.41541574600000014
+        ],
+        "single": [
+          0.40089634,
+          0.303403941,
+          0.31383992899999974
+        ],
+        "fused": [
+          0.31658531100000004,
+          0.2590572589999997,
+          0.257800866
+        ],
+        "combined": [
+          0.1589043929999998,
+          0.18380010700000002,
+          0.16635011600000008
+        ]
+      }
+    },
+    {
+      "tracks": 4,
+      "sourceSha256": "42d8ef864ebc9e7644a3b76229853e3f71f101bebca934276d01f67772bdb3df",
+      "outputSha256": "091beb887d6e2706a84e4f6b466f476de948333522dab35801035a9a86a79bac",
+      "frames": 72,
+      "packets": 568,
+      "times": {
+        "baseline": [
+          0.7925841529999997,
+          0.6917747469999995,
+          0.6472109249999994
+        ],
+        "single": [
+          0.5464802389999995,
+          0.5370056640000003,
+          0.49888088299999983
+        ],
+        "fused": [
+          0.555830422,
+          0.6038572260000001,
+          0.4847628370000002
+        ],
+        "combined": [
+          0.1900967869999995,
+          0.18921194300000024,
+          0.17380718299999898
+        ]
+      }
+    }
+  ],
+  "summary": [
+    {
+      "tracks": 1,
+      "medians": {
+        "baseline": 0.428051602,
+        "single": 0.31383992899999974,
+        "fused": 0.2590572589999997,
+        "combined": 0.16635011600000008
+      },
+      "combinedVsBaseline": 0.6113783590044826,
+      "combinedVsSingle": 0.46995235268486113,
+      "combinedVsFused": 0.3578635215931152
+    },
+    {
+      "tracks": 4,
+      "medians": {
+        "baseline": 0.6917747469999995,
+        "single": 0.5370056640000003,
+        "fused": 0.555830422,
+        "combined": 0.18921194300000024
+      },
+      "combinedVsBaseline": 0.726483304253949,
+      "combinedVsSingle": 0.6476537294027496,
+      "combinedVsFused": 0.6595869252367041
+    }
+  ]
+}
