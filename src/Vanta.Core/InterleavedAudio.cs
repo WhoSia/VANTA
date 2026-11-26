@@ -90,10 +90,13 @@ internal static class InterleavedAudio
         ct.ThrowIfCancellationRequested();
         var join=new AudioPacketJoin(sourceIndices,outputIndices,origin);
         using var a=Open(exe,source);var ae=a.StandardError.ReadToEndAsync();
+        await using var sourceResource=ProcessResourceTrace.Track(a,"source-interleaved-audio");
         Process? b=null;Task<string>? be=null;
+        ProcessResourceTrace.Observation? outputResource=null;
         try
         {
             b=Open(exe,output);be=b.StandardError.ReadToEndAsync();
+            outputResource=ProcessResourceTrace.Track(b,"output-interleaved-audio");
             bool aDone=false,bDone=false;
             while(!aDone||!bDone)
             {
@@ -109,7 +112,7 @@ internal static class InterleavedAudio
         finally
         {
             try{await Stop(a,ae);}
-            finally{if(b is not null){try{await Stop(b,be!);}finally{b.Dispose();}}}
+            finally{if(b is not null){try{await Stop(b,be!);}finally{try{if(outputResource is not null)await outputResource.DisposeAsync();}finally{b.Dispose();}}}}
         }
     }
     private static async Task Stop(Process p,Task<string> err)

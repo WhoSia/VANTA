@@ -121,11 +121,14 @@ public static class PacketTimeline
     {
         ct.ThrowIfCancellationRequested();
         using var a=Open(exe,source,selector,video,payload);
+        await using var sourceResource=ProcessResourceTrace.Track(a,video?"source-video-clock":"source-audio-packets");
         Task<string> ae=a.StandardError.ReadToEndAsync();
         Process? b=null; Task<string>? be=null;
+        ProcessResourceTrace.Observation? outputResource=null;
         try
         {
             b=strictDecoder is null?Open(exe,output,selector,video,payload):OpenStrictDecoder(strictDecoder,output);
+            outputResource=ProcessResourceTrace.Track(b,strictDecoder is not null?"output-strict-decode":video?"output-video-clock":"output-audio-packets");
             be=b.StandardError.ReadToEndAsync();
             double? origin=sharedOrigin; long count=0;
             var key=video?"best_effort_timestamp_time":"pts_time";
@@ -159,7 +162,7 @@ public static class PacketTimeline
         finally
         {
             try{await StopAsync(a,ae);}
-            finally{if(b is not null){try{await StopAsync(b,be!);}finally{b.Dispose();}}}
+            finally{if(b is not null){try{await StopAsync(b,be!);}finally{try{if(outputResource is not null)await outputResource.DisposeAsync();}finally{b.Dispose();}}}}
         }
     }
     private static async Task StopAsync(Process p,Task<string> err)

@@ -9,6 +9,7 @@ public static class ProcessRunner
         var psi=new ProcessStartInfo(executable) { UseShellExecute=false, RedirectStandardOutput=true, RedirectStandardError=true, CreateNoWindow=true };
         foreach(var arg in args) psi.ArgumentList.Add(arg);
         using var p=Process.Start(psi) ?? throw new InvalidOperationException("Could not start process");
+        await using var resource=ProcessResourceTrace.Track(p,Path.GetFileName(executable));
         var output=onOutputLine is null?p.StandardOutput.ReadToEndAsync():DrainLinesAsync(p.StandardOutput,onOutputLine);
         var error=p.StandardError.ReadToEndAsync();
         try { await p.WaitForExitAsync(ct); }
