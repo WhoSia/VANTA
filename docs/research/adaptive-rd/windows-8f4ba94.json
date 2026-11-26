@@ -1,0 +1,47 @@
+{
+  "head": "8f4ba94b661f0ece1bcdfbc07700389a884efa84",
+  "run": 45835482615,
+  "job": 139963093716,
+  "quantizer": {
+    "target": 0.99,
+    "probes": [
+      18,
+      34,
+      22,
+      25,
+      24
+    ],
+    "adaptive": {
+      "Quantizer": 24,
+      "Quality": 0.9902997708333333,
+      "Bytes": 50385
+    },
+    "oracle": {
+      "Quantizer": 24,
+      "Quality": 0.9902997708333333,
+      "Bytes": 50385
+    },
+    "match": true,
+    "adaptiveSeconds": 1.9296412,
+    "gridSeconds": 6.582183299999999,
+    "ObservedReversal": false,
+    "StopReason": "Bracket under monotonicity"
+  },
+  "longValidation": [
+    {
+      "rep": 0,
+      "baseline": 1.3908663,
+      "single": 0.8880431
+    },
+    {
+      "rep": 1,
+      "baseline": 1.3776176,
+      "single": 0.8770267
+    },
+    {
+      "rep": 2,
+      "baseline": 1.411719,
+      "single": 0.9080703
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "status": "incomplete-time-limit",
+  "plannedBatches": 12,
+  "completedBatches": 5,
+  "environment": "Linux, Node 22.16.0, FFmpeg 7.1.5, CPU quota 4",
+  "rows": [
+    {
+      "mode": "serial4",
+      "rep": 0,
+      "seconds": 2.5854381350000004,
+      "peakChildRssKiB": 121196,
+      "maxTasks": 1,
+      "jobs": [
+        {
+          "seconds": 0.896249032,
+          "bytes": 393463,
+          "sha": "f577062cb232010c499a9c27af1f5d6d57d28e8500d56b9d28cd92380762a8ab",
+          "threads": 4,
+          "ssim": 0.9948400000000002
+        },
+        {
+          "seconds": 0.9543586240000004,
+          "bytes": 393404,
+          "sha": "3dd2db91af5ece797e725365a8950852dbb0653f6a551311c425e78e0906ad79",
+          "threads": 4,
+          "ssim": 0.9948400000000002
+        },
+        {
+          "seconds": 0.7315367639999999,
+          "bytes": 193702,
+          "sha": "6de81249ed8c1c311b3d3165f2f500deee5ea3915dbbf1f065568cedd615d622",
+          "threads": 4,
+          "ssim": 0.9950367166666666
+        }
+      ]
+    },
+    {
+      "mode": "parallel2",
+      "rep": 0,
+      "seconds": 3.6257784889999995,
+      "peakChildRssKiB": 226032,
+      "maxTasks": 2,
+      "jobs": [
+        {
+          "seconds": 2.6906348600000003,
+          "bytes": 392309,
+          "sha": "b890a2c5e9101e6734022883a37d6ac977a8085986e7ab240b61a5064d43d189",
+          "threads": 2,
+          "ssim": 0.9948157666666666
+        },
+        {
+          "seconds": 1.5354231719999998,
+          "bytes": 392250,
+          "sha": "de0ca2a5d0be2b7252afab7f3a8221ecd20a7f872304ba79e7eda988a3f1b1ba",
+          "threads": 2,
+          "ssim": 0.9948157666666666
+        },
+        {
+          "seconds": 0.9337602109999988,
+          "bytes": 193619,
+          "sha": "916d2bbeb586032bab04a3d67724cefc36fe3e25e55f812066eecf97fc506056",
+          "threads": 2,
+          "ssim": 0.9950469499999997
+        }
+      ]
+    },
+    {
+      "mode": "parallel-auto",
+      "rep": 0,
+      "seconds": 3.3034982349999993,
+      "peakChildRssKiB": 261164,
+      "maxTasks": 2,
+      "jobs": [
+        {
+          "seconds": 2.3335149630000016,
+          "bytes": 400936,
+          "sha": "12a7bcf846cfde54bb9819b855ab143a25b838f53f774bb47255a4b368a6e35c",
+          "threads": null,
+          "ssim": 0.9947805666666665
+        },
+        {
+          "seconds": 2.3987369600000004,
+          "bytes": 400877,
+          "sha": "9baa363f99eb1544ec66b54c15965157da42b9f501870dcaaa13c1942e21c23f",
+          "threads": null,
+          "ssim": 0.9947805666666665
+        },
+        {
+          "seconds": 0.8923706500000007,
+          "bytes": 195235,
+          "sha": "05908b417d92bd9df74103276546c19707f9dd8c841cfc4eb5fd017ecbe676f1",
+          "threads": null,
+          "ssim": 0.9950215166666669
+        }
+      ]
+    },
+    {
+      "mode": "tail4",
+      "rep": 0,
+      "seconds": 2.7728356109999988,
+      "peakChildRssKiB": 226004,
+      "maxTasks": 2,
+      "jobs": [
+        {
+          "seconds": 1.210122124999998,
+          "bytes": 392309,
+          "sha": "b890a2c5e9101e6734022883a37d6ac977a8085986e7ab240b61a5064d43d189",
+          "threads": 2,
+          "ssim": 0.9948157666666666
+        },
+        {
+          "seconds": 1.7827264340000002,
+          "bytes": 392250,
+          "sha": "de0ca2a5d0be2b7252afab7f3a8221ecd20a7f872304ba79e7eda988a3f1b1ba",
+          "threads": 2,
+          "ssim": 0.9948157666666666
+        },
+        {
+          "seconds": 0.9788942270000007,
+          "bytes": 193702,
+          "sha": "6de81249ed8c1c311b3d3165f2f500deee5ea3915dbbf1f065568cedd615d622",
+          "threads": 4,
+          "ssim": 0.9950367166666666
+        }
+      ]
+    },
+    {
+      "mode": "parallel2",
+      "rep": 1,
+      "seconds": 1.918432742000001,
+      "peakChildRssKiB": 231464,
+      "maxTasks": 2,
+      "jobs": [
+        {
+          "seconds": 1.311513203999999,
+          "bytes": 392309,
+          "sha": "b890a2c5e9101e6734022883a37d6ac977a8085986e7ab240b61a5064d43d189",
+          "threads": 2,
+          "ssim": 0.9948157666666666
+        },
+        {
+          "seconds": 1.212071054,
+          "bytes": 392250,
+          "sha": "de0ca2a5d0be2b7252afab7f3a8221ecd20a7f872304ba79e7eda988a3f1b1ba",
+          "threads": 2,
+          "ssim": 0.9948157666666666
+        },
+        {
+          "seconds": 0.6054102100000018,
+          "bytes": 193619,
+          "sha": "916d2bbeb586032bab04a3d67724cefc36fe3e25e55f812066eecf97fc506056",
+          "threads": 2,
+          "ssim": 0.9950469499999997
+        }
+      ]
+    }
+  ]
+}
