@@ -131,3 +131,7 @@ Do not rank ordinary file-size/rate coverage against optional acceleration as if
 ## New hard-gate evidence
 
 10-bit SDR is an eligibility research lane, not a default. HDR synthetic tag preservation is not HDR fidelity. Windows AC3 sample mismatch blocks ordinary eligibility regardless of local passing fixture. H264 fast matched 2/2 repeated 1080p60 proxy pairs, separate content diversity gate remains. Keep v5 scores as prior subjective assessment; no new scenario simulation.
+
+## Sample-selection evidence
+
+Activity sample policy improves rare-interval detection in this synthetic screen, but full source thumbnail scan and extra sample encoding have material cost. Grouped samples 3/3 match three-point oracle, only 2/3 replay costs improve; no automatic policy. Keep hard full-output constraints and default unchanged. No new scenario simulation; v5 prior remains subjective.
