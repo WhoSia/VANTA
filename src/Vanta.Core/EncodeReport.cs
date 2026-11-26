@@ -12,6 +12,8 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
     public Plan? AppliedPlan {get;init;}
     // When set, per-track payload and timestamp checks are folded into TimelineCheck.
     public int? InterleavedAudioPeakPending {get;init;}
+    // True only after a resource-limit refusal and complete per-track retry.
+    public bool InterleavedAudioFallbackUsed {get;init;}
     // Wall time spent waiting for the research validation gate; included in Total, not Validation.
     public TimeSpan ValidationAdmissionWait {get;init;}
     public TimeSpan Validation => OutputProbe+AudioHashCheck+(ConcurrentTimelineDecode??(TimelineCheck+FullDecode));

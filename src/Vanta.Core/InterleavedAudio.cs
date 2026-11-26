@@ -2,6 +2,9 @@ using System.Diagnostics;
 using System.Globalization;
 namespace Vanta.Core;
 
+// A resource limit is distinct from malformed or mismatched media.
+internal sealed class AudioInterleaveLimitException() : IOException("Interleaved packet alignment exceeded research buffer") { }
+
 // Independent per-track FIFO joins. Inter-stream mux order may change,
 // but within-track order, packet payload and common-video-clock offsets may not.
 internal sealed class AudioPacketJoin
@@ -62,7 +65,7 @@ internal sealed class AudioPacketJoin
         }
         else
         {
-            if(pending>=limit)throw new InvalidDataException("Interleaved packet alignment exceeded research buffer");
+            if(pending>=limit)throw new AudioInterleaveLimitException();
             own.Enqueue(packet);pending++;PeakPending=Math.Max(PeakPending,pending);
         }
     }

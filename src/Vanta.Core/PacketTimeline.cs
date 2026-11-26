@@ -25,6 +25,29 @@ public static class PacketTimeline
         double origin=await VideoOriginAsync(ffmpeg,ffprobe,source,output,ct,snapshot);
         return await InterleavedAudio.ValidateAsync(ffprobe,source,output,sourceAudio,outputAudio,origin,ct);
     }
+    // Explicit research path: only a bounded-buffer refusal may retry every audio
+    // track independently. A failed hash, timestamp, parse or decoder is never retried.
+    internal static async Task<int?> ValidateSingleDecodeInterleavedWithFallbackAsync(string ffmpeg,string ffprobe,string source,string output,IReadOnlyList<int> sourceAudio,IReadOnlyList<int> outputAudio,CancellationToken ct,SourceClockSnapshot? snapshot=null)
+    {
+        double origin=await VideoOriginAsync(ffmpeg,ffprobe,source,output,ct,snapshot);
+        return await AudioFallbackAsync(()=>InterleavedAudio.ValidateAsync(ffprobe,source,output,sourceAudio,outputAudio,origin,ct),async ()=>
+        {
+            for(int i=0;i<sourceAudio.Count;i++)
+                await CompareAsync(ffprobe,source,output,$"a:{i}",false,.002,origin,ct,true);
+        },ct);
+    }
+    internal static async Task<int?> AudioFallbackAsync(Func<Task<int>> interleaved,Func<Task> perTrack,CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        try{return await interleaved();}
+        catch(AudioInterleaveLimitException)
+        {
+            ct.ThrowIfCancellationRequested();
+            await perTrack();
+            ct.ThrowIfCancellationRequested();
+            return null;
+        }
+    }
     // Capture the same independent decoded-frame oracle used by the baseline.
     internal static async Task<SourceClockSnapshot> CaptureSourceClockAsync(string ffprobe,string source,CancellationToken ct)
     {

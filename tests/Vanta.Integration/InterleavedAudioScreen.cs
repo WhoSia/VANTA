@@ -28,7 +28,34 @@ internal static class InterleavedAudioScreen
             var j=new AudioPacketJoin([1],[2],0);
             j.Push(true,new(1,0,h1));j.Push(false,new(2,payload?0:.02,payload?h2:h1));
         });
-        Reject(()=>{var j=new AudioPacketJoin([1],[2],0,1);j.Push(true,new(1,0,h1));j.Push(true,new(1,.1,h2));});
+        // A valid but severely different interleave can exceed a small FIFO even
+        // though the two per-track sequences match. Keep limit distinct from mismatch.
+        var skew=new AudioPacketJoin([1,2],[3,4],0,1);
+        bool limit=false;
+        try{skew.Push(true,new(1,0,h1));skew.Push(false,new(4,0,h2));}
+        catch(AudioInterleaveLimitException){limit=true;}
+        Check(limit,"Bounded interleave refusal classification");
+        int retries=0;
+        Task Retry(){retries++;return Task.CompletedTask;}
+        var peak=await PacketTimeline.AudioFallbackAsync(()=>Task.FromResult(1),Retry,ct);
+        Check(peak==1&&retries==0,"Successful interleave must not retry");
+        peak=await PacketTimeline.AudioFallbackAsync(()=>Task.FromException<int>(new AudioInterleaveLimitException()),Retry,ct);
+        Check(peak is null&&retries==1,"Limit must run complete independent retry");
+        bool mismatch=false;
+        try{await PacketTimeline.AudioFallbackAsync(()=>Task.FromException<int>(new InvalidDataException("Mismatch")),Retry,ct);}
+        catch(InvalidDataException){mismatch=true;}
+        Check(mismatch&&retries==1,"Integrity mismatch must not retry");
+        bool failedRetry=false;
+        try{await PacketTimeline.AudioFallbackAsync(()=>Task.FromException<int>(new AudioInterleaveLimitException()),()=>Task.FromException(new InvalidDataException("Retry mismatch")),ct);}
+        catch(InvalidDataException){failedRetry=true;}
+        Check(failedRetry,"Retry mismatch must propagate");
+        using(var stop=new CancellationTokenSource())
+        {
+            bool canceledLimit=false;
+            try{await PacketTimeline.AudioFallbackAsync(()=>{stop.Cancel();return Task.FromException<int>(new AudioInterleaveLimitException());},Retry,stop.Token);}
+            catch(OperationCanceledException){canceledLimit=true;}
+            Check(canceledLimit&&retries==1,"Cancellation must not enter retry");
+        }
         Reject(()=>{var j=new AudioPacketJoin([1,2],[3,4],0);j.Push(true,new(1,0,h1));j.Push(false,new(3,0,h1));j.Complete();});
         Reject(()=>{var j=new AudioPacketJoin([1],[2],0);j.Push(true,new(1,0,h1));j.Complete();});
         Reject(()=>{var j=new AudioPacketJoin([1],[2],0);j.Push(true,new(1,0,h1));j.Push(false,new(2,0,h1));j.Push(false,new(2,.1,h2));j.Complete();});
@@ -55,7 +82,8 @@ internal static class InterleavedAudioScreen
         var made=await ProcessRunner.RunAsync(tools.Ffmpeg,args,ct);
         Check(made.ExitCode==0&&string.IsNullOrWhiteSpace(made.Error),"Four-track fixture");
         string fourHash=Hash(four);
-        await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,four,fourOut,plan with{Codec="libx264"},ct,encoderThreads:2,singleDecodeValidation:true,interleavedAudioValidation:true);
+        var fallbackReport=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,four,fourOut,plan with{Codec="libx264"},ct,encoderThreads:2,singleDecodeValidation:true,interleavedAudioValidation:true,interleavedFallback:true);
+        Check(!fallbackReport.InterleavedAudioFallbackUsed&&fallbackReport.InterleavedAudioPeakPending is >=1,"Ordinary interleave remains fast with explicit fallback policy");
         await SingleDecodeScreen.ReferenceAsync(tools,four,fourOut,4,ct);
         await Encoder.ValidateAudioAsync(tools.Ffmpeg,four,fourOut,ct);
         foreach(var (src,dst,tracks) in new[]{(source,candidate,2),(four,fourOut,4)})
