@@ -89,7 +89,7 @@ internal static class PublicCorpusScreen
                 // Retire repeatedly losing aligned and completed overlap screens from
                 // this exploratory matrix, not from the ordinary regression suite.
                 var modes=new List<string>{"continuous","continuous-auto","continuous-fast","continuous-single-decode"};
-                if(media.AudioTracks>0)modes.Add("continuous-fused");
+                if(media.AudioTracks>0){modes.Add("continuous-fused");modes.Add("continuous-combined");}
                 // Only reuse quality scores for identical output bytes within this
                 // exact source and metric invocation. Never reuse integrity checks.
                 var qualityCache=new Dictionary<string,(int Frames,double Mean,double Minimum,double WorstSecond,double P05)>(StringComparer.Ordinal);
@@ -103,17 +103,18 @@ internal static class PublicCorpusScreen
                         {
                             var trialPlan=mode=="continuous-fast"?plan with {Preset="fast"}:plan;
                             int? threads=mode=="continuous-auto"?null:4;
-                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23,fusedAudioValidation:mode=="continuous-fused",parallelDecodeValidation:mode=="continuous-overlap",singleDecodeValidation:mode=="continuous-single-decode");
+                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23,fusedAudioValidation:mode=="continuous-fused",parallelDecodeValidation:mode=="continuous-overlap",singleDecodeValidation:mode is "continuous-single-decode" or "continuous-combined",interleavedAudioValidation:mode=="continuous-combined");
                             // Shadow oracle outside the timed candidate path: do not accept a weaker validator.
                             if(mode=="continuous-fused")await Encoder.ValidateAudioAsync(tools.Ffmpeg,source,output,ct);
-                            if(mode=="continuous-single-decode")await SingleDecodeScreen.ReferenceAsync(tools,source,output,media.AudioTracks,ct);
+                            if(mode is "continuous-single-decode" or "continuous-combined")await SingleDecodeScreen.ReferenceAsync(tools,source,output,media.AudioTracks,ct);
+                            if(mode=="continuous-combined")await Encoder.ValidateAudioAsync(tools.Ffmpeg,source,output,ct);
                             string outputHash=Hash(output);
                             bool qualityCacheHit=qualityCache.TryGetValue(outputHash,out var q);
                             if(qualityCacheHit)qualityHits++;
                             else{q=await Quality(tools,source,output,media.Fps,ct);qualityCache.Add(outputHash,q);qualityMisses++;}
                             if(q.Frames!=expectedFrames)throw new InvalidDataException("SSIM frame count differs from normalized source");
                             trials[mode]=(result.Total.TotalSeconds,result.OutputBytes,q.Mean,q.WorstSecond,q.Frames,q.P05);
-                            Row(new{kind="trial",id,origin,rep,mode,width=media.Width,height=media.Height,fps=media.Fps,seconds=result.Total.TotalSeconds,encoding=result.Encoding.TotalSeconds,timeline=result.TimelineCheck.TotalSeconds,audio=result.AudioHashCheck.TotalSeconds,decode=result.FullDecode.TotalSeconds,overlap=result.ConcurrentTimelineDecode?.TotalSeconds,validation=result.Validation.TotalSeconds,singleDecode=result.SingleDecodeValidation,outputSha256=outputHash,qualityCacheHit,bytes=result.OutputBytes,frames=q.Frames,ssim=q.Mean,minFrame=q.Minimum,worstSecond=q.WorstSecond,p05=q.P05,threads,preset=trialPlan.Preset});
+                            Row(new{kind="trial",id,origin,rep,mode,width=media.Width,height=media.Height,fps=media.Fps,seconds=result.Total.TotalSeconds,encoding=result.Encoding.TotalSeconds,timeline=result.TimelineCheck.TotalSeconds,audio=result.AudioHashCheck.TotalSeconds,decode=result.FullDecode.TotalSeconds,overlap=result.ConcurrentTimelineDecode?.TotalSeconds,validation=result.Validation.TotalSeconds,singleDecode=result.SingleDecodeValidation,interleavedAudioPeakPending=result.InterleavedAudioPeakPending,outputSha256=outputHash,qualityCacheHit,bytes=result.OutputBytes,frames=q.Frames,ssim=q.Mean,minFrame=q.Minimum,worstSecond=q.WorstSecond,p05=q.P05,threads,preset=trialPlan.Preset});
                         }
                         finally{if(File.Exists(output))File.Delete(output);}
                     }
@@ -124,6 +125,16 @@ internal static class PublicCorpusScreen
                         double byteDelta=(double)b.Bytes/a.Bytes-1;
                         bool matched=a.Frames==b.Frames&&Math.Abs(byteDelta)<=.05&&Math.Abs(a.Mean-b.Mean)<=.001&&Math.Abs(a.Worst-b.Worst)<=.005;
                         Row(new{kind="pair",id,origin,rep,baseline="continuous",candidate,matched,byteDelta,meanSsimDelta=b.Mean-a.Mean,worstSecondDelta=b.Worst-a.Worst,p05Delta=b.P05-a.P05,timeReduction=1-b.Seconds/a.Seconds});
+                    }
+                    if(media.AudioTracks>0)
+                    {
+                        var b=trials["continuous-combined"];
+                        foreach(var reference in new[]{"continuous-single-decode","continuous-fused"})
+                        {
+                            var c=trials[reference];double delta=(double)b.Bytes/c.Bytes-1;
+                            bool matched=c.Frames==b.Frames&&Math.Abs(delta)<=.05&&Math.Abs(c.Mean-b.Mean)<=.001&&Math.Abs(c.Worst-b.Worst)<=.005;
+                            Row(new{kind="incremental-pair",id,origin,rep,baseline=reference,candidate="continuous-combined",matched,byteDelta=delta,meanSsimDelta=b.Mean-c.Mean,worstSecondDelta=b.Worst-c.Worst,timeReduction=1-b.Seconds/c.Seconds});
+                        }
                     }
                 }
                 Row(new{kind="quality-cache",id,origin,hits=qualityHits,misses=qualityMisses});

@@ -35,7 +35,7 @@ public static class Encoder
         stamp.RequireUnchanged(input);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
         var source=details.Info;
-        if(interleavedAudioValidation&&source.AudioTracks is <2 or >32)throw new NotSupportedException("Interleaved research requires 2–32 audio tracks.");
+        if(interleavedAudioValidation&&(source.AudioTracks is <1 or >32))throw new NotSupportedException("Combined packet research requires 1–32 audio tracks.");
         PlanRules.Validate(plan,source);
         var dir=Path.GetDirectoryName(output)!;
         // ABR estimate only; CRF research has no bitrate-derived size contract.
