@@ -263,7 +263,7 @@ try
             Console.WriteLine(FormattableString.Invariant($"ABR_MATRIX {label} {codec} {preset} predicted={estimate:F0} actual={size} error_pct={(size/estimate-1)*100:F2}"));
         }
     }
-    Console.WriteLine("All 16 codec/preset/fixture matrix encodes passed.");
+    Console.WriteLine("All 20 codec/preset/fixture matrix encodes passed.");
     var batchA=OutputNames.Suggest(input);
     var batchB=OutputNames.Suggest(silent);
     var updates=new System.Collections.Concurrent.ConcurrentQueue<BatchUpdate>();

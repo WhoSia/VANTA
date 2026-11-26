@@ -14,6 +14,8 @@ Check(Planner.Propose(source,["libx264"],"libx265").Count==0,"No fallback for un
 bool badPreference=false;try{Planner.Propose(source,null,"invalid");}catch(ArgumentException){badPreference=true;}
 Check(badPreference,"Invalid recommendation preference rejected");
 var manual=avcPlans[1] with {Name="Custom",Preset="veryfast",Height=720};
+Check(PlanRules.Presets.Contains("superfast")&&!PlanRules.Presets.Contains("ultrafast"),"Explicit superfast option, ultrafast remains unavailable");
+PlanRules.Validate(manual with {Preset="superfast"},source);
 Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Compact","libx265",manual)==manual,"Individual settings override shared policy");
 Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Quality","libx265",null)==plans[0],"Reset individual settings to shared policy");
 Check(BatchPlanSelection.Resolve(source,["libx264","libx265"],"Quality","libx265",null,"veryfast")==plans[0] with {Preset="veryfast"},"Shared speed preset only changes preset");

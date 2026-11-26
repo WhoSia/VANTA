@@ -227,13 +227,13 @@ public partial class MainWindow : Window
         try
         {
             Plans.SelectedIndex=-1;
-            CodecBox.SelectedItem="libx264";PresetBox.SelectedValue="fast";
+            CodecBox.SelectedItem="libx264";PresetBox.SelectedValue="veryfast";
             SplitBox.IsChecked=false;
         }
         finally{applying=false;}
         RefreshEstimate();
-        SetStatus("H.264 fast selected; resolution and bitrate unchanged. Split disabled. Actual quality and size may differ. No encoding started.",
-            "H.264 빠르게 설정을 적용했습니다. 해상도와 비트레이트는 그대로이며 분할 압축은 해제했습니다. 실제 화질과 용량은 달라질 수 있습니다. 압축은 아직 시작하지 않았습니다.");
+        SetStatus("H.264 veryfast selected; resolution and bitrate unchanged. Split disabled. Actual quality and size may differ. No encoding started.",
+            "H.264 매우 빠르게 설정을 적용했습니다. 해상도와 비트레이트는 그대로이며 분할 압축은 해제했습니다. 실제 화질과 용량은 달라질 수 있습니다. 압축은 아직 시작하지 않았습니다.");
     }
     private void OnMoreCompression(object sender,RoutedEventArgs e)
     {

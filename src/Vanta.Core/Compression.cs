@@ -12,7 +12,7 @@ public sealed record Plan(string Name, string Codec, int Height, long VideoBitsP
 public static class PlanRules
 {
     public static IReadOnlyList<string> Codecs { get; } = Array.AsReadOnly(new[]{"libx264","libx265"});
-    public static IReadOnlyList<string> Presets { get; } = Array.AsReadOnly(new[]{"veryfast","fast","medium","slow"});
+    public static IReadOnlyList<string> Presets { get; } = Array.AsReadOnly(new[]{"superfast","veryfast","fast","medium","slow"});
     public const long MinimumVideoRate=64000;
     public const long MaximumVideoRate=100_000_000;
     public const double Overhead=1.005;

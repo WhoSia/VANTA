@@ -82,7 +82,7 @@ internal static class DesktopSmoke
         Check((string)Get<DataGrid>(koreanBatch,"Queue").Columns[0].Header=="Source","Grid header follows live language");
         Get<ComboBox>(koreanBatch,"LanguageBox").SelectedIndex=1;
         Check(System.Windows.Automation.AutomationProperties.GetName(Get<ComboBox>(koreanBatch,"SharedPresetBox"))=="공통 압축 속도","Localized accessible field name");
-        Check(UiLanguage.Preset(true,"medium")=="균형"&&UiLanguage.Preset(true,"veryfast")=="매우 빠르게","Korean speed labels");
+        Check(UiLanguage.Preset(true,"medium")=="균형"&&UiLanguage.Preset(true,"veryfast")=="매우 빠르게"&&UiLanguage.Preset(true,"superfast")=="초고속","Korean speed labels");
         var koreanDialog=new BatchPlanDialog(media,["libx264"],new Plan("Custom","libx264",720,300_000,0,"fast",false),true);
         Check((string)Get<Button>(koreanDialog,"ApplyButton").Content=="설정 적용"&&Get<Button>(koreanDialog,"ApplyButton").IsEnabled,"Korean individual editor");
         CheckLayout(main,"Status","EncodeButton",560,480);
@@ -132,7 +132,7 @@ internal static class DesktopSmoke
             split.IsChecked=true;
             Check(speed.IsEnabled,"Speed shortcut available");
             speed.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Check(codec.SelectedItem as string=="libx264"&&Get<ComboBox>(main,"PresetBox").SelectedValue as string=="fast"&&height.Text==oldHeight&&rate.Text==oldRate&&split.IsChecked==false&&plans.SelectedIndex==-1&&encode.IsEnabled,"Speed shortcut changes only codec/preset and clears split");
+            Check(codec.SelectedItem as string=="libx264"&&Get<ComboBox>(main,"PresetBox").SelectedValue as string=="veryfast"&&height.Text==oldHeight&&rate.Text==oldRate&&split.IsChecked==false&&plans.SelectedIndex==-1&&encode.IsEnabled,"Speed shortcut changes only codec/preset and clears split");
             target.Text="invalid";
             Check(!speed.IsEnabled,"Pending target disables speed shortcut");
             speed.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
