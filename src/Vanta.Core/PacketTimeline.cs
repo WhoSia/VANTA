@@ -12,6 +12,41 @@ public static class PacketTimeline
         for(int i=0;i<audioTracks;i++)
             await CompareAsync(ffprobe,source,output,$"a:{i}",false,tolerance,origin,ct,compareAudioPayloads);
     }
+    // Research: output video timestamps and full audio/video decode in one strict FFmpeg pass.
+    // Source timestamps and audio packet comparisons remain independent ffprobe reads.
+    internal static async Task ValidateSingleDecodeAsync(string ffmpeg,string ffprobe,string source,string output,int audioTracks,CancellationToken ct)
+    {
+        double origin=await CompareAsync(ffprobe,source,output,"v:0",true,.002,null,ct,false,ffmpeg);
+        for(int i=0;i<audioTracks;i++)
+            await CompareAsync(ffprobe,source,output,$"a:{i}",false,.002,origin,ct,false);
+    }
+    private static Process OpenStrictDecoder(string exe,string path)
+    {
+        var psi=new ProcessStartInfo(exe){UseShellExecute=false,RedirectStandardOutput=true,RedirectStandardError=true,CreateNoWindow=true};
+        foreach(var arg in new[]{"-v","error","-xerror","-nostdin","-copyts","-i",path,"-map","0:V:0","-map","0:a?","-fps_mode","passthrough","-stats_enc_pre:v","pipe:1","-stats_enc_pre_fmt:v","{n} {ptsi} {tbi}","-f","null","-"})
+            psi.ArgumentList.Add(arg);
+        return Process.Start(psi)??throw new InvalidOperationException("Cannot start strict timestamp decoder");
+    }
+    internal static double ParseStrictFrame(string line,long expectedOrdinal)
+    {
+        var fields=line.Split(' ',StringSplitOptions.RemoveEmptyEntries);
+        if(fields.Length!=3||!long.TryParse(fields[0],NumberStyles.None,CultureInfo.InvariantCulture,out long n)||n!=expectedOrdinal||
+           !long.TryParse(fields[1],NumberStyles.AllowLeadingSign,CultureInfo.InvariantCulture,out long pts)||pts==long.MinValue)
+            throw new InvalidDataException("Invalid decoded frame ordinal or timestamp");
+        var tb=fields[2].Split('/');
+        if(tb.Length!=2||!int.TryParse(tb[0],NumberStyles.None,CultureInfo.InvariantCulture,out int numerator)||numerator<=0||
+           !int.TryParse(tb[1],NumberStyles.None,CultureInfo.InvariantCulture,out int denominator)||denominator<=0)
+            throw new InvalidDataException("Invalid decoded frame time base");
+        double seconds=pts*(double)numerator/denominator;
+        if(!double.IsFinite(seconds))throw new InvalidDataException("Nonfinite decoded frame timestamp");
+        // Match ffprobe's six-decimal timestamp convention before tolerance comparison.
+        return Math.Round(seconds,6,MidpointRounding.AwayFromZero);
+    }
+    private static async Task<double?> ReadStrictAsync(StreamReader reader,long ordinal,CancellationToken ct)
+    {
+        var line=await reader.ReadLineAsync(ct);
+        return line is null?null:ParseStrictFrame(line,ordinal);
+    }
     private static Process Open(string exe,string path,string selector,bool video,bool payload)
     {
         var psi=new ProcessStartInfo(exe){UseShellExecute=false,RedirectStandardOutput=true,RedirectStandardError=true,CreateNoWindow=true};
@@ -77,7 +112,7 @@ public static class PacketTimeline
         }
         return null;
     }
-    private static async Task<double> CompareAsync(string exe,string source,string output,string selector,bool video,double tolerance,double? sharedOrigin,CancellationToken ct,bool payload)
+    private static async Task<double> CompareAsync(string exe,string source,string output,string selector,bool video,double tolerance,double? sharedOrigin,CancellationToken ct,bool payload,string? strictDecoder=null)
     {
         ct.ThrowIfCancellationRequested();
         using var a=Open(exe,source,selector,video,payload);
@@ -85,7 +120,7 @@ public static class PacketTimeline
         Process? b=null; Task<string>? be=null;
         try
         {
-            b=Open(exe,output,selector,video,payload);
+            b=strictDecoder is null?Open(exe,output,selector,video,payload):OpenStrictDecoder(strictDecoder,output);
             be=b.StandardError.ReadToEndAsync();
             double? origin=sharedOrigin; long count=0;
             var key=video?"best_effort_timestamp_time":"pts_time";
@@ -103,7 +138,7 @@ public static class PacketTimeline
                 else
                 {
                     x=await ReadAsync(a.StandardOutput,key,ct);
-                    y=await ReadAsync(b.StandardOutput,key,ct);
+                    y=strictDecoder is null?await ReadAsync(b.StandardOutput,key,ct):await ReadStrictAsync(b.StandardOutput,count,ct);
                 }
                 if(x is null && y is null) break;
                 if(x is null || y is null) throw new InvalidDataException($"Timestamp count mismatch: {selector}");

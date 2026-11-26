@@ -90,6 +90,7 @@ internal static class PublicCorpusScreen
                 if(media.AudioTracks>0)modes.Add("continuous-fused");
                 // Limit initial overlapping decode screen to <=1080p pixel count.
                 if((long)media.Width*media.Height<=1920L*1080)modes.Add("continuous-overlap");
+                modes.Add("continuous-single-decode");
                 for(int rep=0;rep<2;rep++)
                 {
                     foreach(string mode in rep==0?modes.ToArray():modes.AsEnumerable().Reverse().ToArray())
@@ -99,13 +100,14 @@ internal static class PublicCorpusScreen
                         {
                             var trialPlan=mode=="continuous-fast"?plan with {Preset="fast"}:plan;
                             int? threads=mode=="continuous-auto"?null:4;
-                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23,fusedAudioValidation:mode=="continuous-fused",parallelDecodeValidation:mode=="continuous-overlap");
+                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23,fusedAudioValidation:mode=="continuous-fused",parallelDecodeValidation:mode=="continuous-overlap",singleDecodeValidation:mode=="continuous-single-decode");
                             // Shadow oracle outside the timed candidate path: do not accept a weaker validator.
                             if(mode=="continuous-fused")await Encoder.ValidateAudioAsync(tools.Ffmpeg,source,output,ct);
+                            if(mode=="continuous-single-decode")await SingleDecodeScreen.ReferenceAsync(tools,source,output,media.AudioTracks,ct);
                             var q=await Quality(tools,source,output,media.Fps,ct);
                             if(q.Frames!=expectedFrames)throw new InvalidDataException("SSIM frame count differs from normalized source");
                             trials[mode]=(result.Total.TotalSeconds,result.OutputBytes,q.Mean,q.WorstSecond,q.Frames,q.P05);
-                            Row(new{kind="trial",id,origin,rep,mode,width=media.Width,height=media.Height,fps=media.Fps,seconds=result.Total.TotalSeconds,encoding=result.Encoding.TotalSeconds,timeline=result.TimelineCheck.TotalSeconds,audio=result.AudioHashCheck.TotalSeconds,decode=result.FullDecode.TotalSeconds,overlap=result.ConcurrentTimelineDecode?.TotalSeconds,validation=result.Validation.TotalSeconds,bytes=result.OutputBytes,frames=q.Frames,ssim=q.Mean,minFrame=q.Minimum,worstSecond=q.WorstSecond,p05=q.P05,threads,preset=trialPlan.Preset});
+                            Row(new{kind="trial",id,origin,rep,mode,width=media.Width,height=media.Height,fps=media.Fps,seconds=result.Total.TotalSeconds,encoding=result.Encoding.TotalSeconds,timeline=result.TimelineCheck.TotalSeconds,audio=result.AudioHashCheck.TotalSeconds,decode=result.FullDecode.TotalSeconds,overlap=result.ConcurrentTimelineDecode?.TotalSeconds,validation=result.Validation.TotalSeconds,singleDecode=result.SingleDecodeValidation,bytes=result.OutputBytes,frames=q.Frames,ssim=q.Mean,minFrame=q.Minimum,worstSecond=q.WorstSecond,p05=q.P05,threads,preset=trialPlan.Preset});
                         }
                         finally{if(File.Exists(output))File.Delete(output);}
                     }

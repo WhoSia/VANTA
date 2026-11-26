@@ -5,5 +5,7 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
 {
     // Separate stage durations may overlap in research mode; report actual wall time.
     public TimeSpan? ConcurrentTimelineDecode {get;init;}
+    // In single-decode research, TimelineCheck includes strict full output decode.
+    public bool SingleDecodeValidation {get;init;}
     public TimeSpan Validation => OutputProbe+AudioHashCheck+(ConcurrentTimelineDecode??(TimelineCheck+FullDecode));
 }
