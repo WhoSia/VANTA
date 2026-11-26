@@ -13,6 +13,7 @@
       <Button x:Name="ResetPlanButton" Content="{DynamicResource Ui053}" Click="OnResetPlan" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
       <Button x:Name="RetryButton" Content="{DynamicResource Ui054}" Click="OnRetry" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
       <Button x:Name="RemoveButton" Content="{DynamicResource Ui055}" Click="OnRemove" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
+      <Button x:Name="PlayResultButton" Content="{DynamicResource Ui074}" Click="OnPlayResult" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
       <Button x:Name="OpenResultButton" Content="{DynamicResource Ui030}" Click="OnOpenResult" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
       <Button x:Name="CopyButton" Content="{DynamicResource Ui056}" Click="OnCopy" IsEnabled="False" Padding="10,6" Margin="0,0,8,4"/>
     </WrapPanel>

@@ -79,6 +79,7 @@ internal static class UiLanguage
         ("Ui070","Shared encoding speed","공통 압축 속도"),
         ("Ui072","Compression progress","압축 진행률"),
         ("Ui073","Video queue","영상 대기열"),
+        ("Ui074","Play output","결과 재생"),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;

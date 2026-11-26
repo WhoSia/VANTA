@@ -153,6 +153,13 @@ public partial class BatchWindow:Window
         try{r.Stamp?.RequireUnchanged(r.Input);}catch(Exception ex){Summary.Text=ex.Message;return;}
         r.State="Analyzing";Replan();
     }
+    private void OnPlayResult(object sender,RoutedEventArgs e)
+    {
+        if(Queue.SelectedItem is not Row r||r.State!="Complete"||!System.IO.File.Exists(r.Output))
+        {UpdateSelection();Summary.Text=T("Select an existing completed output.","완료된 출력 파일을 선택하세요.");return;}
+        try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(r.Output){UseShellExecute=true});}
+        catch(Exception ex){Summary.Text=T("Could not open the video: "+ex.Message,"영상을 열지 못했습니다: "+ex.Message);}
+    }
     private void OnOpenResult(object sender,RoutedEventArgs e)
     {
         if(Queue.SelectedItem is not Row r||r.State!="Complete"||!System.IO.File.Exists(r.Output)){Summary.Text=T("Select an existing completed output.","완료된 출력 파일을 선택하세요.");return;}
@@ -209,7 +216,7 @@ public partial class BatchWindow:Window
         ResetPlanButton.IsEnabled=EditPlanButton.IsEnabled&&row?.ManualPlan is not null;
         RetryButton.IsEnabled=idle&&row is not null&&BatchRecovery.CanRetry(row.State,row.Media is not null);
         RemoveButton.IsEnabled=idle&&row is not null;
-        OpenResultButton.IsEnabled=row is not null&&row.State=="Complete"&&System.IO.File.Exists(row.Output);
+        PlayResultButton.IsEnabled=OpenResultButton.IsEnabled=row is not null&&row.State=="Complete"&&System.IO.File.Exists(row.Output);
         CopyButton.IsEnabled=row is not null;
     }
     private void UpdateSummary()

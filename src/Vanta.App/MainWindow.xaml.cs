@@ -54,19 +54,37 @@ public partial class MainWindow : Window
             ThreadsBox.SelectedItem=ThreadsBox.Items.Cast<ThreadChoice>().First(c=>c.Count==previousThreads);
         }
         finally{applying=false;}
-        RefreshEstimate();Status.Text=T(statusEn,statusKo);
+        RefreshEstimate();RefreshResult();Status.Text=T(statusEn,statusKo);
         if(persistLanguage){try{UiLanguage.Save(korean);}catch(Exception ex){SetStatus("Could not save language: "+ex.Message,"언어 설정을 저장하지 못했습니다: "+ex.Message);}}
     }
     private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"));
     private void ClearResult()
     {
-        completedOutput=null;completedReport=null;ResultPath.Text="";
-        ResultFolderButton.IsEnabled=CopyResultButton.IsEnabled=false;
+        completedOutput=null;completedReport=null;RefreshResult();
+    }
+    private string ResultText(EncodeReport r)=>T(
+        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · {1-r.OutputBytes/(double)r.InputBytes:P1} actual savings · {r.Total.TotalSeconds:F1}s (validation {r.Validation.TotalSeconds:F1}s)",
+        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (검증 {r.Validation.TotalSeconds:F1}초)");
+    private void RefreshResult()
+    {
+        ResultPath.Text=completedOutput??"";
+        ResultSummary.Text=completedReport is EncodeReport report?ResultText(report):"";
+        ResultSummary.Visibility=completedReport is null?Visibility.Collapsed:Visibility.Visible;
+        bool available=completedOutput is not null&&System.IO.File.Exists(completedOutput);
+        PlayResultButton.IsEnabled=ResultFolderButton.IsEnabled=available;
+        CopyResultButton.IsEnabled=completedReport is not null;
+    }
+    private void OnPlayResult(object sender,RoutedEventArgs e)
+    {
+        if(completedOutput is null||!System.IO.File.Exists(completedOutput))
+        {RefreshResult();SetStatus("The completed output is no longer available.","완료된 출력 파일을 찾을 수 없습니다.");return;}
+        try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(completedOutput){UseShellExecute=true});}
+        catch(Exception ex){SetStatus("Could not open the video: "+ex.Message,"영상을 열지 못했습니다: "+ex.Message);}
     }
     private void OnResultFolder(object sender,RoutedEventArgs e)
     {
         if(completedOutput is null||!System.IO.File.Exists(completedOutput))
-        {SetStatus("The completed output is no longer available.","완료된 출력 파일을 찾을 수 없습니다.");return;}
+        {RefreshResult();SetStatus("The completed output is no longer available.","완료된 출력 파일을 찾을 수 없습니다.");return;}
         try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(System.IO.Path.GetDirectoryName(completedOutput)!){UseShellExecute=true});}
         catch(Exception ex){SetStatus(ex.Message);}
     }
@@ -76,7 +94,7 @@ public partial class MainWindow : Window
         try
         {
             var r=completedReport;
-            Clipboard.SetText($"{completedOutput}\n{r.InputBytes/1e6:F2} MB → {r.OutputBytes/1e6:F2} MB · {1-r.OutputBytes/(double)r.InputBytes:P1} actual savings\n{r.Total.TotalSeconds:F1}s elapsed · {r.Validation.TotalSeconds:F1}s validation");
+            Clipboard.SetText($"{completedOutput}\n{ResultText(r)}");
             SetStatus("Completed result copied.","완료 결과를 복사했습니다.");
         }
         catch(Exception ex){SetStatus(ex.Message);}
@@ -304,7 +322,7 @@ public partial class MainWindow : Window
             });
             var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
-            ResultPath.Text=completedOutput;ResultFolderButton.IsEnabled=CopyResultButton.IsEnabled=true;
+            RefreshResult();
             var bytes=report.OutputBytes;
             SetStatus($"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",$"검증 완료: {bytes/1e6:F2} MB · 실제 절감률 {1-bytes/(double)report.InputBytes:P1} · {report.Total.TotalSeconds:F1}초 (검증 {report.Validation.TotalSeconds:F1}초)");
         }

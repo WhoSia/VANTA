@@ -16,7 +16,7 @@ internal static class DesktopSmoke
         if(args.Contains("--media")){RunMediaWorkflow(app);return;}
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
-        Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled,"No result before successful encode");
+        Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled&&!Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Collapsed,"No result before successful encode");
         Check(Get<CheckBox>(main,"SplitBox").IsChecked!=true,"Split disabled initially");
         var media=new MediaInfo(10_000_000,60,1920,1080,30,"h264",0,0);
         var dialog=new BatchPlanDialog(media,["libx264","libx265"],new Plan("Custom","libx264",720,300_000,0,"fast",false));
@@ -155,6 +155,7 @@ internal static class DesktopSmoke
             await encodingTask;
             language.SelectedIndex=0;
             Check(File.Exists(output)&&Get<Button>(main,"ResultFolderButton").IsEnabled&&Get<Button>(main,"CopyResultButton").IsEnabled&&Get<TextBlock>(main,"ResultPath").Text==output&&encode.IsEnabled,"Validated output reaches real desktop controls");
+            Check(Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Text.Contains("actual savings"),"Playable output and persistent actual summary");
             var outputBytes=await File.ReadAllBytesAsync(output);
             await main.EncodeToAsync(output);
             Check((await File.ReadAllBytesAsync(output)).SequenceEqual(outputBytes),"Existing output remains unchanged");
@@ -163,6 +164,7 @@ internal static class DesktopSmoke
             language.SelectedIndex=1;
             Check(Get<TextBlock>(main,"ResultPath").Text==output&&Get<Button>(main,"ResultFolderButton").IsEnabled,"Completed result survives localization");
             Check((string)encode.Content=="압축 파일 저장…","Single action is a save command");
+            Check(Get<TextBlock>(main,"ResultSummary").Text.Contains("실제 절감률")&&(string)Get<Button>(main,"PlayResultButton").Content=="결과 재생","Persistent result localizes after unrelated status changes");
             var second=Path.Combine(root,"second source.mp4");File.Copy(source,second);
             var batch=new BatchWindow(korean:true);
             try
@@ -182,6 +184,8 @@ internal static class DesktopSmoke
                 await batchRun;
                 Check(File.Exists(Path.Combine(root,"source clip_vanta.mp4"))&&File.Exists(Path.Combine(root,"second source_vanta.mp4")),"Batch produces separate validated outputs");
                 Check(!start.IsEnabled&&Get<TextBlock>(batch,"Summary").Text.Contains("완료 2")&&Get<TextBlock>(batch,"Summary").Text.Contains("최근 실행 경과 시간"),"Batch completion and wall time reflected in command bar");
+                var queue=Get<DataGrid>(batch,"Queue");queue.SelectedIndex=0;
+                Check(Get<Button>(batch,"PlayResultButton").IsEnabled,"Completed batch row enables playback");
                 var third=Path.Combine(root,"third source.mp4");File.Copy(source,third);
                 var fourth=Path.Combine(root,"fourth source.mp4");File.Copy(source,fourth);
                 Get<ComboBox>(batch,"ParallelBox").SelectedItem=1;
@@ -193,6 +197,11 @@ internal static class DesktopSmoke
                 Check(!File.Exists(Path.Combine(root,"third source_vanta.mp4"))&&!File.Exists(Path.Combine(root,"fourth source_vanta.mp4"))&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Canceled batch does not publish or leak staging files");
             }
             finally{batch.Close();}
+            File.Delete(output);
+            Get<Button>(main,"PlayResultButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(!Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Visible,"Deleted output cannot launch; historical summary remains");
+            await main.LoadAsync(second);
+            Check(Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Collapsed&&!Get<Button>(main,"PlayResultButton").IsEnabled,"New source clears completed result");
         }
         finally {main.Close();Directory.Delete(root,true);}
     }
