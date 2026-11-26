@@ -41,4 +41,4 @@ Target: hundreds of MB through tens of GB, typical 1080p, common fractional/inte
 
 ### Audio input expansion (pending exact CI)
 
-New staged source extends copy eligibility to mono/stereo MP3, AC-3, E-AC-3 and ALAC with valid timing, bitrate and layout. Adds decoded PCM verification before publication in addition to existing packet/timeline checks. MKV/Opus/PCM/FLAC and other unverified cases remain restricted. See [input compatibility evidence](docs/research/input-compatibility/README.md). Not yet a verified package.
+After Windows AC-3 decoded-sample mismatch, ordinary copy eligibility is restricted to AAC and mono/stereo MP3 with valid timing, bitrate and layout; AC-3, E-AC-3 and ALAC remain research-only. Adds decoded PCM verification before publication in addition to existing packet/timeline checks. MKV/Opus/PCM/FLAC and other unverified cases remain restricted. See [input compatibility evidence](docs/research/input-compatibility/README.md). Not yet a verified package.

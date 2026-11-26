@@ -12,7 +12,7 @@ public static class Probe
     public static async Task<MediaInfo> ReadAsync(string ffprobe,string path,CancellationToken ct=default)=>(await InspectAsync(ffprobe,path,ct)).Info;
     public static Task<MediaDetails> InspectAsync(string ffprobe,string path,CancellationToken ct=default)
         =>InspectResearchAsync(ffprobe,path,ct,false);
-    internal static async Task<MediaDetails> InspectResearchAsync(string ffprobe,string path,CancellationToken ct,bool tenBitSdr)
+    internal static async Task<MediaDetails> InspectResearchAsync(string ffprobe,string path,CancellationToken ct,bool tenBitSdr,bool extendedAudioResearch=false)
     {
         var file=new FileInfo(path);
         var r=await ProcessRunner.RunAsync(ffprobe,["-v","error","-show_format","-show_streams","-of","json",file.FullName],ct);
@@ -41,7 +41,7 @@ public static class Probe
         else if(!TenBitSdrPolicy.Eligible(video,visual,tenBitSdr)) reason="Unsupported pixel format or HDR; only 8-bit SDR is enabled outside the 10-bit research path";
         else if(visual.HasTransform) reason="Display rotation or transformation is unsupported; normalization has not been validated";
         else if(info.Width%2!=0||info.Height%2!=0||info.Width<2||info.Height<2) reason="Unsupported dimensions";
-        else if(audios.Any(s=>!AudioMetadata.CopyCodec(Str(s,"codec_name")) || !(Num(Str(s,"bit_rate"))>0))) reason="Audio copy requires AAC, MP3, AC-3, E-AC-3 or ALAC with known bitrate";
+        else if(audios.Any(s=>!(extendedAudioResearch?AudioMetadata.CopyCodec(Str(s,"codec_name")):Str(s,"codec_name") is "aac" or "mp3") || !(Num(Str(s,"bit_rate"))>0))) reason="Audio copy requires AAC or MP3 with known bitrate; other codecs are research-only";
         else if(audioMetadata.Any(a=>!a.Supported)) reason="Audio copy requires supported mono/stereo layout or AAC 5.1/7.1 with known sample rate";
         else if(timing.Any(t=>!double.IsFinite(t.Start)||!double.IsFinite(t.Duration)||t.Duration<=0)) reason="Stream timing unavailable; cannot validate";
         return new(info,timing,reason=="",reason,visual){PixelFormat=Str(video,"pix_fmt"),Audio=Array.AsReadOnly(audioMetadata),AudioStreamIndices=Array.AsReadOnly(audios.Select(s=>s.TryGetProperty("index",out var idx)&&idx.ValueKind==JsonValueKind.Number&&idx.TryGetInt32(out int n)?n:-1).ToArray())};
