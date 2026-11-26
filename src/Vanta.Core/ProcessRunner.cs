@@ -10,8 +10,8 @@ public static class ProcessRunner
         foreach(var arg in args) psi.ArgumentList.Add(arg);
         using var p=Process.Start(psi) ?? throw new InvalidOperationException("Could not start process");
         await using var resource=ProcessResourceTrace.Track(p,Path.GetFileName(executable));
-        var output=onOutputLine is null?p.StandardOutput.ReadToEndAsync():DrainLinesAsync(p.StandardOutput,onOutputLine);
-        var error=p.StandardError.ReadToEndAsync();
+        var output=onOutputLine is null?BoundedProcessText.ReadOutputAsync(p.StandardOutput):DrainLinesAsync(p.StandardOutput,onOutputLine);
+        var error=BoundedProcessText.ReadDiagnosticAsync(p.StandardError);
         try { await p.WaitForExitAsync(ct); }
         catch(OperationCanceledException) { try { if(!p.HasExited) p.Kill(entireProcessTree:true); } catch(InvalidOperationException) {} await p.WaitForExitAsync(); await Task.WhenAll(output,error); throw; }
         return new(p.ExitCode,await output,await error);

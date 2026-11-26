@@ -37,7 +37,7 @@ public static class PacketTimeline
         var frames=new List<double>();
         using var p=Open(ffprobe,source,"v:0",true,false);
         await using var resource=ProcessResourceTrace.Track(p,"source-clock-capture");
-        var stderr=p.StandardError.ReadToEndAsync();
+        var stderr=BoundedProcessText.ReadDiagnosticAsync(p.StandardError);
         try
         {
             while(await ReadAsync(p.StandardOutput,"best_effort_timestamp_time",ct) is double time)
@@ -62,7 +62,7 @@ public static class PacketTimeline
         await snapshot.RequireUnchangedAsync(ffprobe,lease,ct);
         using var p=OpenStrictDecoder(ffmpeg,output);
         await using var resource=ProcessResourceTrace.Track(p,"output-strict-decode");
-        var stderr=p.StandardError.ReadToEndAsync();
+        var stderr=BoundedProcessText.ReadDiagnosticAsync(p.StandardError);
         double? origin=null;int count=0;
         try
         {
@@ -178,14 +178,14 @@ public static class PacketTimeline
         ct.ThrowIfCancellationRequested();
         using var a=Open(exe,source,selector,video,payload);
         await using var sourceResource=ProcessResourceTrace.Track(a,video?"source-video-clock":"source-audio-packets");
-        Task<string> ae=a.StandardError.ReadToEndAsync();
+        Task<string> ae=BoundedProcessText.ReadDiagnosticAsync(a.StandardError);
         Process? b=null; Task<string>? be=null;
         ProcessResourceTrace.Observation? outputResource=null;
         try
         {
             b=strictDecoder is null?Open(exe,output,selector,video,payload):OpenStrictDecoder(strictDecoder,output);
             outputResource=ProcessResourceTrace.Track(b,strictDecoder is not null?"output-strict-decode":video?"output-video-clock":"output-audio-packets");
-            be=b.StandardError.ReadToEndAsync();
+            be=BoundedProcessText.ReadDiagnosticAsync(b.StandardError);
             double? origin=sharedOrigin; long count=0;
             var key=video?"best_effort_timestamp_time":"pts_time";
             while(true)

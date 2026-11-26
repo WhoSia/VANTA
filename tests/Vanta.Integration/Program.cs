@@ -40,6 +40,18 @@ if(args.Length==3&&args[0]=="--native-bench")
     await NativeKernelScreen.RunAsync(args[1],args[2],nativeTimeout.Token);
     return;
 }
+if(args.Length==3&&args[0]=="--scale")
+{
+    using var scaleTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(28));
+    await ScaleScreen.RunAsync(args[1],args[2],scaleTimeout.Token);
+    return;
+}
+if(args.Length==5&&args[0]=="--scale-offset")
+{
+    using var offsetTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(10));
+    await ScaleScreen.RunOffsetsAsync(args[1..4],args[4],offsetTimeout.Token);
+    return;
+}
 if(args.Length!=0)throw new ArgumentException("Unexpected integration-test arguments.");
 var root=Path.Combine(Path.GetTempPath(),"VANTA CI 한글 "+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);
@@ -54,6 +66,7 @@ static void Check(bool condition,string message) { if(!condition) throw new Exce
 static string Hash(string path) { using var s=File.OpenRead(path); return Convert.ToHexString(SHA256.HashData(s)); }
 try
 {
+    await BoundedTextScreen.RunAsync();
     var resolved=await Toolchain.DiscoverAsync(ct);
     Check(Path.IsPathFullyQualified(resolved.Ffmpeg)&&Path.IsPathFullyQualified(resolved.Ffprobe)&&resolved.Codecs.Contains("libx264")&&resolved.Codecs.Contains("libx265"),"Toolchain resolution");
     var softwareCheck=await EncoderDiagnostics.CheckAsync(resolved,["libx264","libx265"],ct);
