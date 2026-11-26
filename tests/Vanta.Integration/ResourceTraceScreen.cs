@@ -41,6 +41,22 @@ internal static class ResourceTraceScreen
             try{await ProcessRunner.RunAsync(tools.Ffmpeg,["-version"],canceled.Token);}catch(OperationCanceledException){rejected=true;}
             Check(rejected&&trace.Snapshot().Count==0,"Canceled trace has no children");
         }
-        Console.WriteLine("Resource trace per-child CPU/RSS, byte equality, independent oracle and cancellation passed.");
+        // Cancel after a real child emits progress; the trace must join its sampler
+        // after the runner has terminated the process, not leave a detached observer.
+        using(var trace=ProcessResourceTrace.Begin())
+        using(var running=CancellationTokenSource.CreateLinkedTokenSource(ct))
+        {
+            bool progressSeen=false,stopped=false;
+            try
+            {
+                await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-xerror","-nostdin","-re","-f","lavfi","-i","testsrc2=s=160x90:r=24:d=10","-progress","pipe:1","-nostats","-f","null","-"],running.Token,line=>
+                {
+                    if(line.StartsWith("out_time_us=",StringComparison.Ordinal)){progressSeen=true;running.Cancel();}
+                });
+            }
+            catch(OperationCanceledException){stopped=true;}
+            Check(progressSeen&&stopped&&trace.Snapshot().Count==1,"Actively canceled child and sampler joined");
+        }
+        Console.WriteLine("Resource trace per-child CPU/RSS, byte equality, independent oracle and active/pre-cancellation passed.");
     }
 }

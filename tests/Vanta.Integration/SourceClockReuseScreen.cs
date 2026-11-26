@@ -14,6 +14,14 @@ internal static class SourceClockReuseScreen
         var snapshot=await PacketTimeline.CaptureSourceClockAsync(tools.Ffprobe,source,ct);
         double capture=timer.Elapsed.TotalSeconds;
         Check(snapshot.Count==3597,"120s NTSC source clock count");
+        // Constructor is internal but must reject malformed or over-budget observations.
+        foreach(var frames in new[]{Array.Empty<double>(),new[]{double.NaN},new double[SourceClockSnapshot.MaxFrames+1]})
+        {
+            bool rejected=false;
+            try{_ = new SourceClockSnapshot(source,tools.Ffprobe,SourceStamp.Capture(source),SourceStamp.Capture(tools.Ffprobe),new byte[32],frames);}
+            catch(InvalidDataException){rejected=true;}
+            Check(rejected,"Invalid snapshot bounds rejected");
+        }
         var comparisons=new List<(bool Reuse,double Seconds)>();
         for(int rep=0;rep<3;rep++)
         foreach(bool reuse in rep%2==0?new[]{false,true}:new[]{true,false})
@@ -59,7 +67,7 @@ internal static class SourceClockReuseScreen
         string badOutput=Path.Combine(root,"snapshot-stale.mp4");
         bool stale=false;
         try{await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,copy,badOutput,plan,ct,singleDecodeValidation:true,sourceClockSnapshot:copied);}
-        catch(Exception ex) when(ex is IOException or InvalidOperationException or NotSupportedException){stale=true;}
+        catch(Exception ex) when(ex is IOException or InvalidDataException or InvalidOperationException or NotSupportedException){stale=true;}
         Check(stale&&!File.Exists(badOutput)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Stale snapshot cannot publish");
         using var canceled=new CancellationTokenSource();canceled.Cancel();bool stopped=false;
         try{await PacketTimeline.CaptureSourceClockAsync(tools.Ffprobe,source,canceled.Token);}catch(OperationCanceledException){stopped=true;}
