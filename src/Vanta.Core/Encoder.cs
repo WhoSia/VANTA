@@ -1,12 +1,13 @@
 using System.Globalization;
 using System.Diagnostics;
 namespace Vanta.Core;
+internal enum MotionSearchMode { Default, Diamond, DiamondSubme1 }
 public static class Encoder
 {
     public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false,MotionSearchMode motionSearch=MotionSearchMode.Default)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -15,6 +16,9 @@ public static class Encoder
             var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
         }
         ct.ThrowIfCancellationRequested();
+        if(!Enum.IsDefined(motionSearch))throw new ArgumentOutOfRangeException(nameof(motionSearch));
+        if(motionSearch!=MotionSearchMode.Default&&(plan.Codec!="libx264"||plan.Preset!="veryfast"||experimentalSplit||researchCrf.HasValue||researchHardwareEncoder is not null||tenBitSdr||parallelDecodeValidation||singleDecodeValidation||fusedAudioValidation||parallelAudioHash||interleavedAudioValidation||extendedAudioResearch))
+            throw new ArgumentException("Motion search research requires ordinary continuous H.264 veryfast ABR and baseline validation.");
         if(sourceClockSnapshot is not null&&!singleDecodeValidation)throw new ArgumentException("Source clock research requires single-decode validation.");
         if(interleavedAudioValidation&&!singleDecodeValidation)throw new ArgumentException("Interleaved audio research requires single-decode validation.");
         if(singleDecodeValidation&&(parallelDecodeValidation||fusedAudioValidation||parallelAudioHash||experimentalSplit||researchHardwareEncoder is not null))throw new ArgumentException("Single-decode research requires the independent continuous CPU validation baseline.");
@@ -50,6 +54,7 @@ public static class Encoder
         var common=new List<string>{"-hide_banner","-nostdin","-n","-xerror","-i",input,"-map","0:V:0"};
         if(researchHardwareEncoder is null)common.AddRange(["-c:v",plan.Codec,"-preset",plan.Preset,researchCrf.HasValue?"-crf":"-b:v",(researchCrf.HasValue?(long)researchCrf.Value:plan.VideoBitsPerSecond).ToString(CultureInfo.InvariantCulture)]);
         else common.AddRange(HardwareEncoderPolicy.Arguments(researchHardwareEncoder,plan));
+        if(motionSearch!=MotionSearchMode.Default)common.AddRange(["-x264-params",motionSearch==MotionSearchMode.Diamond?"me=dia":"me=dia:subme=1"]);
         if(tenBitSdr)common.AddRange(["-pix_fmt","yuv420p10le","-profile:v","main10"]);
         common.AddRange(["-fps_mode","passthrough"]);
         if(encoderThreads is int threads)common.AddRange(["-threads",threads.ToString(CultureInfo.InvariantCulture)]);

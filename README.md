@@ -6,9 +6,9 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 ## Status and download
 
-0.4.0 — Adaptive Segmented Encoding & Measured Acceleration (owner-approved 2026-11-25 KST; in development). No tagged release. Latest verified preview 6a4afb4 passes Windows CI 45868618491 (one nullable warning, zero errors), decision v5 and repeated synthetic acceleration cohort 45868618561 (two of three groups qualify). Public confirmation and preset frontier blocked by external acquisition. 0.3.0 build 457eb66 remains rollback reference; interactive owner acceptance remains open.
+0.4.0 — Adaptive Segmented Encoding & Measured Acceleration (owner-approved 2026-11-25 KST; in development). No tagged release. Latest verified preview d04b7a6 passes Windows CI 45875336047 (zero warnings and errors), synthetic preset frontier 45875335786 (42 trials) and temporal sample search 45875335703 (3 fixtures). Public confirmation remains blocked by external acquisition; synthetic frontier does not establish general performance. 0.3.0 build 457eb66 remains rollback reference; interactive owner acceptance remains open.
 
-**[Download the verified Windows x64 package (6a4afb4)](https://github.com/WhoSia/VANTA/actions/runs/45868618491/artifacts/15142081767).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance. See the [five-case owner checklist](docs/DESKTOP_ACCEPTANCE.md#030-owner-pc-minimal-handoff-not-executed).
+**[Download the verified Windows x64 package (d04b7a6)](https://github.com/WhoSia/VANTA/actions/runs/45875336047/artifacts/15144404070).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance. See the [five-case owner checklist](docs/DESKTOP_ACCEPTANCE.md#030-owner-pc-minimal-handoff-not-executed).
 
 ## Current preview
 
@@ -39,14 +39,14 @@ Try H.264 with fast (or veryfast), automatic encoder threads and experimental sp
 
 Target: hundreds of MB through tens of GB, typical 1080p, common fractional/integer rates and VFR, higher resolutions. See [scale evidence and limitations](docs/research/media-scale/README.md). Local FFmpeg 11 rate checks, physical ~297MB stress input and sparse 5/20GiB chunk offsets passed; new exact C# Windows rate/physical and Linux offset lanes pending. Sparse files do not demonstrate physical large-media throughput. Current supported formats remain restricted; no claim of universal media support yet.
 
-### Audio input expansion (pending exact CI)
+### Audio input expansion (verified preview)
 
-After Windows AC-3 decoded-sample mismatch, ordinary copy eligibility is restricted to AAC and mono/stereo MP3 with valid timing, bitrate and layout; AC-3, E-AC-3 and ALAC remain research-only. Adds decoded PCM verification before publication in addition to existing packet/timeline checks. MKV/Opus/PCM/FLAC and other unverified cases remain restricted. See [input compatibility evidence](docs/research/input-compatibility/README.md). Not yet a verified package.
+After Windows AC-3 decoded-sample mismatch, ordinary copy eligibility is restricted to AAC and mono/stereo MP3 with valid timing, bitrate and layout; AC-3, E-AC-3 and ALAC remain research-only. Adds decoded PCM verification before publication in addition to existing packet/timeline checks. MKV/Opus/PCM/FLAC and other unverified cases remain restricted. See [input compatibility evidence](docs/research/input-compatibility/README.md). Ordinary Windows regression verified at d04b7a6.
 
 ### Ten-bit research
 
 Internal full-resolution software HEVC Main10 research for explicitly tagged BT.709 SDR, with strict pixel format and color metadata checks. Not enabled in ordinary desktop compression; PQ/HLG and other HDR support remain unverified. See [research evidence](docs/research/ten-bit-and-throughput/README.md).
 
-### Speed controls (new source; exact CI pending)
+### Speed controls (verified preview)
 
 Speed first selects H.264 veryfast, same resolution/bitrate; manual superfast setting added, may alter quality or size. Ultrafast not exposed; recommendations unchanged. See docs/research/throughput-loop for local screen and rejected decoder-sharing idea.

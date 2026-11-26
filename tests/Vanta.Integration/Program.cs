@@ -20,6 +20,7 @@ if(args.Length==2&&args[0]=="--synthetic-frontier")
 {
     using var frontierTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(28));
     await PresetFrontierScreen.RunAsync(null,args[1],frontierTimeout.Token);
+    await MotionSearchScreen.RunAsync(Path.ChangeExtension(args[1],".motion.jsonl"),frontierTimeout.Token);
     return;
 }
 if(args.Length==3&&args[0]=="--preset-frontier")
