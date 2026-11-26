@@ -6,19 +6,19 @@ A lightweight, FFmpeg-powered video compressor with adaptive compression plannin
 
 ## Status and download
 
-0.4.0 — Adaptive Segmented Encoding & Measured Acceleration (owner-approved 2026-11-25 KST; in development). No tagged release. Latest verified 0.4.0 development preview includes result playback and persistent metrics, c140007 (ordinary CI 45752127602; public corpus failed); 0.3.0 build 457eb66 remains rollback reference; interactive owner acceptance remains open.
+0.4.0 — Adaptive Segmented Encoding & Measured Acceleration (owner-approved 2026-11-25 KST; in development). No tagged release. Latest verified 0.4.0 development preview includes explicit AAC surround support and estimated scratch admission, 4ba9e80 (ordinary CI 45803488883; public corpus failed); 0.3.0 build 457eb66 remains rollback reference; interactive owner acceptance remains open.
 
-**[Download the verified Windows x64 package (c140007)](https://github.com/WhoSia/VANTA/actions/runs/45752127602/artifacts/15085938755).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance. See the [five-case owner checklist](docs/DESKTOP_ACCEPTANCE.md#030-owner-pc-minimal-handoff-not-executed).
+**[Download the verified Windows x64 package (4ba9e80)](https://github.com/WhoSia/VANTA/actions/runs/45803488883/artifacts/15108342876).** The successful run provides only one user-facing package artifact. Extract both the downloaded ZIP and its inner application ZIP into a new folder, then run `Vanta.App.exe`. Optional dependency check: `./Start-VANTA.ps1 -CheckOnly` in the app directory. Requires Windows x64 .NET 10 Desktop Runtime and matching FFmpeg/FFprobe, not the SDK. Optional local installer refuses existing versions. New previews use separate folders. See [distribution](docs/DISTRIBUTION.md). Newer source may be unverified; consult [Actions](https://github.com/WhoSia/VANTA/actions). CI success does not establish interactive desktop acceptance. See the [five-case owner checklist](docs/DESKTOP_ACCEPTANCE.md#030-owner-pc-minimal-handoff-not-executed).
 
 ## Current preview
 
 - Single video or independent multi-video batch, up to two concurrent encodes.
 - Source-aware bitrate-budget tiers, editable H.264/HEVC codec, preset, height, video bitrate and target-size budget. Quality is not measured by the recommendation heuristic and final size can differ substantially.
-- AAC mono/stereo audio copy (or silent); newer source adds explicit 5.1/7.1 layouts, pending verification, 8-bit SDR yuv420p, known stream timing; MP4 output. Unsupported streams or metadata, including display rotation/matrices, are rejected. Not all MP4/MOV/MKV inputs meet these conditions.
+- AAC mono/stereo/5.1/7.1 audio copy (or silent; explicit supported surround layouts), 8-bit SDR yuv420p, known stream timing; MP4 output. Unsupported streams or metadata, including display rotation/matrices, are rejected. Not all MP4/MOV/MKV inputs meet these conditions.
 - Collision-safe _vanta.mp4 output names, common output directory, per-file overrides, local batch defaults, cancellation, explicit retry, aggregate actual savings, result playback, persistent single-result metrics, result folder and diagnostic copy.
 - Continuous encoding default. Optional bounded CFR H.264 video-only split experiment; no consistent speedup demonstrated in matched tests, no automatic selection. Original audio is mapped once.
 - Optional encoder thread request (not a CPU cap); explicit synthetic hardware encoder diagnostics only. GPU compression and FPS conversion are not enabled.
-- Newer source adds conservative estimated local Windows scratch-space admission (pending CI, not a quota).
+- Conservative estimated local Windows scratch-space admission (not a quota).
 - Per-job elapsed and validation time, full decode and relative A/V timestamp validation before publication. No overwrite, no telemetry.
 
 ## Invariants
