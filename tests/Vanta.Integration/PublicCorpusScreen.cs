@@ -62,7 +62,7 @@ internal static class PublicCorpusScreen
                 {
                     var native=await Probe.InspectAsync(tools.Ffprobe,raw,ct);
                     Row(new{kind="native-probe",id,origin,supported=native.Supported,reason=native.Reason,info=native.Info});
-                    if(native.Supported&&native.Info.Seconds<=30&&Math.Max(native.Info.Width,native.Info.Height)<=1920)
+                    if(native.Supported&&native.Info.Seconds<=120&&Math.Max(native.Info.Width,native.Info.Height)<=1920)
                     {
                         string nativeOut=Path.Combine(Path.GetDirectoryName(source)!,id+"-native-output.mp4");
                         var m=native.Info;
@@ -74,6 +74,7 @@ internal static class PublicCorpusScreen
                         }
                         finally{if(File.Exists(nativeOut))File.Delete(nativeOut);}
                     }
+                    else Row(new{kind="native-encode-skip",id,origin,reason=native.Supported?"Native screen limit: 120 seconds, maximum dimension 1920":native.Reason});
                 }
                 catch(Exception ex) when(ex is not OperationCanceledException)
                 {Row(new{kind="native-error",id,origin,error=ex.Message});}

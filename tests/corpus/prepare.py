@@ -94,7 +94,11 @@ def normalize(item, raw, dest):
                 "-g", str(fps), "-keyint_min", str(fps), "-sc_threshold", "0", "-x264-params", "open-gop=0",
                 "-threads", "4", "-pix_fmt", "yuv420p", "-map_metadata", "-1", "-map_chapters", "-1",
                 "-video_track_timescale", "90000", str(vid))
-            vmeta = next(s for s in probe(vid)["streams"] if s["codec_type"] == "video")
+            video_only = probe(vid)
+            video_streams = [s for s in video_only["streams"] if s["codec_type"] == "video"]
+            if len(video_streams) != 1:
+                raise ValueError(f"Offset video-only encode yielded {len(video_streams)} video streams")
+            vmeta = video_streams[0]
             duration = int(vmeta["nb_frames"]) / fps
             if duration <= 0:
                 raise ValueError("Offset video normalization yielded no frames")
@@ -130,6 +134,19 @@ def normalize(item, raw, dest):
             raise ValueError("Normalized audio DTS is not strictly increasing")
     return meta, normalized
 
+def diagnose_video(raw):
+    """Bounded diagnostic, not a replacement source or an acceptance bypass."""
+    result = subprocess.run(
+        ["ffmpeg", "-v", "error", "-xerror", "-nostdin", "-i", str(raw),
+         "-map", "0:V:0", "-an", "-frames:v", "300", "-fps_mode", "passthrough",
+         "-f", "framemd5", "-"],
+        capture_output=True, text=True, timeout=60)
+    frames = [line for line in result.stdout.splitlines() if line.strip() and not line.startswith("#")]
+    return {"exit_code": result.returncode, "decoded_frames_up_to_300": len(frames),
+            "first_frame": frames[0] if frames else None,
+            "last_frame": frames[-1] if frames else None,
+            "error": result.stderr[-2000:]}
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--work", type=pathlib.Path, required=True)
@@ -160,6 +177,13 @@ def main():
             record["status"] = "ready"
         except Exception as exc:
             record["error"] = f"{type(exc).__name__}: {exc}"
+            if "raw_sha256" in record and raw.is_file():
+                try:
+                    record["raw_decode_diagnostic"] = diagnose_video(raw)
+                    print("CORPUS_DIAGNOSTIC", item["id"], json.dumps(record["raw_decode_diagnostic"]), flush=True)
+                except Exception as diagnostic_error:
+                    record["raw_decode_diagnostic"] = {"error": f"{type(diagnostic_error).__name__}: {diagnostic_error}"}
+                    print("CORPUS_DIAGNOSTIC", item["id"], json.dumps(record["raw_decode_diagnostic"]), flush=True)
         records.append(record)
         (args.report / "intake.json").write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
         print(item["id"], record["status"], record.get("error", ""), flush=True)

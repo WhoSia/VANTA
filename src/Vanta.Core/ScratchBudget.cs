@@ -62,7 +62,7 @@ internal sealed class ScratchBudget
             var path=Path.GetFullPath(directory);
             string? root=Path.GetPathRoot(path);
             if(root is null||root.Length!=3||root[1]!=':')return null;
-            for(var d=new DirectoryInfo(path);d is not null;d=d.Parent)
+            for(DirectoryInfo? d=new DirectoryInfo(path);d is not null;d=d.Parent)
                 if((d.Attributes&FileAttributes.ReparsePoint)!=0)return null;
             var drive=new DriveInfo(root);
             return drive.IsReady&&drive.DriveType==DriveType.Fixed?(root,drive.AvailableFreeSpace):null;
