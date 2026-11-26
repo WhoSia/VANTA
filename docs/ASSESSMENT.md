@@ -103,3 +103,7 @@ Both decision snapshots reproduced. Current hypothesis priority: single output d
 ## Evidence checkpoint after 8f4ba94
 
 Decision v3 reproduced on CI. Live adaptive search and long HEVC validation provide stronger evidence for those leading research candidates, not a new 12000-scenario result. Batch resource screen is a separate provisional experiment. Resource feasibility remains unproven: requested thread budget is not actual resource usage; partial proxy showed higher summed RSS with concurrency and unstable timing, no winner. Retain required/owner/blocked gates, no production promotion. Candidate judgments (user impact, speed potential, integrity, testability) for adaptive batch admission (.79,.65,.89,.93), stage backpressure (.86,.77,.90,.73), source timeline elimination (.84,.85,.57,.65); subjective hypothesis prioritization, no measured utility or success probabilities. Source timeline elimination must not substitute a count derived only from frames that survived encoding for an independent input-frame oracle.
+
+## Multi-audio hypothesis
+
+Provisional four-axis (user value, speed potential, integrity confidence, testability) scores for multi-audio scan elimination (.72,.81,.83,.92), combined single decode + per-track join (.85,.83,.78,.90). Subjective and conditional on multi-track coverage; not measured probabilities or a replacement for v3. Prior public single-decode positive repeated result raises confidence but not global acceptance. Remaining hard gates and actual owner acceptance unchanged. No new 12000 scenario run here.

@@ -360,3 +360,7 @@ Single decode full C# 12 matched pairs,9 wins, mean +4.13%, median +5.55%, no >=
 ## Long validation and batch admission evidence
 
 Exact 8f4ba94 actual HEVC 120s validation-only median serial 1.3908663s vs single .8880431s (~36.15% lower); does not establish a 15% whole-job gain. Quantizer live full Encoder probes 5/17, same measured optimum q24; subset 1.9296412s vs full audit 6.5821833s. Internal batch allocator uses work-conserving requested encoder thread leases, handles odd budgets, isolated tail, failure and cancellation. Not a process cap; default unchanged. Local Node FFmpeg proxy incomplete after 60s limit (5 of 12 planned batches), results in docs/research/batch-resource. Actual six C# batch runs and negative controls pending. Never interpret incomplete timings as a winner.
+
+## Multi-audio demux elimination
+
+Prior 8f4ba94 public lane now passed: single decode 12/12 matched and faster, mean 6.27%; fused 8/8 matched and faster, mean 7.14%, one >=15% joint in each. Multiple independent audio scans scale with track count. Candidate uses one audio packet scan per file, tracks mapped by actual indices, bounded per-track FIFO joins with payload hashes and shared video clock. Proxy local 2/4 tracks median packet-validation time reductions 54.66%/77.37%, not full workflow. Tests of full combined validator pending, no promotion. See docs/research/interleaved-audio. Existing reference retained.

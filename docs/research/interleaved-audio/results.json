@@ -1,0 +1,89 @@
+{
+  "environment": "Node 22.16.0 / FFmpeg 7.1.5 Linux, CPU quota 4",
+  "rows": [
+    {
+      "tracks": 2,
+      "rep": 0,
+      "mode": "per-track",
+      "seconds": 0.26186168100000007,
+      "packets": 752
+    },
+    {
+      "tracks": 2,
+      "rep": 0,
+      "mode": "all",
+      "seconds": 0.1156611170000001,
+      "packets": 752
+    },
+    {
+      "tracks": 2,
+      "rep": 1,
+      "mode": "all",
+      "seconds": 0.1704919140000002,
+      "packets": 752
+    },
+    {
+      "tracks": 2,
+      "rep": 1,
+      "mode": "per-track",
+      "seconds": 0.2521389339999998,
+      "packets": 752
+    },
+    {
+      "tracks": 2,
+      "rep": 2,
+      "mode": "per-track",
+      "seconds": 0.256008959,
+      "packets": 752
+    },
+    {
+      "tracks": 2,
+      "rep": 2,
+      "mode": "all",
+      "seconds": 0.1160716960000002,
+      "packets": 752
+    },
+    {
+      "tracks": 4,
+      "rep": 0,
+      "mode": "per-track",
+      "seconds": 0.6004314140000001,
+      "packets": 1504
+    },
+    {
+      "tracks": 4,
+      "rep": 0,
+      "mode": "all",
+      "seconds": 0.14400484099999994,
+      "packets": 1504
+    },
+    {
+      "tracks": 4,
+      "rep": 1,
+      "mode": "all",
+      "seconds": 0.20192970500000001,
+      "packets": 1504
+    },
+    {
+      "tracks": 4,
+      "rep": 1,
+      "mode": "per-track",
+      "seconds": 0.9036546629999993,
+      "packets": 1504
+    },
+    {
+      "tracks": 4,
+      "rep": 2,
+      "mode": "per-track",
+      "seconds": 0.6648918320000002,
+      "packets": 1504
+    },
+    {
+      "tracks": 4,
+      "rep": 2,
+      "mode": "all",
+      "seconds": 0.15043987199999992,
+      "packets": 1504
+    }
+  ]
+}
