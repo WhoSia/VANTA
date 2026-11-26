@@ -118,8 +118,8 @@ public static class PacketTimeline
         }
         finally
         {
-            await StopAsync(a,ae);
-            if(b is not null){try{await StopAsync(b,be!);}finally{b.Dispose();}}
+            try{await StopAsync(a,ae);}
+            finally{if(b is not null){try{await StopAsync(b,be!);}finally{b.Dispose();}}}
         }
     }
     private static async Task StopAsync(Process p,Task<string> err)

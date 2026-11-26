@@ -6,7 +6,7 @@ public static class Encoder
     public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -16,6 +16,7 @@ public static class Encoder
         }
         ct.ThrowIfCancellationRequested();
         if(fusedAudioValidation&&parallelAudioHash)throw new ArgumentException("Choose one research audio validation path.");
+        if(parallelDecodeValidation&&(experimentalSplit||fusedAudioValidation||parallelAudioHash||researchHardwareEncoder is not null))throw new ArgumentException("Parallel decode research requires the independent continuous CPU validation baseline.");
         if(researchHardwareEncoder is not null)HardwareEncoderPolicy.Validate(researchHardwareEncoder,plan,experimentalSplit,researchCrf,encoderThreads);
         ThreadBudget.ValidateEncoder(encoderThreads,experimentalSplit&&splitSegments==2&&splitWorkers==2);
         if(researchCrf is int crf&&(crf<0||crf>51||plan.Codec!="libx264"))throw new ArgumentException("Research CRF requires H.264 and a value from 0 to 51.");
@@ -76,22 +77,42 @@ public static class Encoder
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
             var outputProbe=Lap();
-            await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct,compareAudioPayloads:fusedAudioValidation);
-            var timeline=Lap();
-            var audioHash=TimeSpan.Zero;
-            if(source.AudioTracks>0&&!fusedAudioValidation)
+            TimeSpan timeline,decode,audioHash=TimeSpan.Zero;
+            TimeSpan? overlap=null;
+            Task CheckTimeline(CancellationToken token)=>PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,token,compareAudioPayloads:fusedAudioValidation);
+            Task CheckDecode(CancellationToken token)=>Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],token);
+            if(parallelDecodeValidation)
             {
-                await ValidateAudioAsync(ffmpeg,input,temp,ct,parallelAudioHash);
-                audioHash=Lap();
+                using var linked=CancellationTokenSource.CreateLinkedTokenSource(ct);
+                async Task<TimeSpan> Timed(Func<CancellationToken,Task> work)
+                {
+                    var timer=Stopwatch.StartNew();
+                    try{await work(linked.Token);return timer.Elapsed;}
+                    catch{linked.Cancel();throw;}
+                }
+                var t=Timed(CheckTimeline);
+                var d=Timed(CheckDecode);
+                // Join both before leaving this scope, even when either fails.
+                var durations=await Task.WhenAll(t,d);
+                timeline=durations[0];decode=durations[1];overlap=Lap();
+                if(source.AudioTracks>0){await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
             }
-            await Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],ct);
-            var decode=Lap();
+            else
+            {
+                await CheckTimeline(ct);timeline=Lap();
+                if(source.AudioTracks>0&&!fusedAudioValidation)
+                {
+                    await ValidateAudioAsync(ffmpeg,input,temp,ct,parallelAudioHash);
+                    audioHash=Lap();
+                }
+                await CheckDecode(ct);decode=Lap();
+            }
             var bytes=new FileInfo(temp).Length;
             ct.ThrowIfCancellationRequested();
             stamp.RequireUnchanged(input);
             File.Move(temp,output,false);
             var publication=Lap();
-            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes);
+            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes){ConcurrentTimelineDecode=overlap};
             // Publication is the commit point. A completion observer cannot turn
             // an already-published verified output into a failed encode.
             try { progress?.Report(new("Complete",1)); }

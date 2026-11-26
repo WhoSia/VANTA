@@ -277,6 +277,24 @@ try
     catch(ArgumentException){fusedConflict=true;}
     Check(fusedConflict&&!File.Exists(Path.Combine(root,"conflicting validation.mp4")),"Conflicting validation research options rejected");
     Console.WriteLine("Full Encoder fused validation checked against independent streamhash and timeline reference.");
+    var overlapOut=Path.Combine(root,"overlap VFR compressed.mp4");
+    var overlapReport=await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,vfr,overlapOut,plan,ct,parallelDecodeValidation:true);
+    Check(overlapReport.ConcurrentTimelineDecode is TimeSpan wall&&wall>=TimeSpan.Zero&&overlapReport.Validation<=overlapReport.Total&&File.Exists(overlapOut),"Overlap validation reports wall time");
+    await Encoder.ValidateAudioAsync(resolved.Ffmpeg,vfr,overlapOut,ct);
+    await PacketTimeline.ValidateAsync(resolved.Ffprobe,vfr,overlapOut,2,ct,compareAudioPayloads:true);
+    bool overlapConflict=false;
+    try{await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,vfr,Path.Combine(root,"overlap conflict.mp4"),plan,ct,fusedAudioValidation:true,parallelDecodeValidation:true);}
+    catch(ArgumentException){overlapConflict=true;}
+    Check(overlapConflict&&!File.Exists(Path.Combine(root,"overlap conflict.mp4")),"Overlap research conflict rejected");
+    using(var cancelValidation=CancellationTokenSource.CreateLinkedTokenSource(ct))
+    {
+        var canceledOverlap=Path.Combine(root,"overlap canceled.mp4");
+        bool rejectedOverlap=false;
+        try{await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,vfr,canceledOverlap,plan,cancelValidation.Token,new InlineEncodeProgress(x=>{if(x.Stage=="Validating")cancelValidation.Cancel();}),parallelDecodeValidation:true);}
+        catch(OperationCanceledException){rejectedOverlap=true;}
+        Check(rejectedOverlap&&!File.Exists(canceledOverlap)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Overlap pre-validation cancellation leaves no output");
+    }
+    Console.WriteLine("Overlap full validation and cancellation controls passed.");
     var longInput=Path.Combine(root,"long source.mp4");
     var longOutput=Path.Combine(root,"long compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=120","-f","lavfi","-i","sine=frequency=660:sample_rate=48000:duration=120","-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p","-c:a","aac",longInput);
@@ -439,3 +457,5 @@ try
 finally { Directory.Delete(root,true); }
 sealed class BatchProgress(Action<BatchUpdate> report):IProgress<BatchUpdate>{public void Report(BatchUpdate value)=>report(value);}
 sealed class ImmediateProgress(Action<EncodeProgress> report):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>report(value);}
+
+sealed class InlineEncodeProgress(Action<EncodeProgress> action):IProgress<EncodeProgress>{public void Report(EncodeProgress value)=>action(value);}

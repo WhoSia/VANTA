@@ -86,23 +86,26 @@ internal static class PublicCorpusScreen
                 if(expectedFrames<1||expectedFrames>100_000)throw new InvalidDataException("Invalid expected corpus frame count");
                 var plan=new Plan("Corpus","libx264",media.Height,2_000_000,0,"medium",false);
                 var trials=new Dictionary<string,(double Seconds,long Bytes,double Mean,double Worst,int Frames,double P05)>();
-                string[] modes=media.AudioTracks>0?["continuous","aligned","continuous-auto","continuous-fast","continuous-fused"]:["continuous","aligned","continuous-auto","continuous-fast"];
+                var modes=new List<string>{"continuous","aligned","continuous-auto","continuous-fast"};
+                if(media.AudioTracks>0)modes.Add("continuous-fused");
+                // Limit initial overlapping decode screen to <=1080p pixel count.
+                if((long)media.Width*media.Height<=1920L*1080)modes.Add("continuous-overlap");
                 for(int rep=0;rep<2;rep++)
                 {
-                    foreach(string mode in rep==0?modes:modes.Reverse().ToArray())
+                    foreach(string mode in rep==0?modes.ToArray():modes.AsEnumerable().Reverse().ToArray())
                     {
                         string output=Path.Combine(Path.GetDirectoryName(source)!,id+"-"+rep+"-"+mode+".mp4");
                         try
                         {
                             var trialPlan=mode=="continuous-fast"?plan with {Preset="fast"}:plan;
                             int? threads=mode=="continuous-auto"?null:4;
-                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23,fusedAudioValidation:mode=="continuous-fused");
+                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23,fusedAudioValidation:mode=="continuous-fused",parallelDecodeValidation:mode=="continuous-overlap");
                             // Shadow oracle outside the timed candidate path: do not accept a weaker validator.
                             if(mode=="continuous-fused")await Encoder.ValidateAudioAsync(tools.Ffmpeg,source,output,ct);
                             var q=await Quality(tools,source,output,media.Fps,ct);
                             if(q.Frames!=expectedFrames)throw new InvalidDataException("SSIM frame count differs from normalized source");
                             trials[mode]=(result.Total.TotalSeconds,result.OutputBytes,q.Mean,q.WorstSecond,q.Frames,q.P05);
-                            Row(new{kind="trial",id,origin,rep,mode,width=media.Width,height=media.Height,fps=media.Fps,seconds=result.Total.TotalSeconds,encoding=result.Encoding.TotalSeconds,timeline=result.TimelineCheck.TotalSeconds,audio=result.AudioHashCheck.TotalSeconds,decode=result.FullDecode.TotalSeconds,bytes=result.OutputBytes,frames=q.Frames,ssim=q.Mean,minFrame=q.Minimum,worstSecond=q.WorstSecond,p05=q.P05,threads,preset=trialPlan.Preset});
+                            Row(new{kind="trial",id,origin,rep,mode,width=media.Width,height=media.Height,fps=media.Fps,seconds=result.Total.TotalSeconds,encoding=result.Encoding.TotalSeconds,timeline=result.TimelineCheck.TotalSeconds,audio=result.AudioHashCheck.TotalSeconds,decode=result.FullDecode.TotalSeconds,overlap=result.ConcurrentTimelineDecode?.TotalSeconds,validation=result.Validation.TotalSeconds,bytes=result.OutputBytes,frames=q.Frames,ssim=q.Mean,minFrame=q.Minimum,worstSecond=q.WorstSecond,p05=q.P05,threads,preset=trialPlan.Preset});
                         }
                         finally{if(File.Exists(output))File.Delete(output);}
                     }
