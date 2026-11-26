@@ -1,0 +1,362 @@
+{
+  "environment": "FFmpeg 7.1.5 Linux, Node 22.16.0",
+  "witness": [
+    {
+      "mode": "ntsc",
+      "frames": 180,
+      "audioPackets": 135,
+      "sourceSha": "9c89fe21b36046d5efb6894e9e4c61a4e7ebfc81e190cd5cc3dcc1572afdbf95",
+      "outputSha": "d623902c2bf18393b2eca98e35ea0889e4bf57626e744213ca40ea846d425fb9",
+      "rep": 0,
+      "candidate": false,
+      "encoding": 0.961323398,
+      "seconds": 1.416244632,
+      "clockError": 0,
+      "witnessBytes": 0
+    },
+    {
+      "mode": "ntsc",
+      "frames": 180,
+      "audioPackets": 135,
+      "sourceSha": "9c89fe21b36046d5efb6894e9e4c61a4e7ebfc81e190cd5cc3dcc1572afdbf95",
+      "outputSha": "d623902c2bf18393b2eca98e35ea0889e4bf57626e744213ca40ea846d425fb9",
+      "rep": 0,
+      "candidate": true,
+      "encoding": 0.830658655,
+      "seconds": 1.245639965,
+      "clockError": 0,
+      "witnessBytes": 3197
+    },
+    {
+      "mode": "ntsc",
+      "frames": 180,
+      "audioPackets": 135,
+      "sourceSha": "9c89fe21b36046d5efb6894e9e4c61a4e7ebfc81e190cd5cc3dcc1572afdbf95",
+      "outputSha": "d623902c2bf18393b2eca98e35ea0889e4bf57626e744213ca40ea846d425fb9",
+      "rep": 1,
+      "candidate": true,
+      "encoding": 0.829377823,
+      "seconds": 1.224192764,
+      "clockError": 0,
+      "witnessBytes": 3197
+    },
+    {
+      "mode": "ntsc",
+      "frames": 180,
+      "audioPackets": 135,
+      "sourceSha": "9c89fe21b36046d5efb6894e9e4c61a4e7ebfc81e190cd5cc3dcc1572afdbf95",
+      "outputSha": "d623902c2bf18393b2eca98e35ea0889e4bf57626e744213ca40ea846d425fb9",
+      "rep": 1,
+      "candidate": false,
+      "encoding": 0.910137461,
+      "seconds": 1.354271557,
+      "clockError": 0,
+      "witnessBytes": 0
+    },
+    {
+      "mode": "ntsc",
+      "frames": 180,
+      "audioPackets": 135,
+      "sourceSha": "9c89fe21b36046d5efb6894e9e4c61a4e7ebfc81e190cd5cc3dcc1572afdbf95",
+      "outputSha": "d623902c2bf18393b2eca98e35ea0889e4bf57626e744213ca40ea846d425fb9",
+      "rep": 2,
+      "candidate": false,
+      "encoding": 0.811723417,
+      "seconds": 1.261385258,
+      "clockError": 0,
+      "witnessBytes": 0
+    },
+    {
+      "mode": "ntsc",
+      "frames": 180,
+      "audioPackets": 135,
+      "sourceSha": "9c89fe21b36046d5efb6894e9e4c61a4e7ebfc81e190cd5cc3dcc1572afdbf95",
+      "outputSha": "d623902c2bf18393b2eca98e35ea0889e4bf57626e744213ca40ea846d425fb9",
+      "rep": 2,
+      "candidate": true,
+      "encoding": 0.784960869,
+      "seconds": 1.155742969,
+      "clockError": 0,
+      "witnessBytes": 3197
+    },
+    {
+      "mode": "vfr",
+      "frames": 84,
+      "audioPackets": 135,
+      "sourceSha": "ae900e9cadf959c31b0964a953f5c3f0c2eef51f9c7889a242d9aeda06518535",
+      "outputSha": "46d15c07c4a396baef779817ea7ed5285ec41031841f8dc318b655db0587a4d6",
+      "rep": 0,
+      "candidate": false,
+      "encoding": 0.501852862,
+      "seconds": 0.856391524,
+      "clockError": 0,
+      "witnessBytes": 0
+    },
+    {
+      "mode": "vfr",
+      "frames": 84,
+      "audioPackets": 135,
+      "sourceSha": "ae900e9cadf959c31b0964a953f5c3f0c2eef51f9c7889a242d9aeda06518535",
+      "outputSha": "46d15c07c4a396baef779817ea7ed5285ec41031841f8dc318b655db0587a4d6",
+      "rep": 0,
+      "candidate": true,
+      "encoding": 0.460249805,
+      "seconds": 0.835920366,
+      "clockError": 0,
+      "witnessBytes": 1395
+    },
+    {
+      "mode": "vfr",
+      "frames": 84,
+      "audioPackets": 135,
+      "sourceSha": "ae900e9cadf959c31b0964a953f5c3f0c2eef51f9c7889a242d9aeda06518535",
+      "outputSha": "46d15c07c4a396baef779817ea7ed5285ec41031841f8dc318b655db0587a4d6",
+      "rep": 1,
+      "candidate": true,
+      "encoding": 0.518086025,
+      "seconds": 0.818411326,
+      "clockError": 0,
+      "witnessBytes": 1395
+    },
+    {
+      "mode": "vfr",
+      "frames": 84,
+      "audioPackets": 135,
+      "sourceSha": "ae900e9cadf959c31b0964a953f5c3f0c2eef51f9c7889a242d9aeda06518535",
+      "outputSha": "46d15c07c4a396baef779817ea7ed5285ec41031841f8dc318b655db0587a4d6",
+      "rep": 1,
+      "candidate": false,
+      "encoding": 0.447310081,
+      "seconds": 0.769326742,
+      "clockError": 0,
+      "witnessBytes": 0
+    },
+    {
+      "mode": "vfr",
+      "frames": 84,
+      "audioPackets": 135,
+      "sourceSha": "ae900e9cadf959c31b0964a953f5c3f0c2eef51f9c7889a242d9aeda06518535",
+      "outputSha": "46d15c07c4a396baef779817ea7ed5285ec41031841f8dc318b655db0587a4d6",
+      "rep": 2,
+      "candidate": false,
+      "encoding": 0.478862721,
+      "seconds": 0.798472418,
+      "clockError": 0,
+      "witnessBytes": 0
+    },
+    {
+      "mode": "vfr",
+      "frames": 84,
+      "audioPackets": 135,
+      "sourceSha": "ae900e9cadf959c31b0964a953f5c3f0c2eef51f9c7889a242d9aeda06518535",
+      "outputSha": "46d15c07c4a396baef779817ea7ed5285ec41031841f8dc318b655db0587a4d6",
+      "rep": 2,
+      "candidate": true,
+      "encoding": 0.485033823,
+      "seconds": 0.812362133,
+      "clockError": 0,
+      "witnessBytes": 1395
+    },
+    {
+      "mode": "large",
+      "frames": 360,
+      "audioPackets": 276,
+      "sourceSha": "ebcc815e3305274e7a14d343cf49ee4753b4401b80f485279e272d9b2978b24d",
+      "outputSha": "758b464754c04449c02b3d13c239a32cc5d95852ba94ca9601ee2aab61c07524",
+      "rep": 0,
+      "candidate": false,
+      "encoding": 8.378727318,
+      "seconds": 9.931938422,
+      "clockError": 0,
+      "witnessBytes": 0
+    },
+    {
+      "mode": "large",
+      "frames": 360,
+      "audioPackets": 276,
+      "sourceSha": "ebcc815e3305274e7a14d343cf49ee4753b4401b80f485279e272d9b2978b24d",
+      "outputSha": "758b464754c04449c02b3d13c239a32cc5d95852ba94ca9601ee2aab61c07524",
+      "rep": 0,
+      "candidate": true,
+      "encoding": 14.231598523,
+      "seconds": 16.33905761,
+      "clockError": 0,
+      "witnessBytes": 6617
+    }
+  ],
+  "presets": [
+    {
+      "mode": "motion",
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "preset": "fast",
+      "encoding": 6.686031856,
+      "verified": 8.984173378,
+      "bytes": 3019657,
+      "mean": 0.9918591111111114,
+      "worst": 0.9914925666666666,
+      "outputSha": "5b46c7f5142331b026dc76df8d316f1962d35eaa06c2f50332830dfd982c14d4",
+      "frames": 180
+    },
+    {
+      "mode": "motion",
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "preset": "veryfast",
+      "encoding": 1.970868909,
+      "verified": 3.523882181,
+      "bytes": 3019101,
+      "mean": 0.9923945388888892,
+      "worst": 0.9920621999999999,
+      "outputSha": "7aa1966e3ec1e3df29d6a8b262802642200977b7aacbb8e67f0dd7d77d15caa5",
+      "frames": 180
+    },
+    {
+      "mode": "motion",
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "preset": "superfast",
+      "encoding": 1.476825449,
+      "verified": 3.191554514,
+      "bytes": 3119706,
+      "mean": 0.9910568555555558,
+      "worst": 0.9909236666666668,
+      "outputSha": "cba2e00a782928f635652e0c381bd29253d546c45dcc03cb0f916401de34ae49",
+      "frames": 180
+    },
+    {
+      "mode": "motion",
+      "sourceSha": "afed74bcd6673ee544770334f573e0f413d22ab7011ebbba879052020aae58cf",
+      "preset": "ultrafast",
+      "encoding": 0.831394255,
+      "verified": 1.654666288,
+      "bytes": 3148521,
+      "mean": 0.985944683333334,
+      "worst": 0.9839414333333334,
+      "outputSha": "07476b55fcee59d1f1e878667daba5c9389f777817f0b0ff5178a8ddb1b1a708",
+      "frames": 180
+    },
+    {
+      "mode": "mixed",
+      "sourceSha": "aeb1ef513e792ac64f232e7cdd2ed41f320bdc4b36da770a939cc3d75883c47b",
+      "preset": "ultrafast",
+      "encoding": 0.803678627,
+      "verified": 1.661398584,
+      "bytes": 6721482,
+      "mean": 0.9990190055555557,
+      "worst": 0.9970805000000001,
+      "outputSha": "67ad15391d045dd3730a8517f4980801b9efb6b4f8abea5472a699cba61d2819",
+      "frames": 180
+    },
+    {
+      "mode": "mixed",
+      "sourceSha": "aeb1ef513e792ac64f232e7cdd2ed41f320bdc4b36da770a939cc3d75883c47b",
+      "preset": "superfast",
+      "encoding": 1.366105497,
+      "verified": 3.445472673,
+      "bytes": 6415903,
+      "mean": 0.9994246388888886,
+      "worst": 0.9983122500000001,
+      "outputSha": "495b58f7a4f8fbcd2575f70fa1175dbdd312bfde31594ac9aea91607efc0158c",
+      "frames": 180
+    },
+    {
+      "mode": "mixed",
+      "sourceSha": "aeb1ef513e792ac64f232e7cdd2ed41f320bdc4b36da770a939cc3d75883c47b",
+      "preset": "veryfast",
+      "encoding": 2.052605357,
+      "verified": 4.168036605,
+      "bytes": 6467470,
+      "mean": 0.9994643722222217,
+      "worst": 0.9984178500000002,
+      "outputSha": "ab7d8628eb0dd4765449768749b0028a21c34303706389ece12b09eef194cfa5",
+      "frames": 180
+    },
+    {
+      "mode": "mixed",
+      "sourceSha": "aeb1ef513e792ac64f232e7cdd2ed41f320bdc4b36da770a939cc3d75883c47b",
+      "preset": "fast",
+      "encoding": 3.367848449,
+      "verified": 5.423817252,
+      "bytes": 6606767,
+      "mean": 0.9995558833333339,
+      "worst": 0.9986819500000002,
+      "outputSha": "3f531f36af0d67a630d8bdb4e190a4caeaa1ae1b97001884100ca5a406570c61",
+      "frames": 180
+    }
+  ],
+  "pairs": [
+    {
+      "mode": "motion",
+      "preset": "veryfast",
+      "byteDelta": -0.0001841268726878731,
+      "meanDelta": 0.0005354277777778194,
+      "worstDelta": 0.0005696333333332637,
+      "matched": true,
+      "timeReduction": 0.6077677897858573
+    },
+    {
+      "mode": "motion",
+      "preset": "superfast",
+      "byteDelta": 0.03313257101717171,
+      "meanDelta": -0.0008022555555555755,
+      "worstDelta": -0.0005688999999998723,
+      "matched": true,
+      "timeReduction": 0.6447581341411641
+    },
+    {
+      "mode": "motion",
+      "preset": "ultrafast",
+      "byteDelta": 0.04267504554325208,
+      "meanDelta": -0.005914427777777398,
+      "worstDelta": -0.0075511333333332376,
+      "matched": false,
+      "timeReduction": 0.8158243147831646
+    },
+    {
+      "mode": "mixed",
+      "preset": "ultrafast",
+      "byteDelta": 0.01736325800501204,
+      "meanDelta": -0.0005368777777782219,
+      "worstDelta": -0.0016014500000000043,
+      "matched": true,
+      "timeReduction": 0.6936846308036339
+    },
+    {
+      "mode": "mixed",
+      "preset": "superfast",
+      "byteDelta": -0.028889167727573883,
+      "meanDelta": -0.00013124444444534422,
+      "worstDelta": -0.00036970000000002834,
+      "matched": true,
+      "timeReduction": 0.364751334177142
+    },
+    {
+      "mode": "mixed",
+      "preset": "veryfast",
+      "byteDelta": -0.021083988583220803,
+      "meanDelta": -0.00009151111111216359,
+      "worstDelta": -0.00026409999999998934,
+      "matched": true,
+      "timeReduction": 0.23153078148732575
+    }
+  ],
+  "dropControl": {
+    "sourceFrames": 84,
+    "outputFrames": 83,
+    "rejected": true,
+    "directStatsGap": {
+      "n": 10,
+      "ni": 11
+    }
+  },
+  "windows": {
+    "head": "22d3d2d1579c952977ab942578962c8f4124bbef",
+    "run": 45872980836,
+    "job": 140092863466,
+    "artifact": [
+      {
+        "id": 15145070174,
+        "bytes": 257484,
+        "digest": "sha256:04dcbe8aaec2326eaad4172e5755ff3f442a9ecce0676348ecd92c1973cda081"
+      }
+    ]
+  }
+}

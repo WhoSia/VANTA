@@ -46,3 +46,7 @@ After Windows AC-3 decoded-sample mismatch, ordinary copy eligibility is restric
 ### Ten-bit research
 
 Internal full-resolution software HEVC Main10 research for explicitly tagged BT.709 SDR, with strict pixel format and color metadata checks. Not enabled in ordinary desktop compression; PQ/HLG and other HDR support remain unverified. See [research evidence](docs/research/ten-bit-and-throughput/README.md).
+
+### Speed controls (new source; exact CI pending)
+
+Speed first selects H.264 veryfast, same resolution/bitrate; manual superfast setting added, may alter quality or size. Ultrafast not exposed; recommendations unchanged. See docs/research/throughput-loop for local screen and rejected decoder-sharing idea.

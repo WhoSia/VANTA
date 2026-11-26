@@ -401,3 +401,7 @@ Media scale CI 45871127136, physical job 140086507824, FFmpeg 9.1 Windows, four 
 ## Bounded grouped-sample search
 
 Separate sample encodes slower than full 3-point grid in all three cases; grouped activity matches oracle 3/3, two faster and one slower, uniform misses rare quality violation. Replayed costs, no live full workflow acceleration or comparison to one ordinary encode. Mixed regenerated source SHA mismatch forced independent grid recomputation. New C# standalone screen d2932bd pending. See docs/research/temporal-sampling.
+
+## Decoder witness counterexample and faster controls
+
+Split filter witness removed independent source probe but worsened 1080p verified proxy 64.51%; reject, preserve independent oracle. H264 veryfast and superfast matched fast on two 1080p60 synthetic contents, ultrafast failed motion. Explicit speed-first selects veryfast, superfast manual; existing defaults unchanged. New standalone 42-encode fixed-rate synthetic frontier, CI pending. See docs/research/throughput-loop.

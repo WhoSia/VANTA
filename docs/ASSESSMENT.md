@@ -135,3 +135,7 @@ Do not rank ordinary file-size/rate coverage against optional acceleration as if
 ## Sample-selection evidence
 
 Activity sample policy improves rare-interval detection in this synthetic screen, but full source thumbnail scan and extra sample encoding have material cost. Grouped samples 3/3 match three-point oracle, only 2/3 replay costs improve; no automatic policy. Keep hard full-output constraints and default unchanged. No new scenario simulation; v5 prior remains subjective.
+
+## Performance loop update
+
+Do not promote decoder split witness: actual 1080p regression and common-decoder integrity limitation. Explicit preset choices are lower complexity and useful but cannot claim general superiority from two single-content runs. No new 12000-scenario model; retain v5 and hard gates. Owner asks for materially faster ordinary compression; prioritize actual encoding and independently validated combined path rather than speculative sample overhead.
