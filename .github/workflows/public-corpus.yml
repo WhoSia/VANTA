@@ -36,6 +36,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
           ffprobe -version
           if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: Streaming acquisition regression
+        run: python -S tests/corpus/test_acquire.py
       - name: Offset fixture regression
         run: python -S tests/corpus/test_offset.py
       - name: Acquire and prepare public inputs

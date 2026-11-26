@@ -21,3 +21,7 @@ Third run pinned six raw SHA256 values but BBB normalized video was absent; sour
 ## Explicit ordinal-clock animation derivative
 
 The pinned BBB input failed the strict raw framemd5 mux with non-monotonic output DTS (378 then 1) in 45803488770. This does not prove that only one frame can be decoded. For this one named and hash-verified source, attempt a CFR derivative assigning decoded frame ordinal N to time N/fps, independently prepared audio, exact target frame count, and existing normalized metadata checks. Preserve the raw diagnostic even if this derivative succeeds; timing_preserved=false, never native acceptance. No fallback applies to arbitrary production inputs. The actual Ogg result remains pending.
+
+## Preparation overhead and overlap screen
+
+Download pins computed in same streamed pass; raw metadata reused, final source rehash and fixture hash remain mandatory. Standard-library Python -S avoids unnecessary environment site startup, stages timed separately. Offline mock acquisition tests cover valid pins, wrong pins, size limit, cleanup. New continuous-overlap candidate only for <=1920x1080 pixel count, independent timeline and strict decode concurrently, audio hash still independent, no production default change. Stage times can overlap; report wall time separately. First six-fixture corpus success exact b4ea48c, BBB derivative preserves frame count not original timing.
