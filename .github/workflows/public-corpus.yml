@@ -37,10 +37,10 @@ jobs:
           ffprobe -version
           if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
       - name: Offset fixture regression
-        run: python tests/corpus/test_offset.py
+        run: python -S tests/corpus/test_offset.py
       - name: Acquire and prepare public inputs
         shell: pwsh
-        run: python tests/corpus/prepare.py --work "$env:RUNNER_TEMP/vanta-corpus" --report artifacts/corpus-report
+        run: python -S tests/corpus/prepare.py --work "$env:RUNNER_TEMP/vanta-corpus" --report artifacts/corpus-report
       - name: Real C# encoder comparison
         if: ${{ !cancelled() && hashFiles('artifacts/corpus-report/intake.json') != '' }}
         run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --corpus artifacts/corpus-report/intake.json artifacts/corpus-report/results.jsonl

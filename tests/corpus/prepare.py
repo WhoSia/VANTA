@@ -6,6 +6,7 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.request
 import urllib.parse
 
@@ -46,6 +47,8 @@ def acquire(item, path):
     request = urllib.request.Request(item["url"], headers={"User-Agent": "VANTA-Corpus/0.4 (https://github.com/WhoSia/VANTA; codec research)"})
     opener = urllib.request.build_opener(SafeRedirect())
     temp = path.with_suffix(path.suffix + ".partial")
+    sha256 = hashlib.sha256()
+    sha1 = hashlib.sha1() if item.get("sha1") else None
     try:
         with opener.open(request, timeout=30) as response, temp.open("xb") as output:
             require_url(response.geturl())
@@ -58,18 +61,24 @@ def acquire(item, path):
                 if size > MAX_BYTES:
                     raise ValueError("Media exceeds download limit")
                 output.write(chunk)
+                sha256.update(chunk)
+                if sha1 is not None:
+                    sha1.update(chunk)
         if not size:
             raise ValueError("Empty source")
-        if item.get("sha1") and digest(temp, "sha1") != item["sha1"]:
+        if sha1 is not None and sha1.hexdigest() != item["sha1"]:
             raise ValueError("Published SHA-1 mismatch")
-        if item.get("sha256") and digest(temp) != item["sha256"]:
+        raw_hash = sha256.hexdigest()
+        if item.get("sha256") and raw_hash != item["sha256"]:
             raise ValueError("Pinned SHA-256 mismatch")
         temp.rename(path)
+        return raw_hash
     finally:
         temp.unlink(missing_ok=True)
 
-def normalize(item, raw, dest):
-    meta = probe(raw)
+def normalize(item, raw, dest, meta=None):
+    if meta is None:
+        meta = probe(raw)
     videos = [s for s in meta["streams"] if s["codec_type"] == "video" and not s.get("disposition", {}).get("attached_pic")]
     if len(videos) != 1:
         raise ValueError(f"Raw input must contain one non-cover video: {len(videos)}")
@@ -169,13 +178,18 @@ def main():
         raw = args.work / (item["id"] + pathlib.Path(item["file"]).suffix)
         dest = args.work / (item["id"] + "-normalized.mp4")
         record = dict(item, status="failed", origin="local-replacement" if args.local else "public", raw=str(raw.resolve()), fixture=str(dest.resolve()))
+        started = time.perf_counter()
+        record["stage_seconds"] = {}
         try:
+            mark = time.perf_counter()
             if args.local:
                 raw = args.local / item["file"]
                 record["raw"] = str(raw.resolve())
+                record["raw_sha256"] = digest(raw)
             else:
-                acquire(item, raw)
-            record["raw_sha256"] = digest(raw)
+                record["raw_sha256"] = acquire(item, raw)
+            record["stage_seconds"]["acquire_and_hash"] = time.perf_counter() - mark
+            mark = time.perf_counter()
             print("CORPUS_RAW", item["id"], record["raw_sha256"], flush=True)
             record["raw_bytes"] = raw.stat().st_size
             record["raw_probe"] = probe(raw)
@@ -185,10 +199,15 @@ def main():
                 record["raw_decode_diagnostic"] = diagnose_video(raw)
                 print("CORPUS_DIAGNOSTIC", item["id"], json.dumps(record["raw_decode_diagnostic"]), flush=True)
                 record["timing_preserved"] = False
-            _, record["fixture_probe"] = normalize(item, raw, dest)
+            record["stage_seconds"]["probe_and_diagnostic"] = time.perf_counter() - mark
+            mark = time.perf_counter()
+            _, record["fixture_probe"] = normalize(item, raw, dest, record["raw_probe"])
+            record["stage_seconds"]["normalize"] = time.perf_counter() - mark
+            mark = time.perf_counter()
             record["fixture_sha256"] = digest(dest)
             if digest(raw) != record["raw_sha256"]:
                 raise ValueError("Source changed")
+            record["stage_seconds"]["verify_hashes"] = time.perf_counter() - mark
             record["status"] = "ready"
         except Exception as exc:
             record["error"] = f"{type(exc).__name__}: {exc}"
@@ -199,6 +218,8 @@ def main():
                 except Exception as diagnostic_error:
                     record["raw_decode_diagnostic"] = {"error": f"{type(diagnostic_error).__name__}: {diagnostic_error}"}
                     print("CORPUS_DIAGNOSTIC", item["id"], json.dumps(record["raw_decode_diagnostic"]), flush=True)
+        record["total_seconds"] = time.perf_counter() - started
+        print("CORPUS_PREP_TIMING", item["id"], json.dumps({"stages": record["stage_seconds"], "total": record["total_seconds"]}), flush=True)
         records.append(record)
         (args.report / "intake.json").write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
         print(item["id"], record["status"], record.get("error", ""), flush=True)
