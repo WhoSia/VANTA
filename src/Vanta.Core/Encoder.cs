@@ -37,6 +37,8 @@ public static class Encoder
         stamp.RequireUnchanged(input);
         if(!details.Supported) throw new NotSupportedException(details.Reason);
         var source=details.Info;
+        bool extendedAudio=details.Audio.Any(a=>a.Codec!="aac");
+        if(extendedAudio&&experimentalSplit)throw new NotSupportedException("Extended audio copy requires continuous encoding.");
         if(interleavedAudioValidation&&(source.AudioTracks is <1 or >32))throw new NotSupportedException("Combined packet research requires 1–32 audio tracks.");
         PlanRules.Validate(plan,source);
         var dir=Path.GetDirectoryName(output)!;
@@ -89,13 +91,13 @@ public static class Encoder
             TimeSpan timeline,decode,audioHash=TimeSpan.Zero;
             TimeSpan? overlap=null;
             int? audioPending=null;
-            Task CheckTimeline(CancellationToken token)=>PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,token,compareAudioPayloads:fusedAudioValidation);
+            Task CheckTimeline(CancellationToken token)=>PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,token,compareAudioPayloads:fusedAudioValidation||extendedAudio);
             Task CheckDecode(CancellationToken token)=>Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],token);
             if(singleDecodeValidation)
             {
                 if(interleavedAudioValidation)
                     audioPending=await PacketTimeline.ValidateSingleDecodeInterleavedAsync(ffmpeg,ffprobe,input,temp,details.AudioStreamIndices,actualDetails.AudioStreamIndices,ct,sourceClockSnapshot);
-                else await PacketTimeline.ValidateSingleDecodeAsync(ffmpeg,ffprobe,input,temp,source.AudioTracks,ct,sourceClockSnapshot);
+                else await PacketTimeline.ValidateSingleDecodeAsync(ffmpeg,ffprobe,input,temp,source.AudioTracks,ct,sourceClockSnapshot,compareAudioPayloads:extendedAudio);
                 timeline=Lap();decode=TimeSpan.Zero;
                 if(source.AudioTracks>0&&!interleavedAudioValidation){await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
             }
@@ -124,6 +126,13 @@ public static class Encoder
                     audioHash=Lap();
                 }
                 await CheckDecode(ct);decode=Lap();
+            }
+            // New codecs require exact decoded PCM too: packet bytes do not
+            // capture edit-list, priming and discard effects.
+            if(extendedAudio)
+            {
+                await DecodedAudioIdentity.ValidateAsync(ffmpeg,input,temp,source.AudioTracks,ct);
+                audioHash+=Lap();
             }
             var bytes=new FileInfo(temp).Length;
             ct.ThrowIfCancellationRequested();

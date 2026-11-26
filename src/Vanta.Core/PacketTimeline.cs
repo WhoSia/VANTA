@@ -14,11 +14,11 @@ public static class PacketTimeline
     }
     // Research: output video timestamps and full audio/video decode in one strict FFmpeg pass.
     // Source timestamps and audio packet comparisons remain independent ffprobe reads.
-    internal static async Task ValidateSingleDecodeAsync(string ffmpeg,string ffprobe,string source,string output,int audioTracks,CancellationToken ct,SourceClockSnapshot? snapshot=null)
+    internal static async Task ValidateSingleDecodeAsync(string ffmpeg,string ffprobe,string source,string output,int audioTracks,CancellationToken ct,SourceClockSnapshot? snapshot=null,bool compareAudioPayloads=false)
     {
         double origin=await VideoOriginAsync(ffmpeg,ffprobe,source,output,ct,snapshot);
         for(int i=0;i<audioTracks;i++)
-            await CompareAsync(ffprobe,source,output,$"a:{i}",false,.002,origin,ct,false);
+            await CompareAsync(ffprobe,source,output,$"a:{i}",false,.002,origin,ct,compareAudioPayloads);
     }
     internal static async Task<int> ValidateSingleDecodeInterleavedAsync(string ffmpeg,string ffprobe,string source,string output,IReadOnlyList<int> sourceAudio,IReadOnlyList<int> outputAudio,CancellationToken ct,SourceClockSnapshot? snapshot=null)
     {

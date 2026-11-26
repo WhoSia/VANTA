@@ -6,7 +6,8 @@ namespace Vanta.Core;
 // payloads and relative timestamps. Never infer an unknown surround layout.
 internal sealed record AudioMetadata(string Codec,int Channels,int SampleRate,string Layout)
 {
-    internal bool Supported=>Codec=="aac"&&SampleRate>0&&(Channels switch
+    internal static bool CopyCodec(string codec)=>codec is "aac" or "mp3" or "ac3" or "eac3" or "alac";
+    internal bool Supported=>CopyCodec(Codec)&&SampleRate>0&&(Codec=="aac"||Channels<=2)&&(Channels switch
     {
         1=>Layout is "" or "mono",
         2=>Layout is "" or "stereo",

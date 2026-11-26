@@ -38,8 +38,8 @@ public static class Probe
         else if(Str(video,"pix_fmt")!="yuv420p" || new[]{"smpte2084","arib-std-b67"}.Contains(Str(video,"color_transfer"))) reason="Only 8-bit SDR yuv420p is supported yet";
         else if(visual.HasTransform) reason="Display rotation or transformation is unsupported; normalization has not been validated";
         else if(info.Width%2!=0||info.Height%2!=0||info.Width<2||info.Height<2) reason="Unsupported dimensions";
-        else if(audios.Any(s=>Str(s,"codec_name")!="aac" || !(Num(Str(s,"bit_rate"))>0))) reason="Only AAC audio with known bitrate is supported in copy mode";
-        else if(audioMetadata.Any(a=>!a.Supported)) reason="Only AAC mono, stereo, 5.1 or 7.1 with known sample rate and supported channel layout is supported";
+        else if(audios.Any(s=>!AudioMetadata.CopyCodec(Str(s,"codec_name")) || !(Num(Str(s,"bit_rate"))>0))) reason="Audio copy requires AAC, MP3, AC-3, E-AC-3 or ALAC with known bitrate";
+        else if(audioMetadata.Any(a=>!a.Supported)) reason="Audio copy requires supported mono/stereo layout or AAC 5.1/7.1 with known sample rate";
         else if(timing.Any(t=>!double.IsFinite(t.Start)||!double.IsFinite(t.Duration)||t.Duration<=0)) reason="Stream timing unavailable; cannot validate";
         return new(info,timing,reason=="",reason,visual){Audio=Array.AsReadOnly(audioMetadata),AudioStreamIndices=Array.AsReadOnly(audios.Select(s=>s.TryGetProperty("index",out var idx)&&idx.ValueKind==JsonValueKind.Number&&idx.TryGetInt32(out int n)?n:-1).ToArray())};
     }

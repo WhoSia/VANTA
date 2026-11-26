@@ -172,6 +172,7 @@ try
     Check(!Directory.EnumerateFiles(root,".vanta-*").Any(),"Temporary output leaked");
     Console.WriteLine("Delayed AAC, Unicode paths, source preservation, no overwrite, pre-cancel passed.");
     await SurroundAudioScreen.RunAsync(resolved,root,ct);
+    await ExtendedAudioScreen.RunAsync(resolved,root,ct);
     await HardwareResearchScreen.RunAsync(resolved,root,input,hardwareCheck,ct);
     ScratchBudgetScreen.Run(root);
     var shifted=Path.Combine(root,"shifted audio.mp4");
