@@ -85,7 +85,7 @@ internal static class PublicCorpusScreen
                 if(expectedFrames<1||expectedFrames>100_000)throw new InvalidDataException("Invalid expected corpus frame count");
                 var plan=new Plan("Corpus","libx264",media.Height,2_000_000,0,"medium",false);
                 var trials=new Dictionary<string,(double Seconds,long Bytes,double Mean,double Worst,int Frames,double P05)>();
-                string[] modes=["continuous","aligned","continuous-auto","continuous-fast"];
+                string[] modes=media.AudioTracks>0?["continuous","aligned","continuous-auto","continuous-fast","continuous-fused"]:["continuous","aligned","continuous-auto","continuous-fast"];
                 for(int rep=0;rep<2;rep++)
                 {
                     foreach(string mode in rep==0?modes:modes.Reverse().ToArray())
@@ -95,7 +95,9 @@ internal static class PublicCorpusScreen
                         {
                             var trialPlan=mode=="continuous-fast"?plan with {Preset="fast"}:plan;
                             int? threads=mode=="continuous-auto"?null:4;
-                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23);
+                            var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,trialPlan,ct,experimentalSplit:mode=="aligned",encoderThreads:threads,splitSegments:4,splitWorkers:2,keyframeAligned:mode=="aligned",researchCrf:23,fusedAudioValidation:mode=="continuous-fused");
+                            // Shadow oracle outside the timed candidate path: do not accept a weaker validator.
+                            if(mode=="continuous-fused")await Encoder.ValidateAudioAsync(tools.Ffmpeg,source,output,ct);
                             var q=await Quality(tools,source,output,media.Fps,ct);
                             if(q.Frames!=expectedFrames)throw new InvalidDataException("SSIM frame count differs from normalized source");
                             trials[mode]=(result.Total.TotalSeconds,result.OutputBytes,q.Mean,q.WorstSecond,q.Frames,q.P05);

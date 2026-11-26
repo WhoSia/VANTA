@@ -6,7 +6,7 @@ public static class Encoder
     public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -15,6 +15,7 @@ public static class Encoder
             var now=clock.Elapsed;var elapsed=now-mark;mark=now;return elapsed;
         }
         ct.ThrowIfCancellationRequested();
+        if(fusedAudioValidation&&parallelAudioHash)throw new ArgumentException("Choose one research audio validation path.");
         ThreadBudget.ValidateEncoder(encoderThreads,experimentalSplit&&splitSegments==2&&splitWorkers==2);
         if(researchCrf is int crf&&(crf<0||crf>51||plan.Codec!="libx264"))throw new ArgumentException("Research CRF requires H.264 and a value from 0 to 51.");
         if((keyframeAligned||longestFirst)&&!experimentalSplit)throw new ArgumentException("Research partition or scheduling requires segmented mode.");
@@ -68,10 +69,10 @@ public static class Encoder
             Timeline.Validate(details.Timing,actualDetails.Timing,source.Fps);
             if(actual.AudioTracks!=source.AudioTracks || Math.Abs(actual.Seconds-source.Seconds)>0.25) throw new InvalidDataException("Output stream count or duration mismatch");
             var outputProbe=Lap();
-            await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct);
+            await PacketTimeline.ValidateAsync(ffprobe,input,temp,source.AudioTracks,ct,compareAudioPayloads:fusedAudioValidation);
             var timeline=Lap();
             var audioHash=TimeSpan.Zero;
-            if(source.AudioTracks>0)
+            if(source.AudioTracks>0&&!fusedAudioValidation)
             {
                 await ValidateAudioAsync(ffmpeg,input,temp,ct,parallelAudioHash);
                 audioHash=Lap();

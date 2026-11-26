@@ -264,6 +264,16 @@ try
     await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,mov,movOut,plan,ct);
     await PacketTimeline.ValidateAsync(resolved.Ffprobe,mov,movOut,1,ct,compareAudioPayloads:true);
     Console.WriteLine("Shadow packet validation passed VFR multi-audio and MOV input.");
+    var fusedVfrOut=Path.Combine(root,"fused VFR compressed.mp4");
+    var fusedVfrReport=await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,vfr,fusedVfrOut,plan,ct,fusedAudioValidation:true);
+    Check(fusedVfrReport.AudioHashCheck==TimeSpan.Zero&&File.Exists(fusedVfrOut),"Fused research path publishes verified VFR multi-audio output");
+    await Encoder.ValidateAudioAsync(resolved.Ffmpeg,vfr,fusedVfrOut,ct);
+    await PacketTimeline.ValidateAsync(resolved.Ffprobe,vfr,fusedVfrOut,2,ct);
+    bool fusedConflict=false;
+    try{await Encoder.EncodeResearchAsync(resolved.Ffmpeg,resolved.Ffprobe,vfr,Path.Combine(root,"conflicting validation.mp4"),plan,ct,parallelAudioHash:true,fusedAudioValidation:true);}
+    catch(ArgumentException){fusedConflict=true;}
+    Check(fusedConflict&&!File.Exists(Path.Combine(root,"conflicting validation.mp4")),"Conflicting validation research options rejected");
+    Console.WriteLine("Full Encoder fused validation checked against independent streamhash and timeline reference.");
     var longInput=Path.Combine(root,"long source.mp4");
     var longOutput=Path.Combine(root,"long compressed.mp4");
     await Run("-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=320x180:r=30000/1001:d=120","-f","lavfi","-i","sine=frequency=660:sample_rate=48000:duration=120","-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p","-c:a","aac",longInput);
