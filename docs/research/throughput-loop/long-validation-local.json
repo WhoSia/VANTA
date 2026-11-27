@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "environment": "FFmpeg 7.1.5-0+deb13u1, Linux, cgroup 4 CPU quota",
+  "scope": "Two actual encodes, then three alternating validation-only pairs per fixed output. 30s 1920x1080 30fps synthetic testsrc2, gray middle 10s, AVC ultrafast CRF18 input and two AAC128k sine tracks, no filler, 8Mbps target, 4 requested encoder threads, x265 pools=4. Baseline paired source/output video and per-track packet scans, serial streamhash and strict decode. Combined concurrent source decoded clock and strict output decode timestamp extraction, then one per-file audio scan; buffered Python proxy, not full C# workflow. Independent full oracle and SSIM outside timing. No physical disk throughput, natural footage or general speed claims.",
+  "source": {
+    "bytes": 50750661,
+    "sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+    "frames": 900,
+    "audio_packets": 2816
+  },
+  "rows": [
+    {
+      "kind": "encode",
+      "codec": "libx264",
+      "preset": "veryfast",
+      "encoding_s": 8.148954597000056,
+      "bytes": 30767733,
+      "sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx264",
+      "rep": 0,
+      "mode": "baseline",
+      "seconds": 6.824171073000116,
+      "drift": 0,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx264",
+      "rep": 0,
+      "mode": "combined",
+      "seconds": 2.2555609340001865,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx264",
+      "rep": 1,
+      "mode": "combined",
+      "seconds": 2.162900319999835,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx264",
+      "rep": 1,
+      "mode": "baseline",
+      "seconds": 6.946134547999918,
+      "drift": 0,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx264",
+      "rep": 2,
+      "mode": "baseline",
+      "seconds": 6.869612466000035,
+      "drift": 0,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx264",
+      "rep": 2,
+      "mode": "combined",
+      "seconds": 2.2587835419999465,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "quality",
+      "codec": "libx264",
+      "mean_ssim": 0.9989023833333334,
+      "worst_second": 0.9970393,
+      "frames": 900,
+      "audio_packets": 2816,
+      "oracle_drift": 0,
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809",
+      "source_unchanged": true,
+      "strict_decode": true
+    },
+    {
+      "kind": "encode",
+      "codec": "libx265",
+      "preset": "medium",
+      "encoding_s": 27.22767234999992,
+      "bytes": 21551135,
+      "sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx265",
+      "rep": 0,
+      "mode": "baseline",
+      "seconds": 9.552690031000111,
+      "drift": 0,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx265",
+      "rep": 0,
+      "mode": "combined",
+      "seconds": 3.187471903999949,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx265",
+      "rep": 1,
+      "mode": "combined",
+      "seconds": 3.362838861,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx265",
+      "rep": 1,
+      "mode": "baseline",
+      "seconds": 9.787297336999927,
+      "drift": 0,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx265",
+      "rep": 2,
+      "mode": "baseline",
+      "seconds": 9.865081115999828,
+      "drift": 0,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "validation",
+      "codec": "libx265",
+      "rep": 2,
+      "mode": "combined",
+      "seconds": 3.28525096400017,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "quality",
+      "codec": "libx265",
+      "mean_ssim": 0.9979220711111111,
+      "worst_second": 0.9965600333333333,
+      "frames": 900,
+      "audio_packets": 2816,
+      "oracle_drift": 0,
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835",
+      "source_unchanged": true,
+      "strict_decode": true
+    }
+  ],
+  "results": [
+    {
+      "codec": "libx264",
+      "validationMedianBaseline": 6.869612466000035,
+      "validationMedianCombined": 2.2555609340001865,
+      "pairedReductions": [
+        0.6694747376828916,
+        0.688618136453659,
+        0.6711919990859154
+      ],
+      "wholeJobIllustrativeReduction": 0.30722315335709205,
+      "priorTailPrediction": {
+        "baseline": [
+          {
+            "predicted": 6.824171073000116,
+            "actual": 6.946134547999918,
+            "error": -0.1219634749998022
+          },
+          {
+            "predicted": 6.946134547999918,
+            "actual": 6.869612466000035,
+            "error": 0.07652208199988308
+          }
+        ],
+        "combined": [
+          {
+            "predicted": 2.2555609340001865,
+            "actual": 2.162900319999835,
+            "error": 0.09266061400035142
+          },
+          {
+            "predicted": 2.162900319999835,
+            "actual": 2.2587835419999465,
+            "error": -0.09588322200011135
+          }
+        ]
+      }
+    },
+    {
+      "codec": "libx265",
+      "validationMedianBaseline": 9.787297336999927,
+      "validationMedianCombined": 3.28525096400017,
+      "pairedReductions": [
+        0.6663272969544642,
+        0.6564078166617955,
+        0.6669818600201942
+      ],
+      "wholeJobIllustrativeReduction": 0.1756599134885517,
+      "priorTailPrediction": {
+        "baseline": [
+          {
+            "predicted": 9.552690031000111,
+            "actual": 9.787297336999927,
+            "error": -0.23460730599981616
+          },
+          {
+            "predicted": 9.787297336999927,
+            "actual": 9.865081115999828,
+            "error": -0.07778377899990119
+          }
+        ],
+        "combined": [
+          {
+            "predicted": 3.187471903999949,
+            "actual": 3.362838861,
+            "error": -0.17536695700005112
+          },
+          {
+            "predicted": 3.362838861,
+            "actual": 3.28525096400017,
+            "error": 0.07758789699983026
+          }
+        ]
+      }
+    }
+  ]
+}
