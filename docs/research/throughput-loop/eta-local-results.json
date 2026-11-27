@@ -1,0 +1,486 @@
+{
+  "schema": 1,
+  "environment": "FFmpeg 7.1.5-0+deb13u1 Linux, cgroup quota 4 CPUs; local Python proxy, not C# production timings",
+  "historyScope": "4 actual distinct synthetic 640x360 30fps 10s silent AVC sources, 1.6Mbps CBR generation with filler; H264 veryfast and HEVC fast ABR800kbps, 4 requested threads, HEVC pools=4, alternating codec order per fixture, one execution per case. Timed actual encode, output decoded frame probe and strict decode; source frame reference and SSIM and SHA outside timing. All frames, relative clock and source identity pass. Motion and inverted derived from same generator, not independent natural-media cohort. Grain is held out. UI whole-second rounding is not calibration.",
+  "rows": [
+    {
+      "id": "motion",
+      "source_bytes": 2071584,
+      "source_rate": 1655602,
+      "source_sha": "06246fd595059d1408b9fe135cddf1ac431d078607fb1bbb9eb4a57ba0c58885",
+      "codec": "libx264",
+      "preset": "veryfast",
+      "output_bytes": 994462,
+      "output_sha": "baaae4c74b95aeebbb9872f30ec854ca5c7bfc20edee5c53f823c77dbc488de9",
+      "encoding": 0.5172211139999945,
+      "validation": 0.4217742040000019,
+      "total": 0.9389976729999887,
+      "mean_ssim": 0.9919498166666667,
+      "worst_second": 0.9907794,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    },
+    {
+      "id": "motion",
+      "source_bytes": 2071584,
+      "source_rate": 1655602,
+      "source_sha": "06246fd595059d1408b9fe135cddf1ac431d078607fb1bbb9eb4a57ba0c58885",
+      "codec": "libx265",
+      "preset": "fast",
+      "output_bytes": 993275,
+      "output_sha": "6c8ed2ed1e3bd0d38e3755c8df5e9fc359c888dfd3f44ecd952282d32182c431",
+      "encoding": 2.4215858979999894,
+      "validation": 0.5785187470000067,
+      "total": 3.0001064079999935,
+      "mean_ssim": 0.9925213366666666,
+      "worst_second": 0.9911509,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    },
+    {
+      "id": "inverted",
+      "source_bytes": 2071280,
+      "source_rate": 1655359,
+      "source_sha": "7ed27efb4b09afdc89b00abdeb8f862356c3ace0c9fd146ed7f71a0a5fc7a622",
+      "codec": "libx265",
+      "preset": "fast",
+      "output_bytes": 989664,
+      "output_sha": "88b412f7f86e8d5464997d31db65ea84d33b5e8b510d34c2c8ec67442e7f7432",
+      "encoding": 2.590308522000015,
+      "validation": 0.6075886840000067,
+      "total": 3.197899661000008,
+      "mean_ssim": 0.99253314,
+      "worst_second": 0.9911372666666666,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    },
+    {
+      "id": "inverted",
+      "source_bytes": 2071280,
+      "source_rate": 1655359,
+      "source_sha": "7ed27efb4b09afdc89b00abdeb8f862356c3ace0c9fd146ed7f71a0a5fc7a622",
+      "codec": "libx264",
+      "preset": "veryfast",
+      "output_bytes": 995689,
+      "output_sha": "5c5b1e91966b1a66eed5f3ac8d7843ca6996d5a3541f323d5d0c06ee14437742",
+      "encoding": 0.4524009959999944,
+      "validation": 0.48406190500000434,
+      "total": 0.9364646440000115,
+      "mean_ssim": 0.9920662533333332,
+      "worst_second": 0.9908749333333334,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    },
+    {
+      "id": "flat_middle",
+      "source_bytes": 2114098,
+      "source_rate": 1689600,
+      "source_sha": "37b2ca0dc8db0fa613d5bd92138c029cd414194705acb22b6e6910895bb9f7b0",
+      "codec": "libx264",
+      "preset": "veryfast",
+      "output_bytes": 948098,
+      "output_sha": "fa1d3a1891fbe12cd8d8b6a80ae6738c6a243dea5d739a80b2c0aa9edea48b06",
+      "encoding": 0.4016358369999864,
+      "validation": 0.39450279700000124,
+      "total": 0.7961416400000019,
+      "mean_ssim": 0.9972946666666667,
+      "worst_second": 0.9911066000000001,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    },
+    {
+      "id": "flat_middle",
+      "source_bytes": 2114098,
+      "source_rate": 1689600,
+      "source_sha": "37b2ca0dc8db0fa613d5bd92138c029cd414194705acb22b6e6910895bb9f7b0",
+      "codec": "libx265",
+      "preset": "fast",
+      "output_bytes": 542236,
+      "output_sha": "af6b7ead950b1c3a7e9b88fbf0f6adec2a973e2fb0bcdd58d7e67da674e5a263",
+      "encoding": 1.7540822699999978,
+      "validation": 0.5145248829999787,
+      "total": 2.268609166999994,
+      "mean_ssim": 0.9955059166666667,
+      "worst_second": 0.9910655666666667,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    },
+    {
+      "id": "grain",
+      "source_bytes": 2027185,
+      "source_rate": 1620083,
+      "source_sha": "1203bdb0a5bea28984aa7fbee4bdc2126b77414cb31807ccbaf530353e22292d",
+      "codec": "libx265",
+      "preset": "fast",
+      "output_bytes": 1019019,
+      "output_sha": "c5be8355f29f11836b11f7a670b3310d39734643214b6c80b0f62a68566e2ebc",
+      "encoding": 2.521236557000009,
+      "validation": 0.713282539000005,
+      "total": 3.2345216100000016,
+      "mean_ssim": 0.9615675833333334,
+      "worst_second": 0.9488898333333334,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    },
+    {
+      "id": "grain",
+      "source_bytes": 2027185,
+      "source_rate": 1620083,
+      "source_sha": "1203bdb0a5bea28984aa7fbee4bdc2126b77414cb31807ccbaf530353e22292d",
+      "codec": "libx264",
+      "preset": "veryfast",
+      "output_bytes": 1009624,
+      "output_sha": "8f83d2c2f4ced05549f8f501105918427142e9505ae07dd97436c7fd0b2219b6",
+      "encoding": 0.48003552599999466,
+      "validation": 0.4634501310000019,
+      "total": 0.9434880720000081,
+      "mean_ssim": 0.9647118733333333,
+      "worst_second": 0.9585302333333333,
+      "frames": 300,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true
+    }
+  ],
+  "holdout": [
+    {
+      "codec": "libx264",
+      "train": [
+        "motion",
+        "inverted",
+        "flat_middle"
+      ],
+      "test": "grain",
+      "low": 0.7961416400000019,
+      "high": 0.9389976729999887,
+      "actual": 0.9434880720000081,
+      "aboveHigh": 0.0047821194121526744,
+      "displayLow": 1,
+      "displayHigh": 1,
+      "actualDisplay": 1,
+      "rateEligible": true
+    },
+    {
+      "codec": "libx265",
+      "train": [
+        "motion",
+        "inverted",
+        "flat_middle"
+      ],
+      "test": "grain",
+      "low": 2.268609166999994,
+      "high": 3.197899661000008,
+      "actual": 3.2345216100000016,
+      "aboveHigh": 0.011451875569023162,
+      "displayLow": 2,
+      "displayHigh": 4,
+      "actualDisplay": 4,
+      "rateEligible": true
+    }
+  ],
+  "traceScope": "Two actual 720p60 12s silent synthetic AVC CRF18 sources; HEVC medium ABR4Mbps four requested threads, pools=4. Real FFmpeg progress pipe 0.5s updates, Python replay equivalent to EncodingEta with initial Encoding=0 at process launch, not WPF dispatch or full C# timings. Actual process exit marks encoding end, not publication. Independent source/output frame PTS, strict decode and source SHA verified after timed encode. No SSIM measured for these two outputs.",
+  "traces": [
+    {
+      "id": "motion",
+      "source_sha": "843e73bf30e8960f24d10c83fbdd7ff0d5c644649cb157e1fb9b2fa5b238481f",
+      "source_bytes": 25034126,
+      "output_sha": "c6338669c69e037d98887186cd4e61092a95b82f877a150c70af55ddf127ce26",
+      "output_bytes": 6022926,
+      "encoding_seconds": 11.006203924999994,
+      "frames": 720,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true,
+      "points": 21,
+      "estimates": 16,
+      "mae": 0.8206444982804733,
+      "max_abs_error": 1.7390279702938223,
+      "trace": [
+        {
+          "t": 1.0920078370000112,
+          "fraction": 0.04027775,
+          "eta": null,
+          "actual_remaining": 9.914196087999983,
+          "error": null
+        },
+        {
+          "t": 1.592161481000005,
+          "fraction": 0.08611108333333334,
+          "eta": null,
+          "actual_remaining": 9.414042443999989,
+          "error": null
+        },
+        {
+          "t": 2.093602639000011,
+          "fraction": 0.13888891666666667,
+          "eta": null,
+          "actual_remaining": 8.912601285999983,
+          "error": null
+        },
+        {
+          "t": 2.593193635999995,
+          "fraction": 0.18888891666666666,
+          "eta": null,
+          "actual_remaining": 8.413010288999999,
+          "error": null
+        },
+        {
+          "t": 3.0933104849999893,
+          "fraction": 0.2375,
+          "eta": null,
+          "actual_remaining": 7.912893440000005,
+          "error": null
+        },
+        {
+          "t": 3.5934469720000095,
+          "fraction": 0.28194441666666664,
+          "eta": 9.151784923293807,
+          "actual_remaining": 7.412756952999985,
+          "error": 1.7390279702938223
+        },
+        {
+          "t": 4.093580072999998,
+          "fraction": 0.32638891666666664,
+          "eta": 8.58532946432342,
+          "actual_remaining": 6.912623851999996,
+          "error": 1.6727056123234245
+        },
+        {
+          "t": 4.593777816999989,
+          "fraction": 0.3625,
+          "eta": 8.078712712655152,
+          "actual_remaining": 6.412426108000005,
+          "error": 1.6662866046551468
+        },
+        {
+          "t": 5.095217412000011,
+          "fraction": 0.4166666666666667,
+          "eta": 7.392286142298832,
+          "actual_remaining": 5.910986512999983,
+          "error": 1.4812996292988485
+        },
+        {
+          "t": 5.595652070999989,
+          "fraction": 0.46805558333333336,
+          "eta": 6.359449567035499,
+          "actual_remaining": 5.410551854000005,
+          "error": 0.9488977130354943
+        },
+        {
+          "t": 6.096422367000002,
+          "fraction": 0.5194444166666666,
+          "eta": 5.745090841475434,
+          "actual_remaining": 4.909781557999992,
+          "error": 0.8353092834754419
+        },
+        {
+          "t": 6.595955699000001,
+          "fraction": 0.5694444166666667,
+          "eta": 4.987186581348404,
+          "actual_remaining": 4.410248225999993,
+          "error": 0.5769383553484113
+        },
+        {
+          "t": 7.09791732299999,
+          "fraction": 0.61527775,
+          "eta": 4.456292560165769,
+          "actual_remaining": 3.908286602000004,
+          "error": 0.5480059581657653
+        },
+        {
+          "t": 7.597873708000009,
+          "fraction": 0.6625,
+          "eta": 3.8706149078490615,
+          "actual_remaining": 3.4083302169999854,
+          "error": 0.4622846908490761
+        },
+        {
+          "t": 8.097954215000016,
+          "fraction": 0.70277775,
+          "eta": 3.408689990502047,
+          "actual_remaining": 2.9082497099999784,
+          "error": 0.5004402805020685
+        },
+        {
+          "t": 8.598090465000013,
+          "fraction": 0.7541666666666667,
+          "eta": 2.802692472016579,
+          "actual_remaining": 2.4081134599999814,
+          "error": 0.39457901201659773
+        },
+        {
+          "t": 9.098325571999993,
+          "fraction": 0.8069444166666667,
+          "eta": 2.2009848003624506,
+          "actual_remaining": 1.907878353000001,
+          "error": 0.2931064473624496
+        },
+        {
+          "t": 9.598900087000004,
+          "fraction": 0.8541666666666666,
+          "eta": 1.6388366002195134,
+          "actual_remaining": 1.40730383799999,
+          "error": 0.23153276221952335
+        },
+        {
+          "t": 10.099056917000013,
+          "fraction": 0.9013889166666667,
+          "eta": 1.1081653889414613,
+          "actual_remaining": 0.9071470079999813,
+          "error": 0.20101838094148006
+        },
+        {
+          "t": 10.600119959000011,
+          "fraction": 0.9541666666666667,
+          "eta": 1,
+          "actual_remaining": 0.40608396599998287,
+          "error": 0.5939160340000171
+        },
+        {
+          "t": 10.991167163,
+          "fraction": 0.99722225,
+          "eta": 1,
+          "actual_remaining": 0.015036761999994042,
+          "error": 0.984963238000006
+        }
+      ]
+    },
+    {
+      "id": "late",
+      "source_sha": "7a984fb3748cd4ef6594a22e0747c57dd96081519f0879a029136014e0928736",
+      "source_bytes": 8340133,
+      "output_sha": "d2f7c84191fdc5e058b5440d2f7bf058f8a94515bdeba200a22fdab66b51b000",
+      "output_bytes": 2081760,
+      "encoding_seconds": 7.884670284999999,
+      "frames": 720,
+      "clock_error": 0,
+      "strict_decode": true,
+      "source_unchanged": true,
+      "points": 15,
+      "estimates": 11,
+      "mae": 0.7389595850777178,
+      "max_abs_error": 1.2819809006714182,
+      "trace": [
+        {
+          "t": 1.0782794330000058,
+          "fraction": 0.07222225,
+          "eta": null,
+          "actual_remaining": 6.806390851999993,
+          "error": null
+        },
+        {
+          "t": 1.5786474090000127,
+          "fraction": 0.17083333333333334,
+          "eta": null,
+          "actual_remaining": 6.306022875999986,
+          "error": null
+        },
+        {
+          "t": 2.0785751580000067,
+          "fraction": 0.25972225,
+          "eta": null,
+          "actual_remaining": 5.806095126999992,
+          "error": null
+        },
+        {
+          "t": 2.5791879770000037,
+          "fraction": 0.33611108333333334,
+          "eta": null,
+          "actual_remaining": 5.305482307999995,
+          "error": null
+        },
+        {
+          "t": 3.0793872860000135,
+          "fraction": 0.4305555833333333,
+          "eta": 4.072737561991963,
+          "actual_remaining": 4.805282998999985,
+          "error": -0.7325454370080218
+        },
+        {
+          "t": 3.5795853520000094,
+          "fraction": 0.525,
+          "eta": 3.397259302796189,
+          "actual_remaining": 4.305084932999989,
+          "error": -0.9078256302038001
+        },
+        {
+          "t": 4.080829039000008,
+          "fraction": 0.6180555833333333,
+          "eta": 2.521860345328572,
+          "actual_remaining": 3.8038412459999904,
+          "error": -1.2819809006714182
+        },
+        {
+          "t": 4.580940843000008,
+          "fraction": 0.675,
+          "eta": 2.145874049906788,
+          "actual_remaining": 3.303729441999991,
+          "error": -1.1578553920932029
+        },
+        {
+          "t": 5.081143827999995,
+          "fraction": 0.7125,
+          "eta": 2.0502861060350854,
+          "actual_remaining": 2.803526457000004,
+          "error": -0.7532403509649184
+        },
+        {
+          "t": 5.584770452000015,
+          "fraction": 0.76527775,
+          "eta": 1.673905279834066,
+          "actual_remaining": 2.2998998329999836,
+          "error": -0.6259945531659177
+        },
+        {
+          "t": 6.084879762000014,
+          "fraction": 0.82222225,
+          "eta": 1.3156494282523947,
+          "actual_remaining": 1.7997905229999844,
+          "error": -0.4841410947475897
+        },
+        {
+          "t": 6.5849849370000015,
+          "fraction": 0.8708333333333333,
+          "eta": 1,
+          "actual_remaining": 1.299685347999997,
+          "error": -0.299685347999997
+        },
+        {
+          "t": 7.085057683000002,
+          "fraction": 0.9194444166666667,
+          "eta": 1,
+          "actual_remaining": 0.7996126019999963,
+          "error": 0.2003873980000037
+        },
+        {
+          "t": 7.585413361000008,
+          "fraction": 0.9680555833333333,
+          "eta": 1,
+          "actual_remaining": 0.29925692399999093,
+          "error": 0.7007430760000091
+        },
+        {
+          "t": 7.868826540000015,
+          "fraction": 0.99722225,
+          "eta": 1,
+          "actual_remaining": 0.015843744999983755,
+          "error": 0.9841562550000162
+        }
+      ]
+    }
+  ]
+}
