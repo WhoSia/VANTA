@@ -102,6 +102,7 @@ internal static class UiLanguage
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
+    internal static string Rate(bool korean,double rate)=>Text(korean,"Recent speed: ","최근 처리 속도: ")+(rate<.01?"<0.01":rate.ToString("0.00",CultureInfo.InvariantCulture))+"×";
     internal static string Duration(TimeSpan value)
     {
         long seconds=(long)Math.Ceiling(Math.Max(0,value.TotalSeconds));

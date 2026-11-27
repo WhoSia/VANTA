@@ -9,6 +9,7 @@ public sealed class EncodingEta
     private bool active;
     private int advances;
     private readonly double minimumDelta;
+    private readonly double? mediaDuration;
     public EncodingEta(double? mediaSeconds=null)
     {
         if(mediaSeconds is double duration&&(!double.IsFinite(duration)||duration<=0))throw new ArgumentOutOfRangeException(nameof(mediaSeconds));
@@ -16,6 +17,7 @@ public sealed class EncodingEta
         // Require at least half a second of reported media time, capped at the
         // original 2% threshold for short inputs. This is not a confidence bound.
         minimumDelta=mediaSeconds is double length?Math.Min(.02,.5/length):.02;
+        mediaDuration=mediaSeconds;
     }
     public void Observe(EncodeProgress progress,TimeSpan elapsed)
     {
@@ -41,14 +43,29 @@ public sealed class EncodingEta
             while(samples.Count>12||samples.Count>2&&t-samples.Peek().Seconds>20)samples.Dequeue();
         }
     }
-    public TimeSpan? Remaining(TimeSpan elapsed)
+    private (double Span,double Delta)? RecentWindow(TimeSpan elapsed)
     {
         double t=elapsed.TotalSeconds;
         if(!active||advances<2||samples.Count<2||t<lastElapsed||t-lastProgress>10||lastFraction>=.999)return null;
         var first=samples.Peek();var last=samples.Last();
         double span=last.Seconds-first.Seconds,delta=last.Fraction-first.Fraction;
         if(span<3||delta<minimumDelta)return null;
-        double seconds=(1-lastFraction)*span/delta;
+        return (span,delta);
+    }
+    // Media seconds processed per wall second over the same recent observation window.
+    // Not CPU utilization, and not the rate of validation or publication.
+    public double? RealtimeRate(TimeSpan elapsed)
+    {
+        var window=RecentWindow(elapsed);
+        if(mediaDuration is not double duration||window is null)return null;
+        double rate=duration*window.Value.Delta/window.Value.Span;
+        return double.IsFinite(rate)&&rate>0?rate:null;
+    }
+    public TimeSpan? Remaining(TimeSpan elapsed)
+    {
+        var window=RecentWindow(elapsed);
+        if(window is null)return null;
+        double seconds=(1-lastFraction)*window.Value.Span/window.Value.Delta;
         if(!double.IsFinite(seconds)||seconds<0||seconds>TimeSpan.FromDays(30).TotalSeconds)return null;
         return TimeSpan.FromSeconds(Math.Max(1,seconds));
     }

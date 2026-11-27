@@ -32,9 +32,10 @@ public partial class BatchWindow:Window
         public string Budget=>Plan is Plan p&&Media is MediaInfo m?$"{UiLanguage.Tier(Korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {UiLanguage.Preset(Korean,p.Preset)} · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB":"";
         public EncodingEta? Eta {get;set;}
         public TimeSpan? Remaining {get;set;}
+        public double? Rate {get;set;}
         public VerificationPhase? Verification {get;set;}
         public TimeSpan? AdmittedAt {get;set;}
-        public string DisplayDetail=>State.StartsWith("Encoding",StringComparison.Ordinal)?(Remaining is TimeSpan remain?UiLanguage.Text(Korean,"Encoding ETA ≈ ","압축 예상 잔여 ≈ ")+UiLanguage.Duration(remain):UiLanguage.Text(Korean,"Estimating encoding time","압축 예상 시간 계산 중")):State=="Validating"?UiLanguage.Verification(Korean,Verification)+UiLanguage.Text(Korean," · time unknown"," · 시간 미정"):State=="Ready"?UiLanguage.Text(Korean,ManualPlan is null?"Shared profile; size not guaranteed.":"Individual override; size not guaranteed.",ManualPlan is null?"공통 플랜 · 용량 보장 없음":"개별 설정 · 용량 보장 없음"):State=="Complete"&&Report is EncodeReport r?UiLanguage.Text(Korean,Detail,$"{r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (인코딩 {r.Encoding.TotalSeconds:F1}초, 검증 {r.Validation.TotalSeconds:F1}초)"):Detail;
+        public string DisplayDetail=>State.StartsWith("Encoding",StringComparison.Ordinal)?(Remaining is TimeSpan remain?UiLanguage.Text(Korean,"Encoding ETA ≈ ","압축 예상 잔여 ≈ ")+UiLanguage.Duration(remain):UiLanguage.Text(Korean,"Estimating encoding time","압축 예상 시간 계산 중"))+(Rate is double speed?" · "+UiLanguage.Rate(Korean,speed):""):State=="Validating"?UiLanguage.Verification(Korean,Verification)+UiLanguage.Text(Korean," · time unknown"," · 시간 미정"):State=="Ready"?UiLanguage.Text(Korean,ManualPlan is null?"Shared profile; size not guaranteed.":"Individual override; size not guaranteed.",ManualPlan is null?"공통 플랜 · 용량 보장 없음":"개별 설정 · 용량 보장 없음"):State=="Complete"&&Report is EncodeReport r?UiLanguage.Text(Korean,Detail,$"{r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (인코딩 {r.Encoding.TotalSeconds:F1}초, 검증 {r.Validation.TotalSeconds:F1}초)"):Detail;
         public string State {get;set;}="Analyzing";
         public string DisplayState=>UiLanguage.Stage(Korean,State);
         public string Detail {get;set;}="";
@@ -327,7 +328,8 @@ public partial class BatchWindow:Window
         {
             if(row.Eta is not EncodingEta estimator)continue;
             var remaining=estimator.Remaining(batchClock.Elapsed);
-            if(row.Remaining!=remaining){row.Remaining=remaining;row.Refresh();}
+            var rate=current?.IsCancellationRequested==true?null:estimator.RealtimeRate(batchClock.Elapsed);
+            if(row.Remaining!=remaining||row.Rate!=rate){row.Remaining=remaining;row.Rate=rate;row.Refresh();}
         }
         int settled=run.Count(r=>r.State is "Complete" or "Failed" or "Canceled");
         int complete=run.Count(r=>r.State=="Complete");
@@ -412,7 +414,7 @@ public partial class BatchWindow:Window
         try{effectiveThreads=ThreadBudget.PerJob(totalThreads,parallel);}catch(ArgumentException ex){Summary.Text=ex.Message;return;}
         var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!,r.Stamp)).ToArray();
         using var cts=new CancellationTokenSource();current=cts;
-        foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Eta=new EncodingEta(r.Media?.Seconds);r.Remaining=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
+        foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Eta=new EncodingEta(r.Media?.Seconds);r.Remaining=null;r.Rate=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
         lastBatchElapsed=null;
         activeRun=ready;activeParallel=parallel;activeThreads=effectiveThreads;
         activeToolKey=ToolScope(parallel);
@@ -430,9 +432,10 @@ public partial class BatchWindow:Window
                 var state=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercentText is string percent?$"Encoding {percent}":x.Stage;
                 r.Eta?.Observe(new(x.Stage,x.Fraction),batchClock.Elapsed);
                 var remaining=r.Eta?.Remaining(batchClock.Elapsed);
+                var rate=cts.IsCancellationRequested?null:r.Eta?.RealtimeRate(batchClock.Elapsed);
                 if(x.Stage is "Complete" or "Failed" or "Canceled")r.Eta=null;
-                if(r.State==state&&r.Detail==(x.Detail??"")&&r.Report==x.Report&&r.Remaining==remaining&&r.Verification==x.Verification)return;
-                r.Remaining=remaining;r.Verification=x.Verification;
+                if(r.State==state&&r.Detail==(x.Detail??"")&&r.Report==x.Report&&r.Remaining==remaining&&r.Rate==rate&&r.Verification==x.Verification)return;
+                r.Remaining=remaining;r.Rate=rate;r.Verification=x.Verification;
                 r.State=state;r.Detail=x.Detail??"";r.Report=x.Report;r.Refresh();
             }
             var progress=new UiProgress(x=>Dispatcher.Invoke(()=>{ApplyUpdate(x);UpdateSummary();RefreshBatchProgress();}));
@@ -445,7 +448,7 @@ public partial class BatchWindow:Window
         {
             foreach(var r in ready.Where(r=>r.State is "Queued" or "Preparing" or "Validating"||r.State.StartsWith("Encoding")))
             {r.State=cts.IsCancellationRequested?"Canceled":"Failed";r.Refresh();}
-            foreach(var r in ready){r.Eta=null;r.Remaining=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
+            foreach(var r in ready){r.Eta=null;r.Remaining=null;r.Rate=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
             batchTimer.Stop();batchClock.Stop();lastBatchElapsed=batchClock.Elapsed;activeRun=null;
             BatchProgressCard.Visibility=Visibility.Collapsed;BatchProgressText.Text=BatchElapsedText.Text=BatchEtaText.Text="";
             current=null;SetBusy(false);

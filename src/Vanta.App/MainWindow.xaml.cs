@@ -43,6 +43,7 @@ public partial class MainWindow : Window
         ProgressPercent.Text=p.DisplayPercentText??"";
         BusyBar.IsIndeterminate=p.DisplayPercent is null;BusyBar.Value=p.DisplayPercent==100?100:p.Fraction is double fraction&&double.IsFinite(fraction)?Math.Clamp(fraction*100,0,99):0;
         ElapsedText.Text=T("Elapsed: ","경과: ")+DurationText(jobClock.Elapsed);
+        ThroughputText.Text=current?.IsCancellationRequested!=true&&p.Stage=="Encoding"&&eta?.RealtimeRate(jobClock.Elapsed) is double rate?UiLanguage.Rate(korean,rate):"";
         EtaText.Text=current?.IsCancellationRequested==true?T("Canceling…","취소 중…"):
             p.Stage=="Validating"?(validationStarted is TimeSpan started&&CompletionReference.ValidationRemaining(previousTail,jobClock.Elapsed-started) is TimeSpan tail
                 ?T("Remaining ≈ ","예상 잔여 ≈ ")+DurationText(tail)+T(" · previous run reference"," · 이전 실행 참고")
@@ -59,7 +60,7 @@ public partial class MainWindow : Window
     private void StopJobProgress()
     {
         etaTimer.Stop();jobClock.Stop();eta=null;jobProgress=null;previousTail=null;validationStarted=null;
-        ProgressCard.Visibility=Visibility.Collapsed;EtaText.Text="";ElapsedText.Text="";ProgressPercent.Text="";ProgressStage.Text="";
+        ProgressCard.Visibility=Visibility.Collapsed;EtaText.Text="";ElapsedText.Text="";ThroughputText.Text="";ProgressPercent.Text="";ProgressStage.Text="";
     }
     private void RefreshPreflightEta()
     {
