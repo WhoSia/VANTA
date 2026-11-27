@@ -16,6 +16,7 @@ internal static class DesktopSmoke
         if(args.Contains("--media")){RunMediaWorkflow(app);return;}
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
+        Check(!Get<Button>(main,"HardwareTrialButton").IsEnabled&&Get<ComboBox>(main,"HardwareBox").SelectedIndex==-1,"No automatic hardware path");
         Check(Get<TextBlock>(main,"ActivePlanSummary").Visibility==Visibility.Collapsed,"No applied settings before source");
         Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(main,"EtaText").Text=="","No stale ETA on startup");
         Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled&&!Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Collapsed,"No result before successful encode");
@@ -140,7 +141,14 @@ internal static class DesktopSmoke
             Check(fastHevc.IsEnabled,"HEVC speed path available");
             fastHevc.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(codec.SelectedItem as string=="libx265"&&Get<ComboBox>(main,"PresetBox").SelectedValue as string=="veryfast"&&height.Text==oldHeight&&rate.Text==oldRate&&encode.IsEnabled,"HEVC shortcut retains rate and dimensions");
-            target.Text="invalid";
+            var hardware=Get<ComboBox>(main,"HardwareBox");var hardwareTrial=Get<Button>(main,"HardwareTrialButton");
+            hardware.SelectedItem="h264_nvenc";Check(!hardwareTrial.IsEnabled,"Mismatched hardware family disabled");
+            hardware.SelectedItem="hevc_nvenc";Check(hardwareTrial.IsEnabled,"Matching explicit device choice available");
+            split.IsChecked=true;Check(!hardwareTrial.IsEnabled,"Split excludes hardware trial");split.IsChecked=false;
+            threads.SelectedIndex=1;Check(!hardwareTrial.IsEnabled,"Manual thread budget excludes device trial");threads.SelectedIndex=0;
+            target.Text="invalid";Check(!hardwareTrial.IsEnabled,"Pending target excludes hardware trial");
+            await main.EncodeToAsync(Path.Combine(root,"blocked-hardware.mp4"),"hevc_nvenc");
+            Check(!File.Exists(Path.Combine(root,"blocked-hardware.mp4")),"Invalid target cannot launch hardware trial");
             Check(!fastHevc.IsEnabled,"Pending target disables HEVC speed shortcut");
             Check(!speed.IsEnabled,"Pending target disables speed shortcut");
             speed.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

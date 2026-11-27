@@ -6,6 +6,32 @@ public static class Encoder
 {
     public static Task<EncodeReport> EncodeAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null)
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
+    // Explicit single-job device trial. No automatic backend selection or CPU fallback.
+    // A successful tiny diagnostic is necessary, not sufficient; full validation still applies.
+    public static async Task<EncodeReport> EncodeHardwareTrialAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,SourceStamp? expectedSource=null)
+    {
+        ct.ThrowIfCancellationRequested();
+        // Software presets do not map to hardware presets. Use backend defaults.
+        var applied=plan with {Preset="medium"};
+        HardwareEncoderPolicy.Validate(backend,applied,false,null,null);
+        input=Path.GetFullPath(input);output=Path.GetFullPath(output);
+        if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)||Directory.Exists(output))
+            throw new IOException("Output must be a new file");
+        if(!string.Equals(Path.GetExtension(output),".mp4",StringComparison.OrdinalIgnoreCase)||!Directory.Exists(Path.GetDirectoryName(output)))
+            throw new IOException("Choose a new MP4 in an existing folder.");
+        var stamp=expectedSource??SourceStamp.Capture(input);
+        stamp.RequireUnchanged(input);
+        var clock=Stopwatch.StartNew();
+        progress?.Report(new("Qualifying hardware",null));
+        var diagnostic=(await EncoderDiagnostics.CheckAsync(tools,[backend],ct)).Single();
+        if(diagnostic.State!="Sample passed")
+            throw new NotSupportedException(backend+" hardware qualification failed: "+diagnostic.State+" — "+diagnostic.Detail);
+        stamp.RequireUnchanged(input);
+        var qualification=clock.Elapsed;
+        var report=await EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,input,output,applied,ct,progress,
+            expectedSource:stamp,researchHardwareEncoder:backend);
+        return report with {HardwareQualification=qualification,Preparation=report.Preparation+qualification,Total=report.Total+qualification};
+    }
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
     internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false,MotionSearchMode motionSearch=MotionSearchMode.Default,bool interleavedFallback=false)
     {
@@ -159,7 +185,7 @@ public static class Encoder
             stamp.RequireUnchanged(input);
             File.Move(temp,output,false);
             var publication=Lap();
-            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes){ConcurrentTimelineDecode=overlap,SingleDecodeValidation=singleDecodeValidation,RequestedEncoderThreads=encoderThreads,InterleavedAudioPeakPending=audioPending,InterleavedAudioFallbackUsed=interleavedFallback&&audioPending is null,ValidationAdmissionWait=admissionWait,AppliedPlan=plan};
+            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes){ConcurrentTimelineDecode=overlap,SingleDecodeValidation=singleDecodeValidation,RequestedEncoderThreads=encoderThreads,InterleavedAudioPeakPending=audioPending,InterleavedAudioFallbackUsed=interleavedFallback&&audioPending is null,ValidationAdmissionWait=admissionWait,AppliedPlan=plan,HardwareEncoder=researchHardwareEncoder};
             // Publication is the commit point. A completion observer cannot turn
             // an already-published verified output into a failed encode.
             try { progress?.Report(new("Complete",1)); }

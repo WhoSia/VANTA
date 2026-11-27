@@ -33,6 +33,32 @@ internal static class HardwareResearchScreen
         catch(ArgumentException){invalidRejected=true;}
         Check(invalidRejected&&!File.Exists(bad),"Invalid backend must not publish");
         string before=Hash(source);
+        string trialBad=Path.Combine(root,"trial-invalid.mp4");
+        bool invalidTrial=false;
+        try{await Encoder.EncodeHardwareTrialAsync(tools,source,trialBad,plan,"unknown",ct);}
+        catch(ArgumentException){invalidTrial=true;}
+        Check(invalidTrial&&!File.Exists(trialBad),"Invalid explicit trial must not publish");
+        invalidTrial=false;
+        try{await Encoder.EncodeHardwareTrialAsync(tools,source,trialBad,plan,"hevc_nvenc",ct);}
+        catch(ArgumentException){invalidTrial=true;}
+        Check(invalidTrial&&!File.Exists(trialBad),"Mismatched hardware family rejected before qualification");
+        using(var canceled=new CancellationTokenSource())
+        {
+            canceled.Cancel();bool refused=false;
+            try{await Encoder.EncodeHardwareTrialAsync(tools,source,trialBad,plan,"h264_nvenc",canceled.Token);}
+            catch(OperationCanceledException){refused=true;}
+            Check(refused&&!File.Exists(trialBad),"Canceled explicit trial cannot publish");
+        }
+        var unavailable=diagnostics.FirstOrDefault(d=>d.State!="Sample passed");
+        if(unavailable is not null)
+        {
+            bool refused=false;
+            try{await Encoder.EncodeHardwareTrialAsync(tools,source,trialBad,plan with{Codec=HardwareEncoderPolicy.SoftwareFamily(unavailable.Encoder)},unavailable.Encoder,ct);}
+            catch(NotSupportedException){refused=true;}
+            // If device availability changes, do not label a verified encode as a failure.
+            if(File.Exists(trialBad)){File.Delete(trialBad);Console.WriteLine("Hardware availability changed on repeat qualification.");}
+            else Check(refused,"Unavailable device must fail qualification without publication");
+        }
         foreach(var d in diagnostics)
         {
             ct.ThrowIfCancellationRequested();
@@ -44,7 +70,8 @@ internal static class HardwareResearchScreen
             deadline.CancelAfter(TimeSpan.FromSeconds(40));
             try
             {
-                var result=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,output,p,deadline.Token,researchHardwareEncoder:d.Encoder);
+                var result=await Encoder.EncodeHardwareTrialAsync(tools,source,output,p,d.Encoder,deadline.Token);
+                Check(result.HardwareEncoder==d.Encoder&&result.HardwareQualification>TimeSpan.Zero,"Explicit backend and qualification timing recorded");
                 Check(File.Exists(output),"Successful hardware encode missing output");
                 await PacketTimeline.ValidateAsync(tools.Ffprobe,source,output,m.AudioTracks,deadline.Token,compareAudioPayloads:true);
                 Console.WriteLine(FormattableString.Invariant($"HARDWARE_FULL {d.Encoder} verified seconds={result.Total.TotalSeconds:F6} bytes={result.OutputBytes}"));

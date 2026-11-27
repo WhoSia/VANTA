@@ -10,6 +10,9 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
     // Requested encoder threads, not actual process threads or CPU affinity.
     public int? RequestedEncoderThreads {get;init;}
     public Plan? AppliedPlan {get;init;}
+    public string? HardwareEncoder {get;init;}
+    // Explicit device qualification is included in Preparation and Total.
+    public TimeSpan HardwareQualification {get;init;}
     // When set, per-track payload and timestamp checks are folded into TimelineCheck.
     public int? InterleavedAudioPeakPending {get;init;}
     // True only after a resource-limit refusal and complete per-track retry.

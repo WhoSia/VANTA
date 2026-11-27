@@ -28,6 +28,12 @@
 <TextBlock Text="{DynamicResource Ui083}" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,4,0,10"/>
 <WrapPanel><Button x:Name="SpeedFirstButton" Content="{DynamicResource Ui075}" IsEnabled="False" Click="OnSpeedFirst" FontWeight="SemiBold" Background="#F4C578" Foreground="#192D47" BorderBrush="#F4C578" Margin="0,0,8,6" ToolTip="{DynamicResource Ui076}"/><Button x:Name="FastHevcButton" Content="{DynamicResource Ui084}" IsEnabled="False" Click="OnFastHevc" Background="#F0F4F8" Foreground="#192D47" Margin="0,0,0,6" ToolTip="{DynamicResource Ui085}"/></WrapPanel>
 <TextBlock Text="{DynamicResource Ui086}" Foreground="#B8CCDF" FontSize="12" TextWrapping="Wrap"/>
+<Border BorderBrush="#48647F" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,12,0,0"><StackPanel>
+<TextBlock Text="{DynamicResource Ui090}" FontWeight="SemiBold" Foreground="#F4C578"/>
+<TextBlock Text="{DynamicResource Ui091}" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,4,0,6"/>
+<WrapPanel><ComboBox x:Name="HardwareBox" Width="180" AutomationProperties.Name="{DynamicResource Ui090}" SelectionChanged="OnHardwareChoice" Margin="0,0,8,6"/><Button x:Name="HardwareTrialButton" Content="{DynamicResource Ui092}" IsEnabled="False" Click="OnHardwareTrial" Background="#F4C578" Foreground="#192D47" BorderBrush="#F4C578" FontWeight="SemiBold" Margin="0,0,0,6"/></WrapPanel>
+<TextBlock Text="{DynamicResource Ui093}" Foreground="#B8CCDF" FontSize="12" TextWrapping="Wrap"/>
+</StackPanel></Border>
 </StackPanel></Border>
 <TextBlock Text="{DynamicResource Ui006}" FontSize="17" FontWeight="SemiBold" Foreground="#15263C" Margin="0,16,0,6"/>
 <TextBlock Text="{DynamicResource Ui007}" TextWrapping="Wrap" Foreground="#526071"/>

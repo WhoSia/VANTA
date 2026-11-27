@@ -95,6 +95,10 @@ internal static class UiLanguage
         ("Ui087","Fast · H.264","빠른 일괄 · H.264"),
         ("Ui088","Fast · HEVC","빠른 일괄 · HEVC"),
         ("Ui089","Change shared codec and preset, recompute budget tiers. Individual overrides retained. No encoding started.","공통 코덱과 프리셋 변경, 용량 예산 재계산. 개별 설정 유지. 압축 시작 안 함."),
+        ("Ui090","GPU / device encoding trial","GPU / 하드웨어 시험 압축"),
+        ("Ui091","Select a matching H.264 or HEVC backend. Device defaults, current height and bitrate.","현재 코덱과 일치하는 장치를 선택하세요. 장치 기본 설정, 현재 해상도와 비트레이트를 사용합니다."),
+        ("Ui092","Try GPU and save…","GPU 시험 압축 및 저장…"),
+        ("Ui093","Requires automatic threads and split off. Tests the selected device first; no CPU fallback. Full validation before saving.","스레드 자동, 분할 해제 필요. 선택한 장치부터 검사하며 CPU로 자동 전환하지 않습니다. 전체 검증 후 저장합니다."),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
@@ -117,7 +121,7 @@ internal static class UiLanguage
     {
         if(!korean)return stage;
         if(stage.StartsWith("Encoding ",StringComparison.Ordinal))return "압축 중 "+stage["Encoding ".Length..];
-        return stage switch {"Diagnostics"=>"하드웨어 진단 중","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
+        return stage switch {"Diagnostics"=>"하드웨어 진단 중","Qualifying hardware"=>"하드웨어 초기화 검사 중","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
     }
     internal static string Verification(bool korean,Vanta.Core.VerificationPhase? phase)=>phase switch
     {
