@@ -281,9 +281,9 @@ public partial class BatchWindow:Window
             if(r.AdmittedAt is TimeSpan start)active.Add(QueueTiming.Remaining(reference,batchClock.Elapsed-start));
             else queued.Add(reference);
         }
-        var remaining=QueueTiming.Estimate(activeParallel,active,queued);
+        var queueRange=QueueTiming.Estimate(activeParallel,active,queued);
         int known=active.Concat(queued).Count(r=>r is not null),needed=active.Count+queued.Count;
-        BatchEtaText.Text=remaining is DurationRange estimate
+        BatchEtaText.Text=queueRange is DurationRange estimate
             ?T("Queue scenario ≈ ","전체 예상 범위 ≈ ")+UiLanguage.Duration(estimate.Low)+"–"+UiLanguage.Duration(estimate.High)+T(" · prior jobs, not guaranteed"," · 이전 작업 참고, 보장 없음")
             :T($"Queue ETA unknown · references {known}/{needed}",$"전체 ETA 미정 · 시간 참고값 {known}/{needed}");
     }
