@@ -98,6 +98,9 @@ internal static class DesktopSmoke
         CheckLayout(main,"Status","LanguageBox",560,480);
         CheckLayout(koreanBatch,"Summary","StartButton",720,580);
         CheckLayout(batch,"Summary","StartButton",720,580);
+        Get<Expander>(batch,"BatchAdvancedOptions").IsExpanded=true;Get<Expander>(batch,"BatchHardwareOptions").IsExpanded=true;
+        CheckLayout(batch,"Summary","StartButton",720,580);
+        CheckLayout(batch,"Summary","CancelButton",720,580);
         koreanDialog.Close();koreanBatch.Close();batch.Close();dialog.Close();main.Close();app.Shutdown();
         Console.WriteLine("WPF construction and individual editor routed-event smoke passed.");
     }
@@ -307,7 +310,7 @@ internal static class DesktopSmoke
         content.Measure(new Size(width,height));content.Arrange(new Rect(0,0,width,height));content.UpdateLayout();
         var command=Get<FrameworkElement>(window,commandName);
         var bounds=command.TransformToAncestor(content).TransformBounds(new Rect(command.RenderSize));
-        Check(bounds.Height>0&&bounds.Top>=0&&bounds.Bottom<=height+1,"Primary command stays in viewport with long diagnostics");
+        Check(bounds.Height>0&&bounds.Top>=0&&bounds.Bottom<=height+1, $"Primary command {commandName} stays in viewport ({width}×{height}, bounds {bounds}) with long diagnostics");
     }
     static T Get<T>(FrameworkElement window,string name) where T:FrameworkElement
         =>window.FindName(name) as T??throw new Exception("Missing WPF element: "+name);
