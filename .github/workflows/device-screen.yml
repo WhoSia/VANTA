@@ -15,7 +15,7 @@ jobs:
       matrix:
         backend: [hevc_nvenc, hevc_qsv, hevc_amf]
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 24
     steps:
       - uses: actions/checkout@v4
         with:

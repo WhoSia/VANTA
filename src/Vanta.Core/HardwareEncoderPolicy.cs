@@ -30,8 +30,14 @@ internal static class HardwareEncoderPolicy
         ValidateFast(encoder,fast);
         return !fast?null:encoder.EndsWith("_qsv",StringComparison.Ordinal)?"veryfast":"p1";
     }
-    internal static string[] InputArguments(bool resident,string? encoder=null,string? sourceCodec=null)
+    internal static void ValidateAsyncDepth(string? encoder,bool resident,int? depth)
     {
+        if(depth is not null&&(!(encoder?.EndsWith("_qsv",StringComparison.Ordinal)??false)||!resident||depth is not (8 or 16)))
+            throw new ArgumentException("Explicit async depth requires resident QSV and depth 8 or 16.");
+    }
+    internal static string[] InputArguments(bool resident,string? encoder=null,string? sourceCodec=null,int? asyncDepth=null)
+    {
+        ValidateAsyncDepth(encoder,resident,asyncDepth);
         if(!resident)return [];
         ValidateResident(encoder??"");
         if(encoder!.EndsWith("_nvenc",StringComparison.Ordinal))
@@ -40,7 +46,9 @@ internal static class HardwareEncoderPolicy
         {
             string decoder=sourceCodec switch{"h264"=>"h264_qsv","hevc"=>"hevc_qsv",_=>throw new ArgumentException("Unsupported QSV source")};
             string device=OperatingSystem.IsWindows()?"qsv=vanta:hw,child_device_type=d3d11va":"qsv=vanta:hw";
-            return ["-init_hw_device",device,"-hwaccel","qsv","-hwaccel_device","vanta","-hwaccel_output_format","qsv","-c:v",decoder];
+            var args=new List<string>{"-init_hw_device",device,"-hwaccel","qsv","-hwaccel_device","vanta","-hwaccel_output_format","qsv","-c:v",decoder};
+            if(asyncDepth is int depth)args.AddRange(["-extra_hw_frames",(2*depth).ToString(CultureInfo.InvariantCulture)]);
+            return args.ToArray();
         }
         return ["-hwaccel","d3d11va","-hwaccel_output_format","d3d11"];
     }
@@ -54,15 +62,17 @@ internal static class HardwareEncoderPolicy
         if(plan.Height!=sourceHeight)throw new NotSupportedException("D3D11/AMF resident trial preserves original resolution.");
         return ["-pix_fmt","+d3d11"];
     }
-    internal static string[] Arguments(string encoder,Plan plan,bool resident=false,bool fast=false)
+    internal static string[] Arguments(string encoder,Plan plan,bool resident=false,bool fast=false,int? asyncDepth=null)
     {
         Validate(encoder,plan,false,null,null);
         // Backend defaults are intentionally not presented as equivalent
         // quality/speed presets. The actual output must pass the same gates.
         ValidateFast(encoder,fast);
+        ValidateAsyncDepth(encoder,resident,asyncDepth);
         if(resident)ValidateResident(encoder);
         var args=new List<string>{"-c:v",encoder,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture)};
         if(FastPreset(encoder,fast) is string preset)args.AddRange(["-preset",preset]);
+        if(asyncDepth is int depth)args.AddRange(["-async_depth",depth.ToString(CultureInfo.InvariantCulture)]);
         if(!resident)args.AddRange(["-pix_fmt","yuv420p"]);
         return args.ToArray();
     }

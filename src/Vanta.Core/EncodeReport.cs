@@ -13,6 +13,7 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
     public string? HardwareEncoder {get;init;}
     public bool GpuResident {get;init;}
     public string? HardwarePreset {get;init;}
+    public int? QsvAsyncDepth {get;init;}
     // Explicit device qualification is included in Preparation and Total.
     public TimeSpan HardwareQualification {get;init;}
     // When set, per-track payload and timestamp checks are folded into TimelineCheck.

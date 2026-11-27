@@ -79,7 +79,7 @@ if(args.Length==5&&args[0]=="--scale-offset")
 }
 if(args.Length==3&&args[0]=="--device-screen")
 {
-    using var screenTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(12));
+    using var screenTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(15));
     var screenTools=await Toolchain.DiscoverAsync(screenTimeout.Token);
     var screen=await DeviceBenchmark.RunAsync(screenTools,args[1],screenTimeout.Token);
     using(var report=new FileStream(args[2],FileMode.CreateNew,FileAccess.Write))using(var writer=new StreamWriter(report))await writer.WriteAsync(screen.Json());

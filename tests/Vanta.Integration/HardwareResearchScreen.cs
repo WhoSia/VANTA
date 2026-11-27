@@ -39,6 +39,17 @@ internal static class HardwareResearchScreen
         try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,"h264_amf",ct,fastHardware:true);}catch(ArgumentException){badResident=true;}
         Check(badResident&&!File.Exists(bad),"Unsupported AMF fast preset rejected");
         Check(HardwareEncoderPolicy.Arguments("h264_qsv",plan,true,true).TakeLast(2).SequenceEqual(new[]{"-preset","veryfast"}),"Intel speed preset isolated");
+        foreach(int depth in new[]{8,16})
+        {
+            Check(HardwareEncoderPolicy.InputArguments(true,"hevc_qsv","h264",depth).TakeLast(2).SequenceEqual(new[]{"-extra_hw_frames",(2*depth).ToString(System.Globalization.CultureInfo.InvariantCulture)}),"Bounded QSV input pool");
+            Check(HardwareEncoderPolicy.Arguments("h264_qsv",plan,true,true,depth).TakeLast(2).SequenceEqual(new[]{"-async_depth",depth.ToString(System.Globalization.CultureInfo.InvariantCulture)}),"QSV async depth output option");
+        }
+        foreach(var option in new[]{("h264_qsv",true,0),("h264_qsv",true,32),("h264_qsv",false,8),("h264_nvenc",true,8)})
+        {
+            bool rejected=false;
+            try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,option.Item1,ct,gpuResident:option.Item2,qsvAsyncDepth:option.Item3);}catch(ArgumentException){rejected=true;}
+            Check(rejected&&!File.Exists(bad),"Invalid depth refuses before qualification/publication");
+        }
         bool invalidRejected=false;
         try{await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,bad,plan,ct,researchHardwareEncoder:"unknown");}
         catch(ArgumentException){invalidRejected=true;}

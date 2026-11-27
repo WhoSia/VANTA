@@ -56,7 +56,7 @@ public static class DeviceBenchmark
             var rows=new List<DeviceBenchmarkRow>();
             bool nv=backend.EndsWith("_nvenc",StringComparison.Ordinal);
             bool resident=nv||backend.EndsWith("_qsv",StringComparison.Ordinal)||OperatingSystem.IsWindows();
-            string[] modes=nv?["CPU medium","CPU veryfast","GPU encode","GPU resident","GPU encode P1","GPU resident P1"]:backend.EndsWith("_qsv",StringComparison.Ordinal)?["CPU medium","CPU veryfast","GPU encode","GPU resident","GPU encode veryfast","GPU resident veryfast"]:resident?["CPU medium","CPU veryfast","GPU encode","GPU resident"]:["CPU medium","CPU veryfast","GPU encode"];
+            string[] modes=nv?["CPU medium","CPU veryfast","GPU encode","GPU resident","GPU encode P1","GPU resident P1"]:backend.EndsWith("_qsv",StringComparison.Ordinal)?["CPU medium","CPU veryfast","GPU encode","GPU resident","GPU encode veryfast","GPU resident veryfast","GPU resident veryfast depth8","GPU resident veryfast depth16"]:resident?["CPU medium","CPU veryfast","GPU encode","GPU resident"]:["CPU medium","CPU veryfast","GPU encode"];
             foreach(string mode in modes)
             {
                 ct.ThrowIfCancellationRequested();progress?.Report(mode);
@@ -68,7 +68,7 @@ public static class DeviceBenchmark
                     var plan=new Plan("Device screen",family,810,1791000,0,mode=="CPU veryfast"?"veryfast":"medium",false);
                     result=mode.StartsWith("CPU",StringComparison.Ordinal)
                         ?await Encoder.EncodeAsync(tools.Ffmpeg,tools.Ffprobe,source,output,plan,deadline.Token,expectedSource:stamp)
-                        :await Encoder.EncodeHardwareTrialAsync(tools,source,output,plan,backend,deadline.Token,expectedSource:stamp,gpuResident:mode.StartsWith("GPU resident",StringComparison.Ordinal),fastHardware:mode.EndsWith(" P1",StringComparison.Ordinal)||mode.EndsWith(" veryfast",StringComparison.Ordinal));
+                        :await Encoder.EncodeHardwareTrialAsync(tools,source,output,plan,backend,deadline.Token,expectedSource:stamp,gpuResident:mode.StartsWith("GPU resident",StringComparison.Ordinal),fastHardware:mode.EndsWith(" P1",StringComparison.Ordinal)||mode.Contains(" veryfast",StringComparison.Ordinal),qsvAsyncDepth:mode.EndsWith(" depth8",StringComparison.Ordinal)?8:mode.EndsWith(" depth16",StringComparison.Ordinal)?16:null);
                     string outputSha=Hash(output);
                     var quality=ParseSsim(await Checked(tools.Ffmpeg,["-v","error","-xerror","-nostdin","-i",source,"-i",output,"-lavfi","ssim=stats_file=-","-an","-f","null","-"],deadline.Token));
                     // Validation-only proxy on the very same output; no promotion.

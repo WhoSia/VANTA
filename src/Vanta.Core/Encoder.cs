@@ -8,7 +8,7 @@ public static class Encoder
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Explicit single-job device trial. No automatic backend selection or CPU fallback.
     // A successful tiny diagnostic is necessary, not sufficient; full validation still applies.
-    public static async Task<EncodeReport> EncodeHardwareTrialAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,SourceStamp? expectedSource=null,bool gpuResident=false,bool fastHardware=false)
+    public static async Task<EncodeReport> EncodeHardwareTrialAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,SourceStamp? expectedSource=null,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null)
     {
         ct.ThrowIfCancellationRequested();
         // Software presets do not map to hardware presets. Use backend defaults.
@@ -16,6 +16,7 @@ public static class Encoder
         HardwareEncoderPolicy.Validate(backend,applied,false,null,null);
         if(gpuResident)HardwareEncoderPolicy.ValidateResident(backend);
         HardwareEncoderPolicy.ValidateFast(backend,fastHardware);
+        HardwareEncoderPolicy.ValidateAsyncDepth(backend,gpuResident,qsvAsyncDepth);
         input=Path.GetFullPath(input);output=Path.GetFullPath(output);
         if(string.Equals(input,output,StringComparison.OrdinalIgnoreCase)||File.Exists(output)||Directory.Exists(output))
             throw new IOException("Output must be a new file");
@@ -31,11 +32,11 @@ public static class Encoder
         stamp.RequireUnchanged(input);
         var qualification=clock.Elapsed;
         var report=await EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,input,output,applied,ct,progress,
-            expectedSource:stamp,researchHardwareEncoder:backend,gpuResident:gpuResident,fastHardware:fastHardware);
+            expectedSource:stamp,researchHardwareEncoder:backend,gpuResident:gpuResident,fastHardware:fastHardware,qsvAsyncDepth:qsvAsyncDepth);
         return report with {HardwareQualification=qualification,Preparation=report.Preparation+qualification,Total=report.Total+qualification};
     }
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false,MotionSearchMode motionSearch=MotionSearchMode.Default,bool interleavedFallback=false,bool gpuResident=false,bool fastHardware=false)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false,MotionSearchMode motionSearch=MotionSearchMode.Default,bool interleavedFallback=false,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -53,6 +54,7 @@ public static class Encoder
         if(singleDecodeValidation&&(parallelDecodeValidation||fusedAudioValidation||parallelAudioHash||experimentalSplit||researchHardwareEncoder is not null))throw new ArgumentException("Single-decode research requires the independent continuous CPU validation baseline.");
         if(fusedAudioValidation&&parallelAudioHash)throw new ArgumentException("Choose one research audio validation path.");
         if(parallelDecodeValidation&&(experimentalSplit||fusedAudioValidation||parallelAudioHash||researchHardwareEncoder is not null))throw new ArgumentException("Parallel decode research requires the independent continuous CPU validation baseline.");
+        HardwareEncoderPolicy.ValidateAsyncDepth(researchHardwareEncoder,gpuResident,qsvAsyncDepth);
         if(gpuResident)HardwareEncoderPolicy.ValidateResident(researchHardwareEncoder??"");
         if(fastHardware)HardwareEncoderPolicy.ValidateFast(researchHardwareEncoder??"",true);
         if(researchHardwareEncoder is not null)HardwareEncoderPolicy.Validate(researchHardwareEncoder,plan,experimentalSplit,researchCrf,encoderThreads);
@@ -84,10 +86,10 @@ public static class Encoder
         using var reservation=researchCrf.HasValue?null:ScratchBudget.Shared.Reserve(dir,plan.EstimateBytes(source),experimentalSplit);
         var temp=Path.Combine(dir,$".vanta-{Guid.NewGuid():N}.mp4");
         var common=new List<string>{"-hide_banner","-nostdin","-n","-xerror"};
-        common.AddRange(HardwareEncoderPolicy.InputArguments(gpuResident,researchHardwareEncoder,source.Codec));
+        common.AddRange(HardwareEncoderPolicy.InputArguments(gpuResident,researchHardwareEncoder,source.Codec,qsvAsyncDepth));
         common.AddRange(["-i",input,"-map","0:V:0"]);
         if(researchHardwareEncoder is null)common.AddRange(["-c:v",plan.Codec,"-preset",plan.Preset,researchCrf.HasValue?"-crf":"-b:v",(researchCrf.HasValue?(long)researchCrf.Value:plan.VideoBitsPerSecond).ToString(CultureInfo.InvariantCulture)]);
-        else common.AddRange(HardwareEncoderPolicy.Arguments(researchHardwareEncoder,plan,gpuResident,fastHardware));
+        else common.AddRange(HardwareEncoderPolicy.Arguments(researchHardwareEncoder,plan,gpuResident,fastHardware,qsvAsyncDepth));
         if(motionSearch!=MotionSearchMode.Default)common.AddRange(["-x264-params",motionSearch==MotionSearchMode.Diamond?"me=dia":"me=dia:subme=1"]);
         if(tenBitSdr)common.AddRange(["-pix_fmt","yuv420p10le","-profile:v","main10"]);
         common.AddRange(["-fps_mode","passthrough"]);
@@ -193,7 +195,7 @@ public static class Encoder
             stamp.RequireUnchanged(input);
             File.Move(temp,output,false);
             var publication=Lap();
-            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes){ConcurrentTimelineDecode=overlap,SingleDecodeValidation=singleDecodeValidation,RequestedEncoderThreads=encoderThreads,InterleavedAudioPeakPending=audioPending,InterleavedAudioFallbackUsed=interleavedFallback&&audioPending is null,ValidationAdmissionWait=admissionWait,AppliedPlan=plan,HardwareEncoder=researchHardwareEncoder,GpuResident=gpuResident,HardwarePreset=researchHardwareEncoder is string device?HardwareEncoderPolicy.FastPreset(device,fastHardware):null};
+            var report=new EncodeReport(preparation,encoding,outputProbe,timeline,audioHash,decode,publication,mark,bytes,source.Bytes){ConcurrentTimelineDecode=overlap,SingleDecodeValidation=singleDecodeValidation,RequestedEncoderThreads=encoderThreads,InterleavedAudioPeakPending=audioPending,InterleavedAudioFallbackUsed=interleavedFallback&&audioPending is null,ValidationAdmissionWait=admissionWait,AppliedPlan=plan,HardwareEncoder=researchHardwareEncoder,GpuResident=gpuResident,HardwarePreset=researchHardwareEncoder is string device?HardwareEncoderPolicy.FastPreset(device,fastHardware):null,QsvAsyncDepth=qsvAsyncDepth};
             // Publication is the commit point. A completion observer cannot turn
             // an already-published verified output into a failed encode.
             try { progress?.Report(new("Complete",1)); }
