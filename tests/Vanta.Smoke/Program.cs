@@ -88,6 +88,15 @@ Check(CompletionReference.ValidationRemaining(Sec(12),Sec(5))==Sec(7),"Historica
 Check(CompletionReference.ValidationRemaining(Sec(12),Sec(12)) is null&&CompletionReference.ValidationRemaining(Sec(12),Sec(13)) is null,"Overrun never reports zero or negative ETA");
 Check(CompletionReference.ValidationRemaining(Sec(12),Sec(-1)) is null&&CompletionReference.ValidationRemaining(null,Sec(1)) is null,"Invalid or absent reference withheld");
 Check(new EncodeProgress("Validating",null){Verification=VerificationPhase.FullDecode}.DisplayPercent is null,"Verification phase never claims percent");
+DurationRange DR(double low,double high)=>new(Sec(low),Sec(high));
+Check(QueueTiming.Estimate(1,[DR(3,4)],[DR(5,6),DR(7,8)])==DR(15,18),"Serial queue sums active and queued references");
+Check(QueueTiming.Estimate(2,[DR(4,4),DR(8,8)],[])==DR(8,8),"Parallel active-only queue equals maximum");
+Check(QueueTiming.Estimate(2,[DR(2,3)],[DR(6,8),DR(4,5)])==DR(6,12),"Parallel queue work-conserving scenario");
+Check(QueueTiming.Estimate(2,[DR(1,1)],[null]) is null,"Queue with unknown job remains unknown");
+Check(QueueTiming.Estimate(2,[DR(1,1),DR(1,1),DR(1,1)],[]) is null,"Queue rejects impossible active count");
+Check(QueueTiming.Estimate(2,[],[]) is null&&QueueTiming.Estimate(0,[],[DR(1,1)]) is null,"Empty or invalid queue does not claim ETA");
+Check(QueueTiming.Remaining(DR(10,20),Sec(12))==DR(0,8),"Active total reference subtracts elapsed");
+Check(QueueTiming.Remaining(DR(10,20),Sec(20)) is null,"Overrun invalidates queue ETA");
 var history=new TimingHistory();
 var historyMedia=new MediaInfo(100_000_000,60,1920,1080,30,"h264",0,0,60,0,12_000_000);
 var historyPlan=new Plan("Balanced","libx264",1080,8_000_000,0,"veryfast",false);

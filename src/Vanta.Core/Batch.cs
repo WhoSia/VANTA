@@ -66,6 +66,7 @@ public static class BatchEncoder
                 try
                 {
                     using var lease=allocator?.Acquire();
+                    Notify(new(i,"Preparing",null));
                     report=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                     {
                         if(x.Stage!="Complete")Notify(new BatchUpdate(i,x.Stage,x.Fraction){Verification=x.Verification});

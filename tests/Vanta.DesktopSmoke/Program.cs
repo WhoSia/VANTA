@@ -194,6 +194,7 @@ internal static class DesktopSmoke
                 var batchRun=batch.StartAsync();
                 Check(batchLanguage.IsEnabled&&!start.IsEnabled,"Language available during batch encode");
                 Check(Get<FrameworkElement>(batch,"BatchProgressCard").Visibility==Visibility.Visible&&Get<TextBlock>(batch,"BatchProgressText").Text.Contains("0/2"),"Batch progress card starts with current run count");
+                Check(Get<TextBlock>(batch,"BatchEtaText").Text.Contains("0/2"),"Unknown queue time reports absent references");
                 batchLanguage.SelectedIndex=0;
                 Check((string)start.Content=="Processing…"&&(string)Get<ComboBox>(batch,"SharedPresetBox").SelectedValue=="veryfast","Batch language change preserves running settings");
                 batchLanguage.SelectedIndex=1;
