@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "environment": "Linux FFmpeg 7.1.5-0+deb13u1 cgroup 4 CPU quota",
+  "scope": "5s 1920x1080 60fps synthetic testsrc2 H264 ultrafast CRF18 and AAC128kbps, downscale to 720p H264 veryfast ABR4Mbps 4 requested encoder threads, auto vs -filter_threads 1, two reversed repetitions. Precomputed independent source decoded clock and audio SHA/PTS/duration; timed encode, output frame/packet probes, strict decode and final hash checks; no SSIM needed for exact same source/outputs, no absolute quality guarantee, not full C# workflow.",
+  "rows": [
+    {
+      "rep": 0,
+      "mode": "auto",
+      "encode_s": 1.7444971280000345,
+      "timeline_s": 0.6318168920000744,
+      "audio_s": 0.08336952499996642,
+      "decode_s": 0.34821734000001925,
+      "total_s": 2.826936913000054,
+      "source_bytes": 22588570,
+      "source_sha": "a3c8eeb76b66622f44f68315f6d6535849bfb4e1aa54f7f7202c773a02776794",
+      "output_bytes": 2619159,
+      "output_sha": "3ab488a68173a74312e7a641af842fec98bd488e509674b89e82a7eb846ec16d",
+      "frames": 300,
+      "audio_packets": 236,
+      "source_unchanged": true,
+      "clock_match": true,
+      "packet_identity": true,
+      "strict_decode": true
+    },
+    {
+      "rep": 0,
+      "mode": "one",
+      "encode_s": 1.69335588499996,
+      "timeline_s": 0.6570597329999828,
+      "audio_s": 0.08498884000005091,
+      "decode_s": 0.3582941339999479,
+      "total_s": 2.813432951999971,
+      "source_bytes": 22588570,
+      "source_sha": "a3c8eeb76b66622f44f68315f6d6535849bfb4e1aa54f7f7202c773a02776794",
+      "output_bytes": 2619159,
+      "output_sha": "3ab488a68173a74312e7a641af842fec98bd488e509674b89e82a7eb846ec16d",
+      "frames": 300,
+      "audio_packets": 236,
+      "source_unchanged": true,
+      "clock_match": true,
+      "packet_identity": true,
+      "strict_decode": true
+    },
+    {
+      "rep": 1,
+      "mode": "one",
+      "encode_s": 1.7560738030000493,
+      "timeline_s": 0.6728483480000023,
+      "audio_s": 0.08252367399995819,
+      "decode_s": 0.3360481019999497,
+      "total_s": 2.8660349689999975,
+      "source_bytes": 22588570,
+      "source_sha": "a3c8eeb76b66622f44f68315f6d6535849bfb4e1aa54f7f7202c773a02776794",
+      "output_bytes": 2619159,
+      "output_sha": "3ab488a68173a74312e7a641af842fec98bd488e509674b89e82a7eb846ec16d",
+      "frames": 300,
+      "audio_packets": 236,
+      "source_unchanged": true,
+      "clock_match": true,
+      "packet_identity": true,
+      "strict_decode": true
+    },
+    {
+      "rep": 1,
+      "mode": "auto",
+      "encode_s": 1.6300758520000045,
+      "timeline_s": 0.6419628070000272,
+      "audio_s": 0.08317646999989847,
+      "decode_s": 0.3534839760000068,
+      "total_s": 2.72821986200006,
+      "source_bytes": 22588570,
+      "source_sha": "a3c8eeb76b66622f44f68315f6d6535849bfb4e1aa54f7f7202c773a02776794",
+      "output_bytes": 2619159,
+      "output_sha": "3ab488a68173a74312e7a641af842fec98bd488e509674b89e82a7eb846ec16d",
+      "frames": 300,
+      "audio_packets": 236,
+      "source_unchanged": true,
+      "clock_match": true,
+      "packet_identity": true,
+      "strict_decode": true
+    }
+  ],
+  "pairs": [
+    {
+      "rep": 0,
+      "encodeReduction": 0.02931575075661208,
+      "totalReduction": 0.004776887994204393,
+      "exact": true
+    },
+    {
+      "rep": 1,
+      "encodeReduction": -0.07729575948594847,
+      "totalReduction": -0.05051466302972574,
+      "exact": true
+    }
+  ]
+}
