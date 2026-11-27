@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "scope": "Actual local repeated validation-only comparison of fixed outputs and source from long-validation-local.json. Linux FFmpeg 7.1.5, cgroup CPU quota4. Compare auto vs -threads 2 before input in both independent source FFprobe and strict FFmpeg output decoder, both concurrent, then source/output audio packet probes concurrent. All rows compared against precomputed independent full frame PTS and audio PTS/duration/hash; independent strict decode and streamhash before timing, source and output SHA reverified after timing. Timed includes video and audio checks, not full C# or encoding. No absolute quality comparison. One HEVC rep1 invocation timed out before producing any trial row; reran same pair successfully, not included as timed result. Local harness screen.py not uploaded. 3 reversed-order pairs per codec.",
+  "source": {
+    "bytes": 50750661,
+    "sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+  },
+  "outputs": {
+    "libx264": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809",
+    "libx265": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+  },
+  "rows": [
+    {
+      "kind": "trial",
+      "codec": "libx264",
+      "rep": 0,
+      "threads": null,
+      "video_s": 2.208020096000382,
+      "total_s": 2.394995535000362,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx264",
+      "rep": 0,
+      "threads": 2,
+      "video_s": 2.7870048749996386,
+      "total_s": 2.9460858749998806,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx264",
+      "rep": 1,
+      "threads": 2,
+      "video_s": 2.8893042859999696,
+      "total_s": 3.0914328160001787,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx264",
+      "rep": 1,
+      "threads": null,
+      "video_s": 2.333124188000056,
+      "total_s": 2.47013958000025,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx264",
+      "rep": 2,
+      "threads": null,
+      "video_s": 2.2425942820000273,
+      "total_s": 2.4346233539999957,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx264",
+      "rep": 2,
+      "threads": 2,
+      "video_s": 2.784147798000049,
+      "total_s": 2.912853794000057,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx265",
+      "rep": 0,
+      "threads": null,
+      "video_s": 3.407606235000003,
+      "total_s": 3.5854000990002532,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx265",
+      "rep": 0,
+      "threads": 2,
+      "video_s": 4.243985809000151,
+      "total_s": 4.4022481730003165,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx265",
+      "rep": 1,
+      "threads": 2,
+      "video_s": 4.002996859999712,
+      "total_s": 4.192860304000078,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx265",
+      "rep": 1,
+      "threads": null,
+      "video_s": 3.319363396999961,
+      "total_s": 3.445638346999658,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx265",
+      "rep": 2,
+      "threads": null,
+      "video_s": 3.2296247290000792,
+      "total_s": 3.458394180000141,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    },
+    {
+      "kind": "trial",
+      "codec": "libx265",
+      "rep": 2,
+      "threads": 2,
+      "video_s": 3.998945018000086,
+      "total_s": 4.133820146000289,
+      "frames": 900,
+      "audio_packets": 2816,
+      "drift": 3.3333333604446125e-7,
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "output_sha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835"
+    }
+  ],
+  "pairs": [
+    {
+      "codec": "libx264",
+      "rep": 0,
+      "videoReduction": -0.2622189807275903,
+      "totalReduction": -0.23010077970748077
+    },
+    {
+      "codec": "libx264",
+      "rep": 1,
+      "videoReduction": -0.23838426641003996,
+      "totalReduction": -0.25152150956581387
+    },
+    {
+      "codec": "libx264",
+      "rep": 2,
+      "videoReduction": -0.24148528351594867,
+      "totalReduction": -0.1964289216294366
+    },
+    {
+      "codec": "libx265",
+      "rep": 0,
+      "videoReduction": -0.24544490070759228,
+      "totalReduction": -0.22782619831684392
+    },
+    {
+      "codec": "libx265",
+      "rep": 1,
+      "videoReduction": -0.20595318476356606,
+      "totalReduction": -0.21686023945347443
+    },
+    {
+      "codec": "libx265",
+      "rep": 2,
+      "videoReduction": -0.2382073316729263,
+      "totalReduction": -0.1953004576245616
+    }
+  ]
+}
