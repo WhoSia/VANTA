@@ -147,7 +147,7 @@ public partial class MainWindow : Window
     }
     private string ResultText(EncodeReport r)=>T(
         $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · {1-r.OutputBytes/(double)r.InputBytes:P1} actual savings · {r.Total.TotalSeconds:F1}s (encoding {r.Encoding.TotalSeconds:F1}s, validation {r.Validation.TotalSeconds:F1}s)",
-        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (인코딩 {r.Encoding.TotalSeconds:F1}초, 검증 {r.Validation.TotalSeconds:F1}초)")+(r.HardwareEncoder is string backend?T($"\n{backend} · device defaults · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · qualification {r.HardwareQualification.TotalSeconds:F1}s",$"\n{backend} · 장치 기본 설정 · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 장치 검사 {r.HardwareQualification.TotalSeconds:F1}초"):T($"\n{r.AppliedPlan?.Codec??"—"} · {r.AppliedPlan?.Preset??"—"} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · threads {r.RequestedEncoderThreads?.ToString()??"auto"}",$"\n{r.AppliedPlan?.Codec??"—"} · {UiLanguage.Preset(true,r.AppliedPlan?.Preset??"—")} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 스레드 {r.RequestedEncoderThreads?.ToString()??"자동"}"));
+        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (인코딩 {r.Encoding.TotalSeconds:F1}초, 검증 {r.Validation.TotalSeconds:F1}초)")+(r.HardwareEncoder is string backend?T($"\n{backend} · {(r.GpuResident?"GPU-resident":"CPU decode")} · device defaults · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · qualification {r.HardwareQualification.TotalSeconds:F1}s",$"\n{backend} · {(r.GpuResident?"GPU 연속 처리":"CPU 디코딩")} · 장치 기본 설정 · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 장치 검사 {r.HardwareQualification.TotalSeconds:F1}초"):T($"\n{r.AppliedPlan?.Codec??"—"} · {r.AppliedPlan?.Preset??"—"} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · threads {r.RequestedEncoderThreads?.ToString()??"auto"}",$"\n{r.AppliedPlan?.Codec??"—"} · {UiLanguage.Preset(true,r.AppliedPlan?.Preset??"—")} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 스레드 {r.RequestedEncoderThreads?.ToString()??"자동"}"));
     private void RefreshResult()
     {
         ResultPath.Text=completedOutput??"";
@@ -218,7 +218,7 @@ public partial class MainWindow : Window
         encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
         StartJobProgress(true,"Diagnostics");
-        SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=false;
+        SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
@@ -239,7 +239,7 @@ public partial class MainWindow : Window
         current?.Cancel();ClearResult();appliedTarget=null;
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;HardwareBox.SelectedIndex=-1;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
-        CancelButton.IsEnabled=true;SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=false;StartJobProgress(true,"Analyzing");RefreshPreflightEta();
+        CancelButton.IsEnabled=true;SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;StartJobProgress(true,"Analyzing");RefreshPreflightEta();
         try
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
@@ -309,9 +309,15 @@ public partial class MainWindow : Window
         p.Codec==(backend.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")&&
         SplitBox.IsChecked!=true&&(ThreadsBox.SelectedItem as ThreadChoice)?.Count is null;
     private void OnHardwareChoice(object sender,System.Windows.Controls.SelectionChangedEventArgs e)=>RefreshHardwareButton();
+    private bool ResidentAllowed(string? backend)=>HardwareAllowed(backend)&&(backend is "h264_nvenc" or "hevc_nvenc")&&media?.Codec is "h264" or "hevc";
     private void RefreshHardwareButton()
     {
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string);
+        if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=ResidentAllowed(HardwareBox?.SelectedItem as string);
+    }
+    private async void OnResidentTrial(object sender,RoutedEventArgs e)
+    {
+        if(HardwareBox.SelectedItem is string backend&&ResidentAllowed(backend))await SaveAndEncodeAsync(backend,true);
     }
     private async void OnHardwareTrial(object sender,RoutedEventArgs e)
     {
@@ -354,6 +360,7 @@ public partial class MainWindow : Window
         if(SpeedFirstButton is not null)SpeedFirstButton.IsEnabled=false;
         if(FastHevcButton is not null)FastHevcButton.IsEnabled=false;
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=false;
+        if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=false;
         if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
         EncodeButton.IsEnabled=false;
         if(TargetPending)
@@ -409,9 +416,9 @@ public partial class MainWindow : Window
         return true;
     }
     private async void OnEncode(object sender,RoutedEventArgs e)=>await SaveAndEncodeAsync(null);
-    private async Task SaveAndEncodeAsync(string? backend)
+    private async Task SaveAndEncodeAsync(string? backend,bool resident=false)
     {
-        if(!ValidateEncodingRequest()||backend is not null&&!HardwareAllowed(backend))return;
+        if(!ValidateEncodingRequest()||backend is not null&&!HardwareAllowed(backend)||resident&&!ResidentAllowed(backend))return;
         var input=sourcePath!;
         SaveFileDialog dlg;
         try
@@ -422,11 +429,11 @@ public partial class MainWindow : Window
             {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         }
         catch(Exception ex){SetStatus(ex.Message);return;}
-        await EncodeToAsync(dlg.FileName,backend);
+        await EncodeToAsync(dlg.FileName,backend,resident);
     }
-    internal async Task EncodeToAsync(string output,string? hardware=null)
+    internal async Task EncodeToAsync(string output,string? hardware=null,bool resident=false)
     {
-        if(!ValidateEncodingRequest()||hardware is not null&&!HardwareAllowed(hardware))return;
+        if(!ValidateEncodingRequest()||hardware is not null&&!HardwareAllowed(hardware)||resident&&!ResidentAllowed(hardware))return;
         var p=activePlan!;var input=sourcePath!;var resolved=tools!;var stamp=sourceStamp!;
         bool split=SplitBox.IsChecked==true;
         var threads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
@@ -437,7 +444,7 @@ public partial class MainWindow : Window
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         StartJobProgress(split,hardware is null?"Preparing":"Qualifying hardware");
         HardwareBox.IsEnabled=false;
-        SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=false;
+        SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;
         if(!split&&timingKey is not null&&timings.TryGetValue(timingKey,out var prior))previousTail=CompletionReference.Tail(prior);
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;ProgressCard.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
         try
@@ -451,7 +458,7 @@ public partial class MainWindow : Window
             });
             var report=hardware is null
                 ?await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp)
-                :await Encoder.EncodeHardwareTrialAsync(resolved,input,output,p,hardware,cts.Token,progress,stamp);
+                :await Encoder.EncodeHardwareTrialAsync(resolved,input,output,p,hardware,cts.Token,progress,stamp,resident);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
             if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report;
                 if(!split&&media is MediaInfo measured)timingHistory.Record(new(timingKey.Path,measured,timingKey.Plan,timingKey.Threads,timingKey.Ffmpeg+"|"+timingKey.Ffprobe,report.Total));}

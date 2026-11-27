@@ -144,9 +144,11 @@ internal static class DesktopSmoke
             var hardware=Get<ComboBox>(main,"HardwareBox");var hardwareTrial=Get<Button>(main,"HardwareTrialButton");
             hardware.SelectedItem="h264_nvenc";Check(!hardwareTrial.IsEnabled,"Mismatched hardware family disabled");
             hardware.SelectedItem="hevc_nvenc";Check(hardwareTrial.IsEnabled,"Matching explicit device choice available");
+            var residentTrial=Get<Button>(main,"ResidentTrialButton");Check(residentTrial.IsEnabled,"Matching NVIDIA resident trial available");
+            hardware.SelectedItem="hevc_qsv";Check(hardwareTrial.IsEnabled&&!residentTrial.IsEnabled,"QSV does not offer CUDA path");hardware.SelectedItem="hevc_nvenc";
             split.IsChecked=true;Check(!hardwareTrial.IsEnabled,"Split excludes hardware trial");split.IsChecked=false;
             threads.SelectedIndex=1;Check(!hardwareTrial.IsEnabled,"Manual thread budget excludes device trial");threads.SelectedIndex=0;
-            target.Text="invalid";Check(!hardwareTrial.IsEnabled,"Pending target excludes hardware trial");
+            target.Text="invalid";Check(!hardwareTrial.IsEnabled&&!residentTrial.IsEnabled,"Pending target excludes hardware trial");
             await main.EncodeToAsync(Path.Combine(root,"blocked-hardware.mp4"),"hevc_nvenc");
             Check(!File.Exists(Path.Combine(root,"blocked-hardware.mp4")),"Invalid target cannot launch hardware trial");
             Check(!fastHevc.IsEnabled,"Pending target disables HEVC speed shortcut");

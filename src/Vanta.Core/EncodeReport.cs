@@ -11,6 +11,7 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
     public int? RequestedEncoderThreads {get;init;}
     public Plan? AppliedPlan {get;init;}
     public string? HardwareEncoder {get;init;}
+    public bool GpuResident {get;init;}
     // Explicit device qualification is included in Preparation and Total.
     public TimeSpan HardwareQualification {get;init;}
     // When set, per-track payload and timestamp checks are folded into TimelineCheck.

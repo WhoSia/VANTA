@@ -27,7 +27,13 @@ internal static class HardwareResearchScreen
                 Check(rejected,"Invalid hardware research option accepted");
             }
         }
+        Check(HardwareEncoderPolicy.InputArguments(true).SequenceEqual(new[]{"-hwaccel","cuda","-hwaccel_output_format","cuda"})&&HardwareEncoderPolicy.InputArguments(false).Length==0,"Resident input option isolation");
+        Check(HardwareEncoderPolicy.ResidentFilter(plan).SequenceEqual(new[]{"-vf",$"scale_cuda=-2:{plan.Height}:format=nv12","-pix_fmt","+cuda"}),"Explicit device frames and no implicit software conversion");
+        Check(!HardwareEncoderPolicy.Arguments("h264_nvenc",plan,true).Contains("yuv420p"),"Resident encoder does not force CPU pixel format");
         string bad=Path.Combine(root,"hardware-invalid.mp4");
+        bool badResident=false;
+        try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,"h264_qsv",ct,gpuResident:true);}catch(ArgumentException){badResident=true;}
+        Check(badResident&&!File.Exists(bad),"Non-NVIDIA resident path rejected");
         bool invalidRejected=false;
         try{await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,bad,plan,ct,researchHardwareEncoder:"unknown");}
         catch(ArgumentException){invalidRejected=true;}
@@ -85,6 +91,26 @@ internal static class HardwareResearchScreen
             }
             finally{if(File.Exists(output))File.Delete(output);}
             Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Hardware research leaked temporary output");
+        }
+        foreach(var d in diagnostics.Where(d=>d.State=="Sample passed"&&d.Encoder.EndsWith("_nvenc",StringComparison.Ordinal)))
+        {
+            string output=Path.Combine(root,d.Encoder+"-resident.mp4");
+            using var deadline=CancellationTokenSource.CreateLinkedTokenSource(ct);
+            deadline.CancelAfter(TimeSpan.FromSeconds(40));
+            try
+            {
+                var result=await Encoder.EncodeHardwareTrialAsync(tools,source,output,plan with{Codec=HardwareEncoderPolicy.SoftwareFamily(d.Encoder)},d.Encoder,deadline.Token,gpuResident:true);
+                Check(result.GpuResident&&result.HardwareEncoder==d.Encoder&&File.Exists(output),"Resident path report");
+                await PacketTimeline.ValidateAsync(tools.Ffprobe,source,output,m.AudioTracks,deadline.Token,compareAudioPayloads:true);
+                Console.WriteLine(FormattableString.Invariant($"HARDWARE_RESIDENT {d.Encoder} verified seconds={result.Total.TotalSeconds:F6} bytes={result.OutputBytes}"));
+            }
+            catch(Exception ex) when(!ct.IsCancellationRequested)
+            {
+                if(File.Exists(output))throw;
+                Console.WriteLine($"HARDWARE_RESIDENT {d.Encoder} rejected: {ex.GetType().Name}: {ex.Message}");
+            }
+            finally{if(File.Exists(output))File.Delete(output);}
+            Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Resident trial leaked temporary output");
         }
         Check(Hash(source)==before,"Hardware research altered source");
         Console.WriteLine("Hardware research argument and no-publication controls passed.");
