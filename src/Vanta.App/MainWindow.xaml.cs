@@ -21,16 +21,17 @@ public partial class MainWindow : Window
     private EncodeProgress? jobProgress;
     private sealed record TimingKey(string Path,SourceStamp Stamp,Plan Plan,int? Threads,bool Split,string Ffmpeg,string Ffprobe);
     private readonly Dictionary<TimingKey,TimeSpan> timings=new();
+    private readonly TimingHistory timingHistory=new();
     private TimingKey? CurrentTimingKey(Plan p)=>sourcePath is not null&&sourceStamp is not null&&tools is not null
-        ?new(sourcePath,sourceStamp,p,(ThreadsBox.SelectedItem as ThreadChoice)?.Count,SplitBox.IsChecked==true,tools.Ffmpeg,tools.Ffprobe):null;
+        ?new(sourcePath,sourceStamp,p with{Name=""},(ThreadsBox.SelectedItem as ThreadChoice)?.Count,SplitBox.IsChecked==true,tools.Ffmpeg,tools.Ffprobe):null;
     private static string DurationText(TimeSpan value)
     {
         long seconds=(long)Math.Ceiling(Math.Max(0,value.TotalSeconds));
         return seconds>=3600?$"{seconds/3600}:{seconds%3600/60:00}:{seconds%60:00}":$"{seconds/60:00}:{seconds%60:00}";
     }
-    private void StartJobProgress(bool split)
+    private void StartJobProgress(bool split,string stage="Preparing")
     {
-        jobClock.Restart();eta=split?null:new EncodingEta();jobProgress=new("Preparing",null);
+        jobClock.Restart();eta=split?null:new EncodingEta();jobProgress=new(stage,null);
         ProgressCard.Visibility=Visibility.Visible;etaTimer.Start();RefreshJobProgress();
     }
     private void RefreshJobProgress()
@@ -43,6 +44,8 @@ public partial class MainWindow : Window
         EtaText.Text=current?.IsCancellationRequested==true?T("Canceling…","취소 중…"):
             p.Stage=="Validating"?T("Verifying output · remaining time unknown","출력 검증 중 · 남은 시간 미정"):
             p.Stage=="Complete"?T("Verified","검증 완료"):
+            p.Stage is "Analyzing" or "Diagnostics"?T("Remaining time unknown","남은 시간 미정"):
+            eta is null?T("Remaining time unknown for split encoding","분할 압축 · 남은 시간 미정"):
             eta?.Remaining(jobClock.Elapsed) is TimeSpan remaining
                 ?T("Encoding ETA ≈ ","압축 예상 잔여 ≈ ")+DurationText(remaining)
                 :T("Estimating · verification time excluded","예상 시간 계산 중 · 검증 시간 제외");
@@ -55,12 +58,30 @@ public partial class MainWindow : Window
     private void RefreshPreflightEta()
     {
         if(PreflightEta is null)return;
-        PreflightEta.Text=activePlan is Plan p&&CurrentTimingKey(p) is TimingKey k&&timings.TryGetValue(k,out var t)
-            ?T("Previous same-setting total: ","동일 설정 이전 전체 시간: ")+DurationText(t)+T(" · reference only"," · 참고값")
-            :activePlan is not null?T("Time estimate available after encoding starts.","예상 시간은 압축 시작 후 표시됩니다."):"";
+
+        PreflightEta.Text=activePlan is Plan p?TimingText(p,false):"";
+    }
+    private string TimingText(Plan p,bool compact)
+    {
+        if(CurrentTimingKey(p) is not TimingKey k||media is null)return "";
+        if(timings.TryGetValue(k,out var t))
+            return (compact?T("Previous: ","이전: "):T("Previous same-setting total: ","동일 설정 이전 전체 시간: "))+DurationText(t)+T(" · reference only"," · 참고값");
+        if(!k.Split&&timingHistory.Estimate(k.Path,media,k.Plan,k.Threads,k.Ffmpeg+"|"+k.Ffprobe) is TimingRange range)
+            return T("Observed range ≈ ","관측 범위 ≈ ")+DurationText(range.Low)+"–"+DurationText(range.High)+T($" ({range.Sources} sources; not guaranteed)",$" (영상 {range.Sources}개 · 보장 없음)");
+        return compact?T("Time not measured","시간 미측정"):T("Time estimate available after encoding starts.","예상 시간은 압축 시작 후 표시됩니다.");
+    }
+    private void RefreshPlanTimes()
+    {
+        RefreshPreflightEta();
+        if(applying||media is not MediaInfo m||Plans.ItemsSource is not IEnumerable<PlanRow> rows)return;
+        var selected=Plans.SelectedIndex;
+        var snapshot=rows.Select(row=>MakeRow(row.Plan,m)).ToArray();
+        applying=true;
+        try{Plans.ItemsSource=snapshot;Plans.SelectedIndex=selected;}
+        finally{applying=false;}
     }
     private EncodeReport? completedReport;
-    private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings);
+    private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings,string Timing);
     private bool korean,languageReady;
     private readonly bool persistLanguage;
     private string statusEn="Open an 8-bit SDR video with AAC audio or no audio.",statusKo="AAC 오디오가 있거나 무음인 8비트 SDR 영상을 열어 주세요.";
@@ -75,8 +96,8 @@ public partial class MainWindow : Window
         UiLanguage.SetPresets(PresetBox,korean);
         ThreadsBox.ItemsSource=ThreadChoices.Create(korean);ThreadsBox.SelectedIndex=0;
         LanguageBox.SelectedIndex=korean?1:0;languageReady=true;SetStatus(statusEn,statusKo);
-        ThreadsBox.SelectionChanged+=(_,_)=>RefreshPreflightEta();
-        SplitBox.Checked+=(_,_)=>RefreshPreflightEta();SplitBox.Unchecked+=(_,_)=>RefreshPreflightEta();
+        ThreadsBox.SelectionChanged+=(_,_)=>RefreshPlanTimes();
+        SplitBox.Checked+=(_,_)=>RefreshPlanTimes();SplitBox.Unchecked+=(_,_)=>RefreshPlanTimes();
     }
     private void SetStatus(string en,string? ko=null){statusEn=en;statusKo=ko??en;Status.Text=T(statusEn,statusKo);}
     private void OnLanguage(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
@@ -104,7 +125,7 @@ public partial class MainWindow : Window
         RefreshEstimate();RefreshResult();RefreshJobProgress();Status.Text=T(statusEn,statusKo);
         if(persistLanguage){try{UiLanguage.Save(korean);}catch(Exception ex){SetStatus("Could not save language: "+ex.Message,"언어 설정을 저장하지 못했습니다: "+ex.Message);}}
     }
-    private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"));
+    private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"),TimingText(p,true));
     private void ClearResult()
     {
         completedOutput=null;completedReport=null;RefreshResult();
@@ -181,7 +202,7 @@ public partial class MainWindow : Window
         using var cts=new CancellationTokenSource();current=cts;
         encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
-        BusyBar.IsIndeterminate=true;ProgressCard.Visibility=Visibility.Visible;
+        StartJobProgress(true,"Diagnostics");
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
@@ -194,7 +215,7 @@ public partial class MainWindow : Window
         finally
         {
             current=null;encoding=false;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=Plans.IsEnabled=true;
-            Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;ProgressCard.Visibility=Visibility.Collapsed;RefreshEstimate();
+            Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;StopJobProgress();RefreshEstimate();
         }
     }
     internal async Task LoadAsync(string path)
@@ -202,7 +223,7 @@ public partial class MainWindow : Window
         current?.Cancel();ClearResult();appliedTarget=null;
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
-        CancelButton.IsEnabled=true;BusyBar.IsIndeterminate=true;ProgressCard.Visibility=Visibility.Visible;
+        CancelButton.IsEnabled=true;StartJobProgress(true,"Analyzing");RefreshPreflightEta();
         try
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
@@ -224,7 +245,7 @@ public partial class MainWindow : Window
         }
         catch(OperationCanceledException){if(current==cts)SetStatus("Analysis canceled.","분석이 취소되었습니다.");}
         catch(Exception ex){if(current==cts)SetStatus(ex.Message);}
-        finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;ProgressCard.Visibility=Visibility.Collapsed;RefreshEstimate();}}
+        finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;StopJobProgress();RefreshEstimate();}}
     }
     private void OnRecommendation(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {
@@ -389,7 +410,9 @@ public partial class MainWindow : Window
             });
             var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
-            if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report.Total;}
+            if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report.Total;
+                if(!split&&media is MediaInfo measured)timingHistory.Record(new(timingKey.Path,measured,timingKey.Plan,timingKey.Threads,timingKey.Ffmpeg+"|"+timingKey.Ffprobe,report.Total));}
+            RefreshPlanTimes();
             RefreshResult();
             var bytes=report.OutputBytes;
             SetStatus($"Validated output: {bytes/1e6:F2} MB · {1-bytes/(double)report.InputBytes:P1} actual savings · {report.Total.TotalSeconds:F1}s (validation {report.Validation.TotalSeconds:F1}s)",$"검증 완료: {bytes/1e6:F2} MB · 실제 절감률 {1-bytes/(double)report.InputBytes:P1} · {report.Total.TotalSeconds:F1}초 (검증 {report.Validation.TotalSeconds:F1}초)");

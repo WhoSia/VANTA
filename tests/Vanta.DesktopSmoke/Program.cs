@@ -193,10 +193,12 @@ internal static class DesktopSmoke
                 var batchLanguage=Get<ComboBox>(batch,"LanguageBox");
                 var batchRun=batch.StartAsync();
                 Check(batchLanguage.IsEnabled&&!start.IsEnabled,"Language available during batch encode");
+                Check(Get<FrameworkElement>(batch,"BatchProgressCard").Visibility==Visibility.Visible&&Get<TextBlock>(batch,"BatchProgressText").Text.Contains("0/2"),"Batch progress card starts with current run count");
                 batchLanguage.SelectedIndex=0;
                 Check((string)start.Content=="Processing…"&&(string)Get<ComboBox>(batch,"SharedPresetBox").SelectedValue=="veryfast","Batch language change preserves running settings");
                 batchLanguage.SelectedIndex=1;
                 await batchRun;
+                Check(Get<FrameworkElement>(batch,"BatchProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(batch,"BatchEtaText").Text=="","Batch progress cleared at terminal settlement");
                 Check(File.Exists(Path.Combine(root,"source clip_vanta.mp4"))&&File.Exists(Path.Combine(root,"second source_vanta.mp4")),"Batch produces separate validated outputs");
                 Check(!start.IsEnabled&&Get<TextBlock>(batch,"Summary").Text.Contains("완료 2")&&Get<TextBlock>(batch,"Summary").Text.Contains("최근 실행 경과 시간"),"Batch completion and wall time reflected in command bar");
                 var queue=Get<DataGrid>(batch,"Queue");queue.SelectedIndex=0;
@@ -208,6 +210,7 @@ internal static class DesktopSmoke
                 var run=batch.StartAsync();
                 Get<Button>(batch,"CancelButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 await run;
+                Check(Get<FrameworkElement>(batch,"BatchProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(batch,"BatchEtaText").Text=="","Canceled batch clears ETA card");
                 Check(Get<TextBlock>(batch,"Summary").Text.Contains("완료 2")&&Get<TextBlock>(batch,"Summary").Text.Contains("취소 2")&&!Get<Button>(batch,"CancelButton").IsEnabled,"Cancel retains previous completed results and settles pending rows");
                 Check(!File.Exists(Path.Combine(root,"third source_vanta.mp4"))&&!File.Exists(Path.Combine(root,"fourth source_vanta.mp4"))&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Canceled batch does not publish or leak staging files");
             }

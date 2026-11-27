@@ -81,6 +81,25 @@ Check(eta.Remaining(Sec(22)) is null,"ETA does not forecast verification");
 eta.Observe(new("Encoding",double.NaN),Sec(23));
 Check(eta.Remaining(Sec(23)) is null,"ETA invalid sample");
 
+var history=new TimingHistory();
+var historyMedia=new MediaInfo(100_000_000,60,1920,1080,30,"h264",0,0,60,0,12_000_000);
+var historyPlan=new Plan("Balanced","libx264",1080,8_000_000,0,"veryfast",false);
+for(int i=0;i<2;i++)history.Record(new("sample"+i,historyMedia,historyPlan,4,"tools",Sec(20+i*5)));
+Check(history.Estimate("query",historyMedia,historyPlan,4,"tools") is null,"Timing reference requires three distinct sources");
+history.Record(new("sample2",historyMedia,historyPlan,4,"tools",Sec(30)));
+var range=history.Estimate("query",historyMedia with{Seconds=90,VideoDurationSeconds=90},historyPlan,4,"tools");
+Check(range is not null&&range.Sources==3&&range.Low==Sec(30)&&range.High==Sec(45),"Timing reference scales nearby durations");
+Check(history.Estimate("sample0",historyMedia,historyPlan,4,"tools") is null,"Timing reference excludes queried source");
+Check(history.Estimate("query",historyMedia,historyPlan with{Preset="slow"},4,"tools") is null,"Timing reference rejects other presets");
+Check(history.Estimate("query",historyMedia with{Fps=60},historyPlan,4,"tools") is null,"Timing reference rejects other frame rates");
+Check(history.Estimate("query",historyMedia,historyPlan,null,"tools") is null&&history.Estimate("query",historyMedia,historyPlan,4,"other") is null,"Timing reference isolates thread and tool settings");
+history.Record(new("SAMPLE2",historyMedia,historyPlan with{Name="Custom"},4,"tools",Sec(25)));
+Check(history.Count==3,"Timing reference deduplicates source and settings");
+history.Record(new("bad",historyMedia with{Fps=double.NaN},historyPlan,4,"tools",Sec(10)));
+Check(history.Count==3,"Timing reference rejects invalid frame rate");
+history.Record(new("outlier",historyMedia,historyPlan,4,"tools",Sec(100)));
+Check(history.Estimate("query",historyMedia,historyPlan,4,"tools") is null,"Timing reference refuses dispersed samples");
+
 var namingRoot=Path.Combine(Path.GetTempPath(),"VANTA-names-"+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(namingRoot);
 try

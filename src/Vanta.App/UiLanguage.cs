@@ -85,6 +85,11 @@ internal static class UiLanguage
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
+    internal static string Duration(TimeSpan value)
+    {
+        long seconds=(long)Math.Ceiling(Math.Max(0,value.TotalSeconds));
+        return seconds>=3600?$"{seconds/3600}:{seconds%3600/60:00}:{seconds%60:00}":$"{seconds/60:00}:{seconds%60:00}";
+    }
     public static string Tier(bool korean,string tier)=>!korean?tier:tier switch {"Quality"=>"화질 우선","Balanced"=>"균형","Compact"=>"용량 우선","Custom"=>"직접 설정",_=>tier};
     public static string Preset(bool korean,string key)=>!korean?key:key switch {"superfast"=>"초고속","veryfast"=>"매우 빠르게","fast"=>"빠르게","medium"=>"균형","slow"=>"압축 효율 우선",_=>key};
     internal sealed record PresetChoice(string Key,string Label);
@@ -99,7 +104,7 @@ internal static class UiLanguage
     {
         if(!korean)return stage;
         if(stage.StartsWith("Encoding ",StringComparison.Ordinal))return "압축 중 "+stage["Encoding ".Length..];
-        return stage switch {"Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
+        return stage switch {"Diagnostics"=>"하드웨어 진단 중","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
     }
     public static void Apply(Window window,bool korean)
     {

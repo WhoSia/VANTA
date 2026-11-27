@@ -34,7 +34,7 @@
     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
     <TextBlock Text="{Binding Size}" FontSize="20" FontWeight="SemiBold" Margin="0,4,0,2" TextWrapping="Wrap"/>
     <TextBlock Text="{Binding Settings}" TextWrapping="Wrap"/>
-    <TextBlock Text="{Binding Savings}" FontSize="12" Foreground="#526071" TextWrapping="Wrap" Margin="0,4,0,0"/>
+    <TextBlock Text="{Binding Savings}" FontSize="12" Foreground="#526071" TextWrapping="Wrap" Margin="0,4,0,0"/><TextBlock Text="{Binding Timing}" FontSize="12" FontWeight="SemiBold" Foreground="#173B65" TextWrapping="Wrap" Margin="0,5,0,0"/>
   </StackPanel></DataTemplate></ListBox.ItemTemplate>
 </ListBox>
 <TextBlock Text="{DynamicResource Ui009}" FontWeight="SemiBold" Margin="0,16,0,8"/>
