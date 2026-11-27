@@ -11,11 +11,11 @@ internal static class UiLanguage
         ("Ui002","Video compression · 0.4.0 development preview","영상 압축 · 0.4.0 개발 미리 보기"),
         ("Ui003","Open videos… (one or many)","영상 열기… (여러 개 가능)"),
         ("Ui004","Batch queue…","일괄 압축…"),
-        ("Ui005","Check hardware encoders…","하드웨어 인코더 검사…"),
-        ("Ui006","Suggested plans","추천 압축 플랜"),
+        ("Ui005","Check my GPU…","내 GPU 확인…"),
+        ("Ui006","Choose an output size","얼마나 줄일까요?"),
         ("Ui007","Recommendation codec (changing this rebuilds the plans and resets manual settings)","추천 코덱 (변경 시 추천 플랜과 직접 설정 초기화)"),
-        ("Ui008","Profiles are bitrate-budget tiers, not measured quality guarantees.","플랜은 비트레이트 예산을 기준으로 하며 실측 화질을 보장하지 않습니다."),
-        ("Ui009","Encoding settings","압축 설정"),
+        ("Ui008","Start with the middle option if unsure. File size is estimated; picture quality is not measured.","잘 모르겠다면 균형 설정부터 시작하세요. 용량은 예상값이며 화질은 측정하지 않았습니다."),
+        ("Ui009","Detailed compression settings","세부 압축 설정"),
         ("Ui010","Video codec","영상 코덱"),
         ("Ui011","Encoding speed","압축 속도 설정"),
         ("Ui012","Height (pixels, even)","영상 높이 (짝수 픽셀)"),
@@ -87,11 +87,11 @@ internal static class UiLanguage
         ("Ui079","Up","위로"),
         ("Ui080","Down","아래로"),
         ("Ui081","Change submission order before starting. Parallel jobs can finish out of order.","시작 전 대기열 제출 순서를 변경합니다. 병렬 작업의 완료 순서는 다를 수 있습니다."),
-        ("Ui082","FAST PATH / CPU","빠른 압축 / CPU"),
-        ("Ui083","Choose a faster encoder path without changing the selected bitrate or resolution.","선택한 해상도와 비트레이트는 유지하고 더 빠른 압축 경로를 선택하세요."),
+        ("Ui082","Need it faster?","시간이 더 중요하신가요?"),
+        ("Ui083","These options keep your selected resolution and bitrate. H.264 is widely compatible; HEVC can compress more efficiently.","선택한 해상도와 비트레이트는 유지합니다. H.264는 호환성이 좋고 HEVC는 압축 효율이 높을 수 있습니다."),
         ("Ui084","Keep HEVC · veryfast","HEVC · 매우 빠르게"),
         ("Ui085","Explicit HEVC veryfast choice. Same bitrate and height; quality and actual size may differ. No encoding started.","HEVC 매우 빠르게 직접 선택. 해상도와 비트레이트 유지, 실제 화질·용량은 달라질 수 있음. 압축 시작 안 함."),
-        ("Ui086","Not a quality match or speed guarantee. GPU hardware diagnostics are separate.","동일 화질이나 속도 향상을 보장하지 않습니다. GPU 하드웨어 진단은 별도입니다."),
+        ("Ui086","Faster settings may change picture quality or file size. For GPU acceleration, check your GPU above.","빠른 설정은 화질이나 실제 용량에 영향을 줄 수 있습니다. GPU 가속은 위의 내 GPU 확인을 이용하세요."),
         ("Ui087","Fast · H.264","빠른 일괄 · H.264"),
         ("Ui088","Fast · HEVC","빠른 일괄 · HEVC"),
         ("Ui089","Change shared codec and preset, recompute budget tiers. Individual overrides retained. No encoding started.","공통 코덱과 프리셋 변경, 용량 예산 재계산. 개별 설정 유지. 압축 시작 안 함."),
@@ -105,11 +105,16 @@ internal static class UiLanguage
         ("Ui097","Synthetic 3-second benchmark. Compares full verified time, bytes and SSIM. Does not read your video or save a video; may take several minutes.","3초 합성 영상 비교. 검증 포함 전체 시간·용량·SSIM을 측정합니다. 사용자 영상 접근 및 영상 저장 없음. 수 분 소요될 수 있습니다."),
         ("Ui098","Fast device preset · NVENC P1 / QSV veryfast","장치 속도 우선 · NVENC P1 / QSV veryfast"),
         ("Ui099","Explicit NVENC P1 or Intel QSV veryfast. Quality and size may differ from device defaults.","NVENC P1 또는 Intel QSV veryfast 직접 선택. 장치 기본 설정과 화질·용량이 다를 수 있습니다."),
-        ("Ui100","GPU LAB","GPU 시험"),
+        ("Ui100","Graphics device","그래픽 장치"),
         ("Ui101","Resident","GPU 연속 처리"),
         ("Ui102","Fast preset","속도 우선"),
-        ("Ui103","Overlap verification","검증 중첩"),
+        ("Ui103","Encode next while checking","검증 중 다음 영상 압축"),
         ("Ui104","Try GPU batch","GPU 일괄 시험"),
+        ("Ui105","GPU acceleration (optional)","GPU 가속 (선택)"),
+        ("Ui106","Drop a video here, or open a file.","영상을 끌어 놓거나 파일을 여세요."),
+        ("Ui107","Estimated size appears after opening a video.","영상을 열면 예상 용량이 표시됩니다."),
+        ("Ui108","Add videos, choose a common size, then start compression.","영상 추가 → 공통 압축 설정 선택 → 압축 시작"),
+        ("Ui109","Resource settings (optional)","자원 설정 (선택)"),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
@@ -119,6 +124,19 @@ internal static class UiLanguage
         long seconds=(long)Math.Ceiling(Math.Max(0,value.TotalSeconds));
         return seconds>=3600?$"{seconds/3600}:{seconds%3600/60:00}:{seconds%60:00}":$"{seconds/60:00}:{seconds%60:00}";
     }
+    internal static string DeviceName(string id)=>id switch
+    {
+        "h264_nvenc"=>"NVIDIA · H.264","hevc_nvenc"=>"NVIDIA · HEVC",
+        "h264_qsv"=>"Intel Quick Sync · H.264","hevc_qsv"=>"Intel Quick Sync · HEVC",
+        "h264_amf"=>"AMD · H.264","hevc_amf"=>"AMD · HEVC",_=>id
+    };
+    internal static string PlanPurpose(bool korean,string name,bool resize)=>name switch
+    {
+        "Quality"=>Text(korean,"Larger file, gentler compression","덜 줄이고 화질 손실을 줄이는 설정"),
+        "Balanced"=>Text(korean,"Start here if unsure","잘 모르겠다면 이 설정부터"),
+        "Compact"=>resize?Text(korean,"Smaller file, lower resolution","더 작은 파일, 해상도도 낮춤"):Text(korean,"Smaller file, more compression","더 작은 파일, 압축 강도 높음"),
+        _=>Text(korean,"Custom settings","직접 설정")
+    };
     public static string Tier(bool korean,string tier)=>!korean?tier:tier switch {"Quality"=>"화질 우선","Balanced"=>"균형","Compact"=>"용량 우선","Custom"=>"직접 설정",_=>tier};
     public static string Preset(bool korean,string key)=>!korean?key:key switch {"superfast"=>"초고속","veryfast"=>"매우 빠르게","fast"=>"빠르게","medium"=>"균형","slow"=>"압축 효율 우선",_=>key};
     internal sealed record PresetChoice(string Key,string Label);

@@ -232,10 +232,10 @@ public partial class BatchWindow:Window
     private string? HardwareProblem(string? backend,bool resident,bool fast,Row[] ready)
     {
         if(backend is null||!EncoderDiagnostics.HardwareCandidates.Contains(backend))return T("Select an explicit GPU backend.","GPU 장치를 직접 선택하세요.");
-        if((ThreadsBox.SelectedItem as ThreadChoice)?.Count is not null)return T("GPU trials require automatic threads.","GPU 시험은 스레드 자동 설정이 필요합니다.");
+        if((ThreadsBox.SelectedItem as ThreadChoice)?.Count is not null)return T("Open resource settings and set threads to Auto.","자원 설정을 열고 스레드를 자동으로 바꾸세요.");
         if(ready.Length==0)return T("Add ready videos first.","준비된 영상을 먼저 추가하세요.");
         string family=backend.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264";
-        if(ready.Any(r=>r.Plan?.Codec!=family))return T("All ready videos must match the GPU codec family.","준비된 모든 영상의 코덱이 선택한 GPU 코덱과 일치해야 합니다.");
+        if(ready.Any(r=>r.Plan?.Codec!=family))return T("Choose a GPU with the same codec as all ready videos, or edit the individual settings.","준비된 영상과 코덱이 같은 GPU를 선택하거나 영상별 설정을 수정하세요.");
         if(fast&&!FastDevice(backend))return T("Fast preset is available for NVENC/QSV only.","속도 우선 프리셋은 NVENC/QSV만 지원합니다.");
         if(resident&&ready.Any(r=>r.Media?.Codec is not ("h264" or "hevc")||(backend.EndsWith("_amf",StringComparison.Ordinal)&&r.Plan?.Height!=r.Media?.Height)))return T("Resident trials require AVC/HEVC input; AMD preserves original height.","연속 처리 시험은 AVC/HEVC 입력이 필요하며 AMD는 원본 해상도를 유지해야 합니다.");
         return null;

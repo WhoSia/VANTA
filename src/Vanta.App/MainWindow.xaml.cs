@@ -97,10 +97,10 @@ public partial class MainWindow : Window
         finally{applying=false;}
     }
     private EncodeReport? completedReport;
-    private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings,string Timing);
+    private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings,string Timing,string Purpose);
     private bool korean,languageReady;
     private readonly bool persistLanguage;
-    private string statusEn="Open an 8-bit SDR video with AAC audio or no audio.",statusKo="AAC 오디오가 있거나 무음인 8비트 SDR 영상을 열어 주세요.";
+    private string statusEn="Open or drop a video to get started.",statusKo="영상 파일을 열거나 이 창에 끌어 놓으세요.";
     private string T(string en,string ko)=>UiLanguage.Text(korean,en,ko);
     public MainWindow():this(UiLanguage.Load(),true){}
     public MainWindow(bool korean,bool persistLanguage=false)
@@ -113,6 +113,7 @@ public partial class MainWindow : Window
         ThreadsBox.ItemsSource=ThreadChoices.Create(korean);ThreadsBox.SelectedIndex=0;
         LanguageBox.SelectedIndex=korean?1:0;languageReady=true;SetStatus(statusEn,statusKo);
         HardwareBox.ItemsSource=EncoderDiagnostics.HardwareCandidates;
+        RefreshHardwareButton();
         ThreadsBox.SelectionChanged+=(_,_)=>{RefreshPlanTimes();RefreshHardwareButton();};
         SplitBox.Checked+=(_,_)=>{RefreshPlanTimes();RefreshHardwareButton();};SplitBox.Unchecked+=(_,_)=>{RefreshPlanTimes();RefreshHardwareButton();};
     }
@@ -142,7 +143,7 @@ public partial class MainWindow : Window
         RefreshEstimate();RefreshResult();RefreshJobProgress();Status.Text=T(statusEn,statusKo);
         if(persistLanguage){try{UiLanguage.Save(korean);}catch(Exception ex){SetStatus("Could not save language: "+ex.Message,"언어 설정을 저장하지 못했습니다: "+ex.Message);}}
     }
-    private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {UiLanguage.Preset(korean,p.Preset)} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"),TimingText(p,true));
+    private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {UiLanguage.Preset(korean,p.Preset)} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"),TimingText(p,true),UiLanguage.PlanPurpose(korean,p.Name,p.Height<m.Height));
     private void ClearResult()
     {
         completedOutput=null;completedReport=null;RefreshResult();
@@ -226,7 +227,14 @@ public partial class MainWindow : Window
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
             var results=await EncoderDiagnostics.CheckAsync(resolved,EncoderDiagnostics.HardwareCandidates,cts.Token);
-            var detail=string.Join(Environment.NewLine,results.Select(r=>$"{r.Encoder}: {r.State} — {r.Detail}"));SetStatus(detail+Environment.NewLine+"Diagnostic only. Hardware encoding is not enabled.",detail+Environment.NewLine+"진단 전용입니다. 하드웨어 압축은 활성화되지 않았습니다.");
+            var passed=results.Where(r=>r.State=="Sample passed").ToArray();
+            string detail=string.Join(Environment.NewLine,results.Select(r=>UiLanguage.DeviceName(r.Encoder)+": "+r.State+" — "+r.Detail));
+            var matching=passed.Where(r=>activePlan is Plan p&&p.Codec==(r.Encoder.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")).ToArray();
+            if(matching.Length==1)HardwareBox.SelectedItem=matching[0].Encoder;
+            HardwareOptions.IsExpanded=true;
+            string available=string.Join(", ",passed.Select(r=>UiLanguage.DeviceName(r.Encoder)));
+            SetStatus(passed.Length==0?"No GPU passed the short test. Use CPU compression or check the graphics driver.\n"+detail:"Available in short test: "+available+". Choose a matching device; no compression started.\n"+detail,
+                passed.Length==0?"짧은 검사에 성공한 GPU가 없습니다. CPU로 압축하거나 그래픽 드라이버를 확인하세요.\n"+detail:"짧은 검사 성공: "+available+". 현재 코덱과 같은 장치를 선택하세요. 압축은 시작하지 않았습니다.\n"+detail);
         }
         catch(OperationCanceledException){SetStatus("Diagnostics canceled or timed out.","진단이 취소되었거나 제한 시간을 초과했습니다.");}
         catch(Exception ex){SetStatus(ex.Message);}
@@ -285,7 +293,7 @@ public partial class MainWindow : Window
             RefreshEstimate();
         }
         if(rows.Length<3)SetStatus("Fewer than three positive bitrate-budget savings estimates. Custom settings are available.","용량 절감 예산이 가능한 플랜이 3개 미만입니다. 직접 설정할 수 있습니다.");
-        else SetStatus("Select or edit a budget tier. Actual size and quality are not guaranteed.","플랜을 선택하거나 수정하세요. 실제 용량과 화질은 보장되지 않습니다.");
+        else SetStatus("Choose a size above, then save. If speed matters, use a faster CPU option or check your GPU.","위에서 용량을 고른 뒤 저장하세요. 시간이 중요하면 빠른 CPU 압축을 선택하거나 GPU를 검사하세요.");
     }
     private void OnPlan(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {
@@ -315,6 +323,19 @@ public partial class MainWindow : Window
         (!backend!.EndsWith("_amf",StringComparison.Ordinal)||activePlan?.Height==media?.Height);
     private void RefreshHardwareButton()
     {
+        if(HardwareHelp is not null)
+        {
+            string? selectedDevice=HardwareBox?.SelectedItem as string;
+            HardwareHelp.Text=current is not null||encoding?T("Finish or cancel the current task.","현재 작업을 마치거나 취소하세요.")
+                :media is null?T("Open a video first. You can compare devices without a video.","먼저 영상을 여세요. 장치 성능 비교는 영상 없이도 가능합니다.")
+                :TargetPending?T("Apply or clear the target size in detailed settings.","세부 설정에서 목표 용량을 적용하거나 지우세요.")
+                :activePlan is not Plan plan?T("Select a valid compression plan first.","유효한 압축 설정을 먼저 선택하세요.")
+                :selectedDevice is null?T("Check available GPUs, then select a device that matches your codec.","GPU 사용 가능 여부를 검사한 뒤 현재 코덱과 같은 장치를 선택하세요.")
+                :plan.Codec!=(selectedDevice.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")?T("Choose the same H.264 or HEVC family as the selected plan.","현재 압축 설정과 같은 H.264 또는 HEVC 장치를 선택하세요.")
+                :SplitBox.IsChecked==true||(ThreadsBox.SelectedItem as ThreadChoice)?.Count is not null?T("In detailed settings, turn off split and set threads to Auto.","세부 설정에서 분할 압축을 끄고 스레드를 자동으로 설정하세요.")
+                :!ResidentAllowed(selectedDevice)?T("Basic GPU encoding is available to try; full GPU processing is incompatible with this input or height.","GPU 압축은 시험할 수 있지만 현재 입력 형식 또는 해상도로는 GPU 연속 처리를 사용할 수 없습니다.")
+                :T("Start with GPU encoding. Full GPU processing is an experimental alternative; neither is guaranteed until the device test passes.","먼저 GPU 압축을 시험해 보세요. GPU 연속 처리는 실험 기능이며 장치 검사에 성공해야 사용할 수 있습니다.");
+        }
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string);
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=ResidentAllowed(HardwareBox?.SelectedItem as string);
         if(HardwareFastBox is not null){HardwareFastBox.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string)&&HardwareBox.SelectedItem is string nv&&(nv.EndsWith("_nvenc",StringComparison.Ordinal)||nv.EndsWith("_qsv",StringComparison.Ordinal));if(!HardwareFastBox.IsEnabled&&current is null)HardwareFastBox.IsChecked=false;}
@@ -413,12 +434,12 @@ public partial class MainWindow : Window
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=false;
         if(HardwareFastBox is not null)HardwareFastBox.IsEnabled=false;
         if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=current is null&&!encoding&&HardwareBox?.SelectedItem is string selected&&EncoderDiagnostics.HardwareCandidates.Contains(selected);
-        if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
+        if(EncodeButton is null||MoreCompressionButton is null||media is null){RefreshHardwareButton();return;}
         EncodeButton.IsEnabled=false;
         if(TargetPending)
         {
             Estimate.Text=T("Apply the new target or clear it to use the current bitrate.","새 목표 용량을 적용하거나 지워서 현재 비트레이트를 사용하세요.");
-            Evidence.Text="";return;
+            Evidence.Text="";if(AdvancedOptions is not null)AdvancedOptions.IsExpanded=true;RefreshHardwareButton();return;
         }
         try
         {
@@ -435,7 +456,7 @@ public partial class MainWindow : Window
             if(FastHevcButton is not null)FastHevcButton.IsEnabled=EncodeButton.IsEnabled&&tools?.Codecs.Contains("libx265")==true;
             RefreshHardwareButton();
         }
-        catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";}
+        catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";if(AdvancedOptions is not null)AdvancedOptions.IsExpanded=true;RefreshHardwareButton();}
     }
     private void OnTarget(object sender,RoutedEventArgs e)
     {
