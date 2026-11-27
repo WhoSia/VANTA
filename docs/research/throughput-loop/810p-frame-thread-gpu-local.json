@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "environment": "Linux FFmpeg 7.1.5, 4 CPU cgroup quota; no /dev/dri or NVIDIA device nodes observed",
+  "scope": "Actual local retained 9s 1440x810 30fps synthetic sources from owner-810p-speed-local.json, x265 veryfast ABR1791000, 4 requested threads and pools=4, default vs frame-threads=2 two alternating order repetitions per source plus one mixed frame-threads=1 control. 9 completed encodes. Relative decoded frame clocks, audio packet PTS/duration/hash, strict output decode, source SHA and independent SSIM all checked. Timed encode and validation exclude source reference/SSIM/hash. Not full C# or owner hardware. All repeated per-setting outputs deterministic. One of four two-frame-thread pairs faster; none >=15%. Keep auto. GPU local separate synthetic 320x180 12 frame qualification commands modeled on EncoderDiagnostics (no completed output), two AMF absent, four present failed. No device speed claim.",
+  "rows": [
+    {
+      "id": "mixed",
+      "param": "default",
+      "rep": 0,
+      "encode_s": 4.450712345000284,
+      "validation_s": 1.3181591849988763,
+      "total_s": 5.76887152999916,
+      "bytes": 1458534,
+      "sha": "5ee6d19f957010a760cd6f6c150180bc4bbb99cb396d5c06147f36aa320330d2",
+      "mean_ssim": 0.9928754703703704,
+      "worst_second": 0.9874989333333333,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "mixed",
+      "param": "frame-threads=1",
+      "rep": 0,
+      "encode_s": 4.899990892999995,
+      "validation_s": 1.2998882500014588,
+      "total_s": 6.1998791430014535,
+      "bytes": 1500337,
+      "sha": "12d6127e5a5518941a50cc0bd4e2257bab9e4deb493b7e48348812fddb279df5",
+      "mean_ssim": 0.9931681111111111,
+      "worst_second": 0.9877678,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "mixed",
+      "param": "frame-threads=2",
+      "rep": 0,
+      "encode_s": 3.627135583001291,
+      "validation_s": 1.429930988999331,
+      "total_s": 5.057066572000622,
+      "bytes": 1483322,
+      "sha": "bd52eaf85a3e57ed5ccd42c1925abf5a2c9a0864517f113c370e237d904a0046",
+      "mean_ssim": 0.9929700962962963,
+      "worst_second": 0.9875565333333334,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "motion",
+      "param": "frame-threads=2",
+      "rep": 0,
+      "encode_s": 4.51836387000003,
+      "validation_s": 1.5973294010000245,
+      "total_s": 6.115693271000055,
+      "bytes": 2216386,
+      "sha": "c489d291874218ea5f6de8b9c367cb79508118756b5bd8f26cd0bb294a6304de",
+      "mean_ssim": 0.9908173518518518,
+      "worst_second": 0.9887564,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "motion",
+      "param": "default",
+      "rep": 0,
+      "encode_s": 3.96014050300073,
+      "validation_s": 1.6148934430002555,
+      "total_s": 5.5750339460009855,
+      "bytes": 2203485,
+      "sha": "7ac276e806daeff52a77505b3e6460cf6a58f629a52c47cd825b30e9f6add604",
+      "mean_ssim": 0.9907603666666667,
+      "worst_second": 0.9885351,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "mixed",
+      "param": "frame-threads=2",
+      "rep": 1,
+      "encode_s": 4.145162187000096,
+      "validation_s": 1.3782578869995632,
+      "total_s": 5.5234200739996595,
+      "bytes": 1483322,
+      "sha": "bd52eaf85a3e57ed5ccd42c1925abf5a2c9a0864517f113c370e237d904a0046",
+      "mean_ssim": 0.9929700962962963,
+      "worst_second": 0.9875565333333334,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "mixed",
+      "param": "default",
+      "rep": 1,
+      "encode_s": 3.2796360029988136,
+      "validation_s": 1.3138003460007894,
+      "total_s": 4.593436348999603,
+      "bytes": 1458534,
+      "sha": "5ee6d19f957010a760cd6f6c150180bc4bbb99cb396d5c06147f36aa320330d2",
+      "mean_ssim": 0.9928754703703704,
+      "worst_second": 0.9874989333333333,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "motion",
+      "param": "default",
+      "rep": 1,
+      "encode_s": 4.105796342000758,
+      "validation_s": 1.5983913889995165,
+      "total_s": 5.704187731000275,
+      "bytes": 2203485,
+      "sha": "7ac276e806daeff52a77505b3e6460cf6a58f629a52c47cd825b30e9f6add604",
+      "mean_ssim": 0.9907603666666667,
+      "worst_second": 0.9885351,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    },
+    {
+      "id": "motion",
+      "param": "frame-threads=2",
+      "rep": 1,
+      "encode_s": 4.4546395819998,
+      "validation_s": 1.6258370200011996,
+      "total_s": 6.080476602000999,
+      "bytes": 2216386,
+      "sha": "c489d291874218ea5f6de8b9c367cb79508118756b5bd8f26cd0bb294a6304de",
+      "mean_ssim": 0.9908173518518518,
+      "worst_second": 0.9887564,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0
+    }
+  ],
+  "pairs": [
+    {
+      "id": "mixed",
+      "rep": 0,
+      "param": "frame-threads=1",
+      "timeReduction": -0.07471263847027565,
+      "sizeDelta": 0.02866097053616845,
+      "meanDelta": 0.0002926407407407572,
+      "worstDelta": 0.00026886666666670056,
+      "matched": true
+    },
+    {
+      "id": "mixed",
+      "rep": 0,
+      "param": "frame-threads=2",
+      "timeReduction": 0.12338720914428858,
+      "sizeDelta": 0.016995147182033543,
+      "meanDelta": 0.00009462592592590635,
+      "worstDelta": 0.000057600000000102014,
+      "matched": true
+    },
+    {
+      "id": "motion",
+      "rep": 0,
+      "param": "frame-threads=2",
+      "timeReduction": -0.09697866062087179,
+      "sizeDelta": 0.005854816347740099,
+      "meanDelta": 0.000056985185185154386,
+      "worstDelta": 0.00022129999999997985,
+      "matched": true
+    },
+    {
+      "id": "mixed",
+      "rep": 1,
+      "param": "frame-threads=2",
+      "timeReduction": -0.20245926020126426,
+      "sizeDelta": 0.016995147182033543,
+      "meanDelta": 0.00009462592592590635,
+      "worstDelta": 0.000057600000000102014,
+      "matched": true
+    },
+    {
+      "id": "motion",
+      "rep": 1,
+      "param": "frame-threads=2",
+      "timeReduction": -0.06596712603894961,
+      "sizeDelta": 0.005854816347740099,
+      "meanDelta": 0.000056985185185154386,
+      "worstDelta": 0.00022129999999997985,
+      "matched": true
+    }
+  ],
+  "gpu": [
+    {
+      "backend": "h264_nvenc",
+      "exit": 255,
+      "seconds": 0.5790091250000842,
+      "reason": "Cannot load libcuda.so.1"
+    },
+    {
+      "backend": "hevc_nvenc",
+      "exit": 255,
+      "seconds": 0.5918734709994169,
+      "reason": "Cannot load libcuda.so.1"
+    },
+    {
+      "backend": "h264_qsv",
+      "exit": 171,
+      "seconds": 0.577201389000038,
+      "reason": "Error creating a MFX session: -9."
+    },
+    {
+      "backend": "hevc_qsv",
+      "exit": 171,
+      "seconds": 0.5875730669995392,
+      "reason": "Error creating a MFX session: -9."
+    },
+    {
+      "backend": "h264_amf",
+      "reason": "Not listed"
+    },
+    {
+      "backend": "hevc_amf",
+      "reason": "Not listed"
+    }
+  ]
+}
