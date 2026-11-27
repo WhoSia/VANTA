@@ -1,0 +1,439 @@
+{
+  "head": "f94ec0ab1ccde8619112f0a2ffaf56f972cad2ec",
+  "run": 46028056549,
+  "attempt": 2,
+  "artifacts": [
+    {
+      "id": 15213470912,
+      "name": "synthetic-device-screen-hevc_nvenc",
+      "digest": "sha256:689f7efce2e4e16c362445039165534fe6bbc63fb3f9562a4795c3af8593a9c5",
+      "size": 1224
+    },
+    {
+      "id": 15213306212,
+      "name": "synthetic-device-screen-hevc_amf",
+      "digest": "sha256:517d8ad4776ad3411e96893940e711177ea34198d4e33fd3524f039e4066ff25",
+      "size": 1198
+    },
+    {
+      "id": 15212488985,
+      "name": "synthetic-device-screen-hevc_qsv",
+      "digest": "sha256:4ca5adb64a1a4b0b39be1a8bf6f10645ef79aa417cd6fa22c006185856593afd",
+      "size": 1263
+    }
+  ],
+  "reports": [
+    {
+      "job": 140606516130,
+      "report": {
+        "Backend": "hevc_qsv",
+        "FfmpegVersion": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+        "SourceSha": "560A44B70BBCC4BF4221E9CDF2FB340303E0BA5CEAA0A6A8C3DDFC6AD1155221",
+        "LogicalProcessors": 4,
+        "Rows": [
+          {
+            "Mode": "CPU medium",
+            "State": "Verified",
+            "Detail": null,
+            "Report": {
+              "Preparation": "00:00:00.3829951",
+              "Encoding": "00:00:02.2182764",
+              "OutputProbe": "00:00:00.0657075",
+              "TimelineCheck": "00:00:00.4397062",
+              "AudioHashCheck": "00:00:00.1351369",
+              "FullDecode": "00:00:00.2069716",
+              "Publication": "00:00:00.0004319",
+              "Total": "00:00:03.4492256",
+              "OutputBytes": 708655,
+              "InputBytes": 888488,
+              "ConcurrentTimelineDecode": null,
+              "SingleDecodeValidation": false,
+              "RequestedEncoderThreads": null,
+              "AppliedPlan": {
+                "Name": "Device screen",
+                "Codec": "libx265",
+                "Height": 810,
+                "VideoBitsPerSecond": 1791000,
+                "AudioBitsPerSecond": 0,
+                "Preset": "medium",
+                "TwoPass": false,
+                "CopyAudio": true
+              },
+              "HardwareEncoder": null,
+              "GpuResident": false,
+              "HardwarePreset": null,
+              "QsvAsyncDepth": null,
+              "HardwareQualification": "00:00:00",
+              "InterleavedAudioPeakPending": null,
+              "InterleavedAudioFallbackUsed": false,
+              "ValidationAdmissionWait": "00:00:00",
+              "Validation": "00:00:00.8475222"
+            },
+            "MeanSsim": 0.9920673666666661,
+            "WorstSecond": 0.9913717666666666,
+            "OrdinaryCheckSeconds": 0.6010755,
+            "CombinedCheckSeconds": 0.448452
+          },
+          {
+            "Mode": "CPU veryfast",
+            "State": "Verified",
+            "Detail": null,
+            "Report": {
+              "Preparation": "00:00:00.0724991",
+              "Encoding": "00:00:01.6501741",
+              "OutputProbe": "00:00:00.0574926",
+              "TimelineCheck": "00:00:00.3549685",
+              "AudioHashCheck": "00:00:00.1138211",
+              "FullDecode": "00:00:00.1645493",
+              "Publication": "00:00:00.0004091",
+              "Total": "00:00:02.4139138",
+              "OutputBytes": 694680,
+              "InputBytes": 888488,
+              "ConcurrentTimelineDecode": null,
+              "SingleDecodeValidation": false,
+              "RequestedEncoderThreads": null,
+              "AppliedPlan": {
+                "Name": "Device screen",
+                "Codec": "libx265",
+                "Height": 810,
+                "VideoBitsPerSecond": 1791000,
+                "AudioBitsPerSecond": 0,
+                "Preset": "veryfast",
+                "TwoPass": false,
+                "CopyAudio": true
+              },
+              "HardwareEncoder": null,
+              "GpuResident": false,
+              "HardwarePreset": null,
+              "QsvAsyncDepth": null,
+              "HardwareQualification": "00:00:00",
+              "InterleavedAudioPeakPending": null,
+              "InterleavedAudioFallbackUsed": false,
+              "ValidationAdmissionWait": "00:00:00",
+              "Validation": "00:00:00.6908315"
+            },
+            "MeanSsim": 0.9906687666666666,
+            "WorstSecond": 0.9889559666666667,
+            "OrdinaryCheckSeconds": 0.5152681,
+            "CombinedCheckSeconds": 0.3836079
+          },
+          {
+            "Mode": "GPU encode",
+            "State": "Rejected",
+            "Detail": "hevc_qsv hardware qualification failed: Failed — [hevc_qsv @ 0000018b21a42d40] Error creating a MFX session: -9.",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU resident",
+            "State": "Rejected",
+            "Detail": "hevc_qsv hardware qualification failed: Failed — [hevc_qsv @ 000001d938760640] Error creating a MFX session: -9.",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU encode veryfast",
+            "State": "Rejected",
+            "Detail": "hevc_qsv hardware qualification failed: Failed — [hevc_qsv @ 000002a098f82340] Error creating a MFX session: -9.",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU resident veryfast",
+            "State": "Rejected",
+            "Detail": "hevc_qsv hardware qualification failed: Failed — [hevc_qsv @ 0000020b3394f800] Error creating a MFX session: -9.",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU resident veryfast depth8",
+            "State": "Rejected",
+            "Detail": "hevc_qsv hardware qualification failed: Failed — [hevc_qsv @ 00000237c59d0900] Error creating a MFX session: -9.",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU resident veryfast depth16",
+            "State": "Rejected",
+            "Detail": "hevc_qsv hardware qualification failed: Failed — [hevc_qsv @ 00000218d4b90bc0] Error creating a MFX session: -9.",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          }
+        ]
+      }
+    },
+    {
+      "job": 140606519302,
+      "report": {
+        "Backend": "hevc_nvenc",
+        "FfmpegVersion": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+        "SourceSha": "7ECA73158DF1B1C9AC71D08024E17643A20DE0E81A752EEA75D896A263A98ABB",
+        "LogicalProcessors": 4,
+        "Rows": [
+          {
+            "Mode": "CPU medium",
+            "State": "Verified",
+            "Detail": null,
+            "Report": {
+              "Preparation": "00:00:00.1867167",
+              "Encoding": "00:00:03.5712866",
+              "OutputProbe": "00:00:00.0925837",
+              "TimelineCheck": "00:00:00.5965104",
+              "AudioHashCheck": "00:00:00.2007702",
+              "FullDecode": "00:00:00.2934966",
+              "Publication": "00:00:00.0005282",
+              "Total": "00:00:04.9418924",
+              "OutputBytes": 708388,
+              "InputBytes": 889157,
+              "ConcurrentTimelineDecode": null,
+              "SingleDecodeValidation": false,
+              "RequestedEncoderThreads": null,
+              "AppliedPlan": {
+                "Name": "Device screen",
+                "Codec": "libx265",
+                "Height": 810,
+                "VideoBitsPerSecond": 1791000,
+                "AudioBitsPerSecond": 0,
+                "Preset": "medium",
+                "TwoPass": false,
+                "CopyAudio": true
+              },
+              "HardwareEncoder": null,
+              "GpuResident": false,
+              "HardwarePreset": null,
+              "QsvAsyncDepth": null,
+              "HardwareQualification": "00:00:00",
+              "InterleavedAudioPeakPending": null,
+              "InterleavedAudioFallbackUsed": false,
+              "ValidationAdmissionWait": "00:00:00",
+              "Validation": "00:00:01.1833609"
+            },
+            "MeanSsim": 0.992084522222222,
+            "WorstSecond": 0.9913717666666666,
+            "OrdinaryCheckSeconds": 0.9070144,
+            "CombinedCheckSeconds": 0.6465046
+          },
+          {
+            "Mode": "CPU veryfast",
+            "State": "Verified",
+            "Detail": null,
+            "Report": {
+              "Preparation": "00:00:00.0968901",
+              "Encoding": "00:00:02.2520956",
+              "OutputProbe": "00:00:00.0813295",
+              "TimelineCheck": "00:00:00.5085200",
+              "AudioHashCheck": "00:00:00.1610107",
+              "FullDecode": "00:00:00.2060327",
+              "Publication": "00:00:00.0004737",
+              "Total": "00:00:03.3063523",
+              "OutputBytes": 695168,
+              "InputBytes": 889157,
+              "ConcurrentTimelineDecode": null,
+              "SingleDecodeValidation": false,
+              "RequestedEncoderThreads": null,
+              "AppliedPlan": {
+                "Name": "Device screen",
+                "Codec": "libx265",
+                "Height": 810,
+                "VideoBitsPerSecond": 1791000,
+                "AudioBitsPerSecond": 0,
+                "Preset": "veryfast",
+                "TwoPass": false,
+                "CopyAudio": true
+              },
+              "HardwareEncoder": null,
+              "GpuResident": false,
+              "HardwarePreset": null,
+              "QsvAsyncDepth": null,
+              "HardwareQualification": "00:00:00",
+              "InterleavedAudioPeakPending": null,
+              "InterleavedAudioFallbackUsed": false,
+              "ValidationAdmissionWait": "00:00:00",
+              "Validation": "00:00:00.9568929"
+            },
+            "MeanSsim": 0.9906760444444447,
+            "WorstSecond": 0.9889559666666667,
+            "OrdinaryCheckSeconds": 0.623711,
+            "CombinedCheckSeconds": 0.4534856
+          },
+          {
+            "Mode": "GPU encode",
+            "State": "Rejected",
+            "Detail": "hevc_nvenc hardware qualification failed: Failed — [hevc_nvenc @ 000001f241150a80] Cannot load nvcuda.dll",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU resident",
+            "State": "Rejected",
+            "Detail": "hevc_nvenc hardware qualification failed: Failed — [hevc_nvenc @ 00000202630cee40] Cannot load nvcuda.dll",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU encode P1",
+            "State": "Rejected",
+            "Detail": "hevc_nvenc hardware qualification failed: Failed — [hevc_nvenc @ 0000021a9fabdd40] Cannot load nvcuda.dll",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU resident P1",
+            "State": "Rejected",
+            "Detail": "hevc_nvenc hardware qualification failed: Failed — [hevc_nvenc @ 000001b5dabef780] Cannot load nvcuda.dll",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          }
+        ]
+      }
+    },
+    {
+      "job": 140606565395,
+      "report": {
+        "Backend": "hevc_amf",
+        "FfmpegVersion": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+        "SourceSha": "7ECA73158DF1B1C9AC71D08024E17643A20DE0E81A752EEA75D896A263A98ABB",
+        "LogicalProcessors": 4,
+        "Rows": [
+          {
+            "Mode": "CPU medium",
+            "State": "Verified",
+            "Detail": null,
+            "Report": {
+              "Preparation": "00:00:00.2733679",
+              "Encoding": "00:00:02.9959468",
+              "OutputProbe": "00:00:00.0851629",
+              "TimelineCheck": "00:00:00.5868192",
+              "AudioHashCheck": "00:00:00.1740855",
+              "FullDecode": "00:00:00.2840989",
+              "Publication": "00:00:00.0008016",
+              "Total": "00:00:04.4002828",
+              "OutputBytes": 708388,
+              "InputBytes": 889157,
+              "ConcurrentTimelineDecode": null,
+              "SingleDecodeValidation": false,
+              "RequestedEncoderThreads": null,
+              "AppliedPlan": {
+                "Name": "Device screen",
+                "Codec": "libx265",
+                "Height": 810,
+                "VideoBitsPerSecond": 1791000,
+                "AudioBitsPerSecond": 0,
+                "Preset": "medium",
+                "TwoPass": false,
+                "CopyAudio": true
+              },
+              "HardwareEncoder": null,
+              "GpuResident": false,
+              "HardwarePreset": null,
+              "QsvAsyncDepth": null,
+              "HardwareQualification": "00:00:00",
+              "InterleavedAudioPeakPending": null,
+              "InterleavedAudioFallbackUsed": false,
+              "ValidationAdmissionWait": "00:00:00",
+              "Validation": "00:00:01.1301665"
+            },
+            "MeanSsim": 0.992084522222222,
+            "WorstSecond": 0.9913717666666666,
+            "OrdinaryCheckSeconds": 0.7892187,
+            "CombinedCheckSeconds": 0.5637129
+          },
+          {
+            "Mode": "CPU veryfast",
+            "State": "Verified",
+            "Detail": null,
+            "Report": {
+              "Preparation": "00:00:00.0841464",
+              "Encoding": "00:00:01.8032878",
+              "OutputProbe": "00:00:00.0719243",
+              "TimelineCheck": "00:00:00.4298417",
+              "AudioHashCheck": "00:00:00.1582619",
+              "FullDecode": "00:00:00.2037228",
+              "Publication": "00:00:00.0004651",
+              "Total": "00:00:02.7516500",
+              "OutputBytes": 695168,
+              "InputBytes": 889157,
+              "ConcurrentTimelineDecode": null,
+              "SingleDecodeValidation": false,
+              "RequestedEncoderThreads": null,
+              "AppliedPlan": {
+                "Name": "Device screen",
+                "Codec": "libx265",
+                "Height": 810,
+                "VideoBitsPerSecond": 1791000,
+                "AudioBitsPerSecond": 0,
+                "Preset": "veryfast",
+                "TwoPass": false,
+                "CopyAudio": true
+              },
+              "HardwareEncoder": null,
+              "GpuResident": false,
+              "HardwarePreset": null,
+              "QsvAsyncDepth": null,
+              "HardwareQualification": "00:00:00",
+              "InterleavedAudioPeakPending": null,
+              "InterleavedAudioFallbackUsed": false,
+              "ValidationAdmissionWait": "00:00:00",
+              "Validation": "00:00:00.8637507"
+            },
+            "MeanSsim": 0.9906760444444447,
+            "WorstSecond": 0.9889559666666667,
+            "OrdinaryCheckSeconds": 0.6542942,
+            "CombinedCheckSeconds": 0.4917913
+          },
+          {
+            "Mode": "GPU encode",
+            "State": "Rejected",
+            "Detail": "hevc_amf hardware qualification failed: Failed — [AMF @ 000001ea34873340] DLL amfrt64.dll failed to open",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          },
+          {
+            "Mode": "GPU resident",
+            "State": "Rejected",
+            "Detail": "hevc_amf hardware qualification failed: Failed — [AMF @ 00000174b861e340] DLL amfrt64.dll failed to open",
+            "Report": null,
+            "MeanSsim": null,
+            "WorstSecond": null,
+            "OrdinaryCheckSeconds": null,
+            "CombinedCheckSeconds": null
+          }
+        ]
+      }
+    }
+  ],
+  "scope": "One synthetic Windows trial per mode. CPU positive controls, unavailable GPU qualification refusals; QSV depth lanes do not establish async depth support or throughput."
+}
