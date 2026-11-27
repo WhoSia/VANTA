@@ -136,7 +136,12 @@ internal static class DesktopSmoke
             Check(speed.IsEnabled,"Speed shortcut available");
             speed.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(codec.SelectedItem as string=="libx264"&&Get<ComboBox>(main,"PresetBox").SelectedValue as string=="veryfast"&&height.Text==oldHeight&&rate.Text==oldRate&&split.IsChecked==false&&plans.SelectedIndex==-1&&encode.IsEnabled,"Speed shortcut changes only codec/preset and clears split");
+            var fastHevc=Get<Button>(main,"FastHevcButton");
+            Check(fastHevc.IsEnabled,"HEVC speed path available");
+            fastHevc.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(codec.SelectedItem as string=="libx265"&&Get<ComboBox>(main,"PresetBox").SelectedValue as string=="veryfast"&&height.Text==oldHeight&&rate.Text==oldRate&&encode.IsEnabled,"HEVC shortcut retains rate and dimensions");
             target.Text="invalid";
+            Check(!fastHevc.IsEnabled,"Pending target disables HEVC speed shortcut");
             Check(!speed.IsEnabled,"Pending target disables speed shortcut");
             speed.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(target.Text=="invalid"&&!encode.IsEnabled,"Speed shortcut cannot bypass target gate");
@@ -192,6 +197,12 @@ internal static class DesktopSmoke
                 Get<ComboBox>(batch,"ParallelBox").SelectedItem=2;
                 Get<ComboBox>(batch,"ThreadsBox").SelectedIndex=0;
                 await batch.AddAsync([source,second]);
+                var batchFast=Get<Button>(batch,"BatchSpeedButton");
+                Check(batchFast.IsEnabled,"Shared fast path available for analyzed files");
+                batchFast.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Check(Get<ComboBox>(batch,"RecommendationBox").SelectedItem?.ToString()=="H.264"&&Get<ComboBox>(batch,"SharedPresetBox").SelectedValue as string=="veryfast","Batch fast path selects AVC veryfast");
+                // Restore the initial shared codec to keep the prior timing-context scenario comparable.
+                Get<ComboBox>(batch,"RecommendationBox").SelectedIndex=0;
                 var start=Get<Button>(batch,"StartButton");
                 Check(start.IsEnabled&&(string)start.Content=="영상 2개 압축 시작","Batch action counts ready files");
                 Check(Get<TextBlock>(batch,"BatchPreflightText").Text.Contains("0/2"),"First batch preflight does not invent time");
@@ -208,6 +219,7 @@ internal static class DesktopSmoke
                 Check(ReferenceEquals(orderGrid.Items[0],secondRow),"Move up changes submission order");
                 var batchRun=batch.StartAsync();
                 Check(!Get<Button>(batch,"QueueDownButton").IsEnabled,"Running queue cannot reorder");
+                Check(!batchFast.IsEnabled&&!Get<Button>(batch,"BatchHevcButton").IsEnabled,"Running batch disables shared fast paths");
                 Get<Button>(batch,"QueueDownButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Check(ReferenceEquals(orderGrid.Items[0],secondRow),"Routed reorder event cannot bypass running guard");
                 Check(batchLanguage.IsEnabled&&!start.IsEnabled,"Language available during batch encode");

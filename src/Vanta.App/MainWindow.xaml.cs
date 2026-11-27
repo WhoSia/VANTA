@@ -216,6 +216,7 @@ public partial class MainWindow : Window
         encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
         StartJobProgress(true,"Diagnostics");
+        SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=false;
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
@@ -236,7 +237,7 @@ public partial class MainWindow : Window
         current?.Cancel();ClearResult();appliedTarget=null;
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
-        CancelButton.IsEnabled=true;StartJobProgress(true,"Analyzing");RefreshPreflightEta();
+        CancelButton.IsEnabled=true;SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=false;StartJobProgress(true,"Analyzing");RefreshPreflightEta();
         try
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
@@ -301,20 +302,23 @@ public partial class MainWindow : Window
     {
         if(RateChoicesBox.SelectedItem is string rate){RateBox.Text=rate;RateChoicesBox.SelectedIndex=-1;}
     }
-    private void OnSpeedFirst(object sender,RoutedEventArgs e)
+    private void OnSpeedFirst(object sender,RoutedEventArgs e)=>ApplyFastPath("libx264");
+    private void OnFastHevc(object sender,RoutedEventArgs e)=>ApplyFastPath("libx265");
+    private void ApplyFastPath(string codec)
     {
-        if(current is not null||encoding||TargetPending||media is null||activePlan is not Plan p||tools is null||!tools.Codecs.Contains("libx264"))return;
+        if(current is not null||encoding||TargetPending||media is null||activePlan is not Plan p||tools is null||!tools.Codecs.Contains(codec))return;
         applying=true;
         try
         {
             Plans.SelectedIndex=-1;
-            CodecBox.SelectedItem="libx264";PresetBox.SelectedValue="veryfast";
+            CodecBox.SelectedItem=codec;PresetBox.SelectedValue="veryfast";
             SplitBox.IsChecked=false;
         }
         finally{applying=false;}
         RefreshEstimate();
-        SetStatus("H.264 veryfast selected; resolution and bitrate unchanged. Split disabled. Actual quality and size may differ. No encoding started.",
-            "H.264 매우 빠르게 설정을 적용했습니다. 해상도와 비트레이트는 그대로이며 분할 압축은 해제했습니다. 실제 화질과 용량은 달라질 수 있습니다. 압축은 아직 시작하지 않았습니다.");
+        string label=codec=="libx265"?"HEVC":"H.264";
+        SetStatus(label+" veryfast selected; resolution and bitrate unchanged. Split disabled. Actual quality and size may differ. No encoding started.",
+            label+" 매우 빠르게 설정을 적용했습니다. 해상도와 비트레이트는 그대로이며 분할 압축은 해제했습니다. 실제 화질과 용량은 달라질 수 있습니다. 압축은 아직 시작하지 않았습니다.");
     }
     private void OnMoreCompression(object sender,RoutedEventArgs e)
     {
@@ -333,6 +337,7 @@ public partial class MainWindow : Window
         RefreshPreflightEta();
         if(MoreCompressionButton is not null)MoreCompressionButton.IsEnabled=false;
         if(SpeedFirstButton is not null)SpeedFirstButton.IsEnabled=false;
+        if(FastHevcButton is not null)FastHevcButton.IsEnabled=false;
         if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
         EncodeButton.IsEnabled=false;
         if(TargetPending)
@@ -352,6 +357,7 @@ public partial class MainWindow : Window
             EncodeButton.IsEnabled=current is null&&!encoding;
             MoreCompressionButton.IsEnabled=EncodeButton.IsEnabled&&p.VideoBitsPerSecond>PlanRules.MinimumVideoRate;
             if(SpeedFirstButton is not null)SpeedFirstButton.IsEnabled=EncodeButton.IsEnabled&&tools?.Codecs.Contains("libx264")==true;
+            if(FastHevcButton is not null)FastHevcButton.IsEnabled=EncodeButton.IsEnabled&&tools?.Codecs.Contains("libx265")==true;
         }
         catch(Exception ex){Estimate.Text=ex.Message;Evidence.Text="";}
     }
@@ -412,6 +418,7 @@ public partial class MainWindow : Window
         var timingKey=CurrentTimingKey(p);
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         StartJobProgress(split);
+        SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=false;
         if(!split&&timingKey is not null&&timings.TryGetValue(timingKey,out var prior))previousTail=CompletionReference.Tail(prior);
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;ProgressCard.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
         try

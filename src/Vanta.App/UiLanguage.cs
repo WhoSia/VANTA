@@ -87,6 +87,14 @@ internal static class UiLanguage
         ("Ui079","Up","위로"),
         ("Ui080","Down","아래로"),
         ("Ui081","Change submission order before starting. Parallel jobs can finish out of order.","시작 전 대기열 제출 순서를 변경합니다. 병렬 작업의 완료 순서는 다를 수 있습니다."),
+        ("Ui082","FAST PATH / CPU","빠른 압축 / CPU"),
+        ("Ui083","Choose a faster encoder path without changing the selected bitrate or resolution.","선택한 해상도와 비트레이트는 유지하고 더 빠른 압축 경로를 선택하세요."),
+        ("Ui084","Keep HEVC · veryfast","HEVC · 매우 빠르게"),
+        ("Ui085","Explicit HEVC veryfast choice. Same bitrate and height; quality and actual size may differ. No encoding started.","HEVC 매우 빠르게 직접 선택. 해상도와 비트레이트 유지, 실제 화질·용량은 달라질 수 있음. 압축 시작 안 함."),
+        ("Ui086","Not a quality match or speed guarantee. GPU hardware diagnostics are separate.","동일 화질이나 속도 향상을 보장하지 않습니다. GPU 하드웨어 진단은 별도입니다."),
+        ("Ui087","Fast · H.264","빠른 일괄 · H.264"),
+        ("Ui088","Fast · HEVC","빠른 일괄 · HEVC"),
+        ("Ui089","Change shared codec and preset, recompute budget tiers. Individual overrides retained. No encoding started.","공통 코덱과 프리셋 변경, 용량 예산 재계산. 개별 설정 유지. 압축 시작 안 함."),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;

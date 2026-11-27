@@ -207,6 +207,19 @@ public partial class BatchWindow:Window
         }
         catch(Exception ex){Summary.Text="Could not reset defaults: "+ex.Message;}
     }
+    private void OnBatchSpeed(object sender,RoutedEventArgs e)=>ApplySharedFast("libx264");
+    private void OnBatchHevc(object sender,RoutedEventArgs e)=>ApplySharedFast("libx265");
+    private void ApplySharedFast(string codec)
+    {
+        if(current is not null||tools is null||!tools.Codecs.Contains(codec)||!rows.Any(r=>r.Media is not null&&r.State is "Ready" or "Skipped"))return;
+        var choice=RecommendationBox.Items.Cast<RecommendationChoice>().FirstOrDefault(c=>c.Codec==codec);
+        if(choice is null)return;
+        initialized=false;
+        try{RecommendationBox.SelectedItem=choice;SharedPresetBox.SelectedValue="veryfast";}
+        finally{initialized=true;}
+        Replan();
+        Summary.Text+=T(" | Shared codec and preset changed; budget recalculated, individual overrides retained."," | 공통 코덱·프리셋 변경, 용량 예산 재계산, 개별 설정 유지.");
+    }
     private void OnProfile(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)Replan();}
     private void OnResourceSettings(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)UpdateSummary();}
     private void SetBusy(bool busy)
@@ -237,6 +250,9 @@ public partial class BatchWindow:Window
     {
         var row=Queue.SelectedItem as Row;
         bool idle=current is null;
+        bool canFast=idle&&tools is not null&&rows.Any(r=>r.Media is not null&&(r.State is "Ready" or "Skipped"));
+        BatchSpeedButton.IsEnabled=canFast&&tools?.Codecs.Contains("libx264")==true;
+        BatchHevcButton.IsEnabled=canFast&&tools?.Codecs.Contains("libx265")==true;
         int readyIndex=-1,readyCount=0;
         foreach(var readyRow in rows.Where(r=>r.State=="Ready"))
         {
