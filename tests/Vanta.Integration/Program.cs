@@ -35,6 +35,12 @@ if(args.Length==2&&args[0]=="--synthetic-frontier")
     await MotionSearchScreen.RunAsync(Path.ChangeExtension(args[1],".motion.jsonl"),frontierTimeout.Token);
     return;
 }
+if(args.Length==4&&args[0]=="--preset-frontier-fixture")
+{
+    using var rateShardTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(28));
+    await PresetFrontierScreen.RunAsync(args[2],args[3],rateShardTimeout.Token,args[1]);
+    return;
+}
 if(args.Length==3&&args[0]=="--preset-frontier")
 {
     using var frontierTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(24));

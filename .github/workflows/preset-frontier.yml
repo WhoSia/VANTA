@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/preset-frontier.yml'
       - 'tests/corpus/**'
+      - 'tests/Vanta.Integration/PresetFrontierScreen.cs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,7 +15,11 @@ concurrency:
 jobs:
   cohort:
     runs-on: windows-latest
-    timeout-minutes: 36
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [animation-bbb, waterfall-portrait, screen-recording, slow-motion-drops, earth-1080p60, earth-4k60]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,7 +31,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts/preset-frontier | Out-Null
-          "commit=$env:GITHUB_SHA" | Set-Content artifacts/preset-frontier/attempt.txt
+          "commit=$env:GITHUB_SHA fixture=${{ matrix.fixture }}" | Set-Content artifacts/preset-frontier/attempt.txt
       - name: Resolve FFmpeg
         shell: pwsh
         run: |
@@ -64,13 +69,13 @@ jobs:
         shell: pwsh
         run: |
           if ($env:VANTA_FFMPEG_DIR) { $env:Path = $env:VANTA_FFMPEG_DIR + ';' + $env:Path }
-          python -S tests/corpus/prepare.py --work "$env:RUNNER_TEMP/vanta-preset-frontier" --report artifacts/preset-frontier
+          python -S tests/corpus/prepare.py --work "$env:RUNNER_TEMP/vanta-preset-frontier" --report artifacts/preset-frontier --only ${{ matrix.fixture }}
       - name: Execute measured comparisons
-        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --preset-frontier artifacts/preset-frontier/intake.json artifacts/preset-frontier/results.jsonl
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --preset-frontier-fixture ${{ matrix.fixture }} artifacts/preset-frontier/intake.json artifacts/preset-frontier/results.jsonl
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: VANTA-preset-frontier-evidence
+          name: VANTA-preset-frontier-${{ matrix.fixture }}
           path: artifacts/preset-frontier/
           if-no-files-found: error
           retention-days: 14
