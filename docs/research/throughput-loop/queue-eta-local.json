@@ -1,0 +1,333 @@
+{
+  "schema": 1,
+  "environment": "Linux FFmpeg 7.1.5, 4 CPU cgroup quota",
+  "scope": "Six synthetic silent 720p30 12s AVC sources, CBR4Mbps with filler (not six independent natural contents). H264 veryfast 2Mbps, fixed 2 requested threads per job in both serial/parallel lanes, three train and three held-out sources, each lane once. Train serial→parallel; test parallel→serial. Actual Python ThreadPoolExecutor; source/output decoded PTS, strict decode, source SHA unchanged and identical output SHA between lanes. Timed job encode and validation; wall includes scheduling and output/source hashing and cleanup. No C# or user-PC performance inference. Quality not separately measured because same-source lane outputs exact. Prior duration range raw proxy and replay of product rounding separately shown; only two holdout batches, not calibration or guarantee.",
+  "sources": [
+    {
+      "id": "motion",
+      "bytes": 6189319,
+      "sha": "0c494bcb7b543906928fe91bfce3064d5fbbe588a05e90859eac64b151141c2f",
+      "rate": 4124622,
+      "seconds": 12,
+      "frames": 360
+    },
+    {
+      "id": "inverted",
+      "bytes": 6187038,
+      "sha": "36a4435a57fdcf4aab94ed005ee876dd448863508c4bfcc3eda4199289956f52",
+      "rate": 4123102,
+      "seconds": 12,
+      "frames": 360
+    },
+    {
+      "id": "mixed",
+      "bytes": 6270546,
+      "sha": "dc7f39ff89ea0646e47d04e9316e5df30a61cb2a707e47be3daa1125327f34f0",
+      "rate": 4178763,
+      "seconds": 12,
+      "frames": 360
+    },
+    {
+      "id": "late",
+      "bytes": 6271285,
+      "sha": "bc6ea6b38dd3d9424196da9f556d9e3bb21724aa6e5a2efeb6ac875aec978ed0",
+      "rate": 4179264,
+      "seconds": 12,
+      "frames": 360
+    },
+    {
+      "id": "grain",
+      "bytes": 6020675,
+      "sha": "fe49dadc8f0a5a7955b3eea47ab5377840865b94d3c8cce77a664b6b6eab0757",
+      "rate": 4012209,
+      "seconds": 12,
+      "frames": 360
+    },
+    {
+      "id": "detail",
+      "bytes": 6209185,
+      "sha": "812097e644a75b1d67e59c8738e548297b15c51d4f641f4e7d5d09df85cedd49",
+      "rate": 4137866,
+      "seconds": 12,
+      "frames": 360
+    }
+  ],
+  "rows": [
+    {
+      "group": "train",
+      "workers": 1,
+      "id": "motion",
+      "admitted": 0.005484855999839056,
+      "finished": 3.4051770959999885,
+      "seconds": 3.3996922400001495,
+      "encoding_s": 1.8864567320001697,
+      "output_bytes": 2996504,
+      "output_sha": "d4994c8c4d9815766dd20a80ce4b312d2978830e4514fce924e9e2de96071739",
+      "source_sha": "0c494bcb7b543906928fe91bfce3064d5fbbe588a05e90859eac64b151141c2f",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "train",
+      "workers": 1,
+      "id": "inverted",
+      "admitted": 3.4172503539998615,
+      "finished": 6.654852512000161,
+      "seconds": 3.2376021580003,
+      "encoding_s": 1.798916095000095,
+      "output_bytes": 2995058,
+      "output_sha": "422f402951c84f31b23f53879e15650b800aea8c93581fc81e868db5292325d4",
+      "source_sha": "36a4435a57fdcf4aab94ed005ee876dd448863508c4bfcc3eda4199289956f52",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "train",
+      "workers": 1,
+      "id": "mixed",
+      "admitted": 6.667429647000063,
+      "finished": 9.476799999999912,
+      "seconds": 2.8093703529998493,
+      "encoding_s": 1.453446363999774,
+      "output_bytes": 3107815,
+      "output_sha": "78287299164302550df935aa47c993d4cdb72e0cf09867a8a3963f81255234f8",
+      "source_sha": "dc7f39ff89ea0646e47d04e9316e5df30a61cb2a707e47be3daa1125327f34f0",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "train",
+      "workers": 2,
+      "id": "inverted",
+      "admitted": 0.0064138940001612355,
+      "finished": 4.0722628680000525,
+      "seconds": 4.065848973999891,
+      "encoding_s": 2.4862282300000516,
+      "output_bytes": 2995058,
+      "output_sha": "422f402951c84f31b23f53879e15650b800aea8c93581fc81e868db5292325d4",
+      "source_sha": "36a4435a57fdcf4aab94ed005ee876dd448863508c4bfcc3eda4199289956f52",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "train",
+      "workers": 2,
+      "id": "motion",
+      "admitted": 0.008642468000289227,
+      "finished": 4.459690607000084,
+      "seconds": 4.451048138999795,
+      "encoding_s": 2.7133628729998236,
+      "output_bytes": 2996504,
+      "output_sha": "d4994c8c4d9815766dd20a80ce4b312d2978830e4514fce924e9e2de96071739",
+      "source_sha": "0c494bcb7b543906928fe91bfce3064d5fbbe588a05e90859eac64b151141c2f",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "train",
+      "workers": 2,
+      "id": "mixed",
+      "admitted": 4.087871482000082,
+      "finished": 7.033418558999983,
+      "seconds": 2.945547076999901,
+      "encoding_s": 1.5825349820001975,
+      "output_bytes": 3107815,
+      "output_sha": "78287299164302550df935aa47c993d4cdb72e0cf09867a8a3963f81255234f8",
+      "source_sha": "dc7f39ff89ea0646e47d04e9316e5df30a61cb2a707e47be3daa1125327f34f0",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "test",
+      "workers": 2,
+      "id": "late",
+      "admitted": 0.006302766000317206,
+      "finished": 3.5635683450000215,
+      "seconds": 3.5572655789997043,
+      "encoding_s": 1.9085738720000336,
+      "output_bytes": 5351233,
+      "output_sha": "d67a496076f883dc48ba50c5303e3fdc1bb468b3a79be8fab3a6a7fa524244af",
+      "source_sha": "bc6ea6b38dd3d9424196da9f556d9e3bb21724aa6e5a2efeb6ac875aec978ed0",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "test",
+      "workers": 2,
+      "id": "grain",
+      "admitted": 0.007759512000120594,
+      "finished": 4.0540348230001655,
+      "seconds": 4.046275311000045,
+      "encoding_s": 2.323308587000156,
+      "output_bytes": 2972460,
+      "output_sha": "8c840d23621a05295427d577f3b3172cbe99828f49875517d904c010d25b4c9a",
+      "source_sha": "fe49dadc8f0a5a7955b3eea47ab5377840865b94d3c8cce77a664b6b6eab0757",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "test",
+      "workers": 2,
+      "id": "detail",
+      "admitted": 3.577254287999949,
+      "finished": 6.850781577000362,
+      "seconds": 3.2735272890004126,
+      "encoding_s": 1.8037538589996984,
+      "output_bytes": 2996336,
+      "output_sha": "8bd7b1de1e75f633620cfce18bf7f890e30503ab16de7fc79c4d0a07746e4122",
+      "source_sha": "812097e644a75b1d67e59c8738e548297b15c51d4f641f4e7d5d09df85cedd49",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "test",
+      "workers": 1,
+      "id": "late",
+      "admitted": 0.0053197089996501745,
+      "finished": 2.896192454999891,
+      "seconds": 2.890872746000241,
+      "encoding_s": 1.290220347000286,
+      "output_bytes": 5351233,
+      "output_sha": "d67a496076f883dc48ba50c5303e3fdc1bb468b3a79be8fab3a6a7fa524244af",
+      "source_sha": "bc6ea6b38dd3d9424196da9f556d9e3bb21724aa6e5a2efeb6ac875aec978ed0",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "test",
+      "workers": 1,
+      "id": "grain",
+      "admitted": 2.910447836000003,
+      "finished": 6.011713396999767,
+      "seconds": 3.1012655609997637,
+      "encoding_s": 1.5692983599997206,
+      "output_bytes": 2972460,
+      "output_sha": "8c840d23621a05295427d577f3b3172cbe99828f49875517d904c010d25b4c9a",
+      "source_sha": "fe49dadc8f0a5a7955b3eea47ab5377840865b94d3c8cce77a664b6b6eab0757",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    },
+    {
+      "group": "test",
+      "workers": 1,
+      "id": "detail",
+      "admitted": 6.0234464279997155,
+      "finished": 9.351598639999793,
+      "seconds": 3.3281522120000773,
+      "encoding_s": 1.8573413560002336,
+      "output_bytes": 2996336,
+      "output_sha": "8bd7b1de1e75f633620cfce18bf7f890e30503ab16de7fc79c4d0a07746e4122",
+      "source_sha": "812097e644a75b1d67e59c8738e548297b15c51d4f641f4e7d5d09df85cedd49",
+      "frames": 360,
+      "drift": 0,
+      "strict_decode": true
+    }
+  ],
+  "batches": [
+    {
+      "group": "train",
+      "workers": 1,
+      "wall_seconds": 9.48509700700015,
+      "job_sum": 9.446664751000299,
+      "predictedUnroundedProxy": null,
+      "covered": null
+    },
+    {
+      "group": "train",
+      "workers": 2,
+      "wall_seconds": 7.041263754000283,
+      "job_sum": 11.462444189999587,
+      "predictedUnroundedProxy": null,
+      "covered": null
+    },
+    {
+      "group": "test",
+      "workers": 2,
+      "wall_seconds": 6.858364673000324,
+      "job_sum": 10.877068179000162,
+      "predictedUnroundedProxy": [
+        4,
+        9
+      ],
+      "covered": true
+    },
+    {
+      "group": "test",
+      "workers": 1,
+      "wall_seconds": 9.35884643899999,
+      "job_sum": 9.320290519000082,
+      "predictedUnroundedProxy": [
+        8,
+        11
+      ],
+      "covered": true
+    }
+  ],
+  "estimates": [
+    {
+      "workers": 1,
+      "perJobRounded": [
+        2,
+        4
+      ],
+      "productFormulaReplay": [
+        6,
+        12
+      ],
+      "actual": 9.35884643899999,
+      "covered": true
+    },
+    {
+      "workers": 2,
+      "perJobRounded": [
+        2,
+        5
+      ],
+      "productFormulaReplay": [
+        3,
+        10
+      ],
+      "actual": 6.858364673000324,
+      "covered": true
+    }
+  ],
+  "pairs": [
+    {
+      "group": "train",
+      "timeReduction": 0.2576497901071838,
+      "exactOutputs": 3
+    },
+    {
+      "group": "test",
+      "timeReduction": 0.2671784158760967,
+      "exactOutputs": 3
+    }
+  ],
+  "idealSchedulerCheck": {
+    "cases": 6186,
+    "durations": [
+      1,
+      2,
+      3
+    ],
+    "workers": [
+      1,
+      2
+    ],
+    "activeUpToWorkers": true,
+    "queuedUpTo": 5,
+    "contained": 6186,
+    "scope": "exact deterministic times, greedy work-conserving independent workers"
+  }
+}
