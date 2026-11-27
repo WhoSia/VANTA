@@ -320,7 +320,7 @@ public partial class BatchWindow:Window
         UpdateSelection();
         int ready=rows.Count(r=>r.State=="Ready");
         StartButton.IsEnabled=current is null&&ready>0;
-        StartButton.Content=current is not null?T("Processing…","작업 중…"):ready>0?T($"Start compression · {ready} video(s)",$"영상 {ready}개 압축 시작"):T("Start batch compression","일괄 압축 시작");
+        StartButton.Content=current is not null?T("Processing…","작업 중…"):ready>0?T($"Start CPU compression · {ready} video(s)",$"CPU로 영상 {ready}개 압축 시작"):T("Start CPU batch compression","CPU 일괄 압축 시작");
         var pending=rows.Where(r=>r.State=="Ready"&&r.Plan is not null&&r.Media is not null).ToArray();
         double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
         int running=rows.Count(r=>r.State.StartsWith("Encoding")||r.State is "Preparing" or "Validating" or "Waiting for encoder" or "Waiting for validation" or "Qualifying hardware"), queued=rows.Count(r=>r.State=="Queued"), analyzing=rows.Count(r=>r.State=="Analyzing");
