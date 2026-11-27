@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "scope": "12 real local CPU encodes, two retained synthetic 9s 1440x810 30fps H264/AAC inputs, x264 veryfast 1791kbps threads4, Linux FFmpeg7.1.5 CPU quota4. Three alternating-order pairs of two-job queues. Serial encodes and verifies one job before next. Overlap has exactly one encoder and one validation worker, next encode starts after first encoder closes, verification of preceding output concurrently; both joined, no publication, temporary files removed. Validation compares independent source FFprobe clocks to strict CPU decoded output clock, concurrent source/output audio packet checks incl duration/hash, exact source and reference output SHA, 270 frames and 423 audio packets each. Oracle precomputed outside wall timer; no C# workflow, GPU or contention generalization. 3 pairs, all faster but median below 15% gate. No policy promotion. Local harness not yet uploaded.",
+  "rows": [
+    {
+      "rep": 0,
+      "mode": "serial",
+      "wall_s": 5.127593367998998,
+      "rows": [
+        {
+          "id": "mixed",
+          "encode_begin": 0.000010880999980145134,
+          "encode_end": 1.595809364998786,
+          "verify_begin": 1.5958392809989164,
+          "verify_end": 2.4682147839994286,
+          "encode_s": 1.5957984839988058,
+          "verify_s": 0.8723755030005123,
+          "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+          "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+          "frames": 270,
+          "audio_packets": 423
+        },
+        {
+          "id": "motion",
+          "encode_begin": 2.4683404190000147,
+          "encode_end": 4.292617013999916,
+          "verify_begin": 4.292639765999411,
+          "verify_end": 5.127529698998842,
+          "encode_s": 1.8242765949999011,
+          "verify_s": 0.834889932999431,
+          "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+          "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+          "frames": 270,
+          "audio_packets": 423
+        }
+      ]
+    },
+    {
+      "rep": 0,
+      "mode": "overlap",
+      "wall_s": 4.2090145950005535,
+      "rows": [
+        {
+          "id": "mixed",
+          "encode_begin": 0.00042737200055853464,
+          "encode_end": 1.4497060240009887,
+          "verify_begin": 1.450079464000737,
+          "verify_end": 2.590045093000299,
+          "encode_s": 1.4492786520004302,
+          "verify_s": 1.1399656289995619,
+          "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+          "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+          "frames": 270,
+          "audio_packets": 423
+        },
+        {
+          "id": "motion",
+          "encode_begin": 1.450147902000026,
+          "encode_end": 3.4243734880001284,
+          "verify_begin": 3.424408033000873,
+          "verify_end": 4.208795163000104,
+          "encode_s": 1.9742255860001023,
+          "verify_s": 0.7843871299992315,
+          "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+          "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+          "frames": 270,
+          "audio_packets": 423
+        }
+      ]
+    },
+    {
+      "rep": 1,
+      "mode": "overlap",
+      "wall_s": 4.35331082599987,
+      "rows": [
+        {
+          "id": "mixed",
+          "encode_begin": 0.0004515269993135007,
+          "encode_end": 1.575605326999721,
+          "verify_begin": 1.5758980059999885,
+          "verify_end": 2.685135611000078,
+          "encode_s": 1.5751538000004075,
+          "verify_s": 1.1092376050000894,
+          "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+          "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+          "frames": 270,
+          "audio_packets": 423
+        },
+        {
+          "id": "motion",
+          "encode_begin": 1.5759726960004627,
+          "encode_end": 3.574169303999952,
+          "verify_begin": 3.574203258000125,
+          "verify_end": 4.353108195999084,
+          "encode_s": 1.998196607999489,
+          "verify_s": 0.7789049379989592,
+          "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+          "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+          "frames": 270,
+          "audio_packets": 423
+        }
+      ]
+    },
+    {
+      "rep": 1,
+      "mode": "serial",
+      "wall_s": 5.026686060000429,
+      "rows": [
+        {
+          "id": "mixed",
+          "encode_begin": 0.000009638000847189687,
+          "encode_end": 1.433850714000073,
+          "verify_begin": 1.4338726850000967,
+          "verify_end": 2.231749305001358,
+          "encode_s": 1.4338410759992257,
+          "verify_s": 0.7978766200012615,
+          "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+          "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+          "frames": 270,
+          "audio_packets": 423
+        },
+        {
+          "id": "motion",
+          "encode_begin": 2.2318450639995717,
+          "encode_end": 4.105994090001332,
+          "verify_begin": 4.106017072999748,
+          "verify_end": 5.026617031000569,
+          "encode_s": 1.87414902600176,
+          "verify_s": 0.9205999580008211,
+          "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+          "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+          "frames": 270,
+          "audio_packets": 423
+        }
+      ]
+    },
+    {
+      "rep": 2,
+      "mode": "serial",
+      "wall_s": 4.696162254000228,
+      "rows": [
+        {
+          "id": "mixed",
+          "encode_begin": 0.000011381000149413012,
+          "encode_end": 1.4785272419994726,
+          "verify_begin": 1.4785517179989256,
+          "verify_end": 2.2157983889992465,
+          "encode_s": 1.4785158609993232,
+          "verify_s": 0.7372466710003209,
+          "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+          "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+          "frames": 270,
+          "audio_packets": 423
+        },
+        {
+          "id": "motion",
+          "encode_begin": 2.2159241749996,
+          "encode_end": 3.8641099319993373,
+          "verify_begin": 3.864133335999213,
+          "verify_end": 4.696100958999523,
+          "encode_s": 1.6481857569997374,
+          "verify_s": 0.8319676230003097,
+          "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+          "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+          "frames": 270,
+          "audio_packets": 423
+        }
+      ]
+    },
+    {
+      "rep": 2,
+      "mode": "overlap",
+      "wall_s": 4.404258762999234,
+      "rows": [
+        {
+          "id": "mixed",
+          "encode_begin": 0.0005064289998699678,
+          "encode_end": 1.4740368929997203,
+          "verify_begin": 1.4743345309998404,
+          "verify_end": 2.5622277349993965,
+          "encode_s": 1.4735304639998503,
+          "verify_s": 1.0878932039995561,
+          "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+          "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+          "frames": 270,
+          "audio_packets": 423
+        },
+        {
+          "id": "motion",
+          "encode_begin": 1.474409090998961,
+          "encode_end": 3.5334470279995003,
+          "verify_begin": 3.533480561000033,
+          "verify_end": 4.403965261999474,
+          "encode_s": 2.0590379370005394,
+          "verify_s": 0.870484700999441,
+          "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+          "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+          "frames": 270,
+          "audio_packets": 423
+        }
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "rep": 0,
+      "serial_s": 5.127593367998998,
+      "overlap_s": 4.2090145950005535,
+      "reduction": 0.17914423143052627
+    },
+    {
+      "rep": 1,
+      "serial_s": 5.026686060000429,
+      "overlap_s": 4.35331082599987,
+      "reduction": 0.13396007348835748
+    },
+    {
+      "rep": 2,
+      "serial_s": 4.696162254000228,
+      "overlap_s": 4.404258762999234,
+      "reduction": 0.06215788024622626
+    }
+  ]
+}
