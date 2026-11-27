@@ -16,6 +16,7 @@ internal static class DesktopSmoke
         if(args.Contains("--media")){RunMediaWorkflow(app);return;}
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
+        Check(Get<Button>(main,"GuidedGpuButton").Visibility==Visibility.Collapsed&&main.GuidedBackend() is null,"No untested shortcut");
         Check(!Get<Expander>(main,"AdvancedOptions").IsExpanded&&!Get<Expander>(main,"HardwareOptions").IsExpanded,"Advanced paths are initially collapsed");
         Check(Get<TextBlock>(main,"HardwareHelp").Text.Contains("Open a video"),"Disabled GPU explains next action");
         Check(!Get<Button>(main,"HardwareTrialButton").IsEnabled&&Get<ComboBox>(main,"HardwareBox").SelectedIndex==-1,"No automatic hardware path");
@@ -156,6 +157,15 @@ internal static class DesktopSmoke
             var fastHardware=Get<CheckBox>(main,"HardwareFastBox");Check(fastHardware.IsEnabled,"NVIDIA P1 is explicit");fastHardware.IsChecked=true;
             hardware.SelectedItem="hevc_qsv";Check(hardwareTrial.IsEnabled&&residentTrial.IsEnabled&&fastHardware.IsEnabled,"QSV resident and explicit Intel speed preset");
             fastHardware.IsChecked=false;hardware.SelectedItem="hevc_nvenc";
+            var guided=Get<Button>(main,"GuidedGpuButton");
+            main.SetDeviceEvidence([new("hevc_qsv","Sample passed","synthetic test control"),new("hevc_nvenc","Failed","test control")]);
+            Check(guided.IsEnabled&&guided.Visibility==Visibility.Visible&&main.GuidedBackend()=="hevc_qsv","Unique qualified matching GPU exposed independently of manual selection");
+            CheckLayout(main,"Status","GuidedGpuButton",560,480);
+            main.SetDeviceEvidence([new("hevc_qsv","Sample passed","control"),new("hevc_nvenc","Sample passed","control")]);
+            Check(main.GuidedBackend() is null&&!guided.IsEnabled,"No arbitrary choice among multiple qualified devices");
+            main.SetDeviceEvidence([new("hevc_qsv","Sample passed","control")]);
+            split.IsChecked=true;Check(!guided.IsEnabled,"Guided GPU cannot bypass split");split.IsChecked=false;Check(guided.IsEnabled,"Valid settings restore shortcut");
+            main.SetDeviceEvidence([]);Check(!guided.IsEnabled,"Cleared evidence disables shortcut");
             split.IsChecked=true;Check(!hardwareTrial.IsEnabled,"Split excludes hardware trial");split.IsChecked=false;
             threads.SelectedIndex=1;Check(!hardwareTrial.IsEnabled,"Manual thread budget excludes device trial");threads.SelectedIndex=0;
             target.Text="invalid";Check(!hardwareTrial.IsEnabled&&!residentTrial.IsEnabled&&Get<Expander>(main,"AdvancedOptions").IsExpanded,"Pending target excludes hardware trial and reveals correction");

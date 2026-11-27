@@ -115,6 +115,7 @@ internal static class UiLanguage
         ("Ui107","Estimated size appears after opening a video.","영상을 열면 예상 용량이 표시됩니다."),
         ("Ui108","Add videos, choose a common size, then start compression.","영상 추가 → 공통 압축 설정 선택 → 압축 시작"),
         ("Ui109","Resource settings (optional)","자원 설정 (선택)"),
+        ("Ui110","Compress with tested GPU…","검사 통과 GPU로 압축…"),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;

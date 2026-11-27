@@ -33,6 +33,7 @@ public partial class MainWindow : Window
     }
     private void StartJobProgress(bool split,string stage="Preparing")
     {
+        RefreshGuidedGpu();
         if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=false;
         if(HardwareFastBox is not null)HardwareFastBox.IsEnabled=false;
         jobClock.Restart();eta=split?null:new EncodingEta(media?.Seconds);jobProgress=new(stage,null);validationStarted=null;previousTail=null;
@@ -68,7 +69,7 @@ public partial class MainWindow : Window
     {
         if(PreflightEta is null)return;
 
-        PreflightEta.Text=activePlan is Plan p?TimingText(p,false):"";
+        PreflightEta.Text=activePlan is Plan p?T("CPU reference: ","CPU 기준: ")+TimingText(p,false):"";
         if(ActivePlanSummary is not null)
         {
             ActivePlanSummary.Visibility=activePlan is null?Visibility.Collapsed:Visibility.Visible;
@@ -97,6 +98,7 @@ public partial class MainWindow : Window
         finally{applying=false;}
     }
     private EncodeReport? completedReport;
+    private string[] qualifiedDevices=[];
     private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings,string Timing,string Purpose);
     private bool korean,languageReady;
     private readonly bool persistLanguage;
@@ -222,19 +224,22 @@ public partial class MainWindow : Window
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
         StartJobProgress(true,"Diagnostics");
         SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;
+        qualifiedDevices=[];RefreshGuidedGpu();
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
             var results=await EncoderDiagnostics.CheckAsync(resolved,EncoderDiagnostics.HardwareCandidates,cts.Token);
+            cts.Token.ThrowIfCancellationRequested();
+            SetDeviceEvidence(results);
             var passed=results.Where(r=>r.State=="Sample passed").ToArray();
             string detail=string.Join(Environment.NewLine,results.Select(r=>UiLanguage.DeviceName(r.Encoder)+": "+r.State+" — "+r.Detail));
             var matching=passed.Where(r=>activePlan is Plan p&&p.Codec==(r.Encoder.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")).ToArray();
             if(matching.Length==1)HardwareBox.SelectedItem=matching[0].Encoder;
-            HardwareOptions.IsExpanded=true;
+            HardwareOptions.IsExpanded=matching.Length!=1;
             string available=string.Join(", ",passed.Select(r=>UiLanguage.DeviceName(r.Encoder)));
-            SetStatus(passed.Length==0?"No GPU passed the short test. Use CPU compression or check the graphics driver.\n"+detail:"Available in short test: "+available+". Choose a matching device; no compression started.\n"+detail,
-                passed.Length==0?"짧은 검사에 성공한 GPU가 없습니다. CPU로 압축하거나 그래픽 드라이버를 확인하세요.\n"+detail:"짧은 검사 성공: "+available+". 현재 코덱과 같은 장치를 선택하세요. 압축은 시작하지 않았습니다.\n"+detail);
+            SetStatus(passed.Length==0?"No GPU passed the short test. Use CPU compression or check the graphics driver.\n"+detail:"Available in short test: "+available+". Use the tested GPU shortcut if available, or choose in GPU settings. No compression started.\n"+detail,
+                passed.Length==0?"짧은 검사에 성공한 GPU가 없습니다. CPU로 압축하거나 그래픽 드라이버를 확인하세요.\n"+detail:"짧은 검사 성공: "+available+". 하단 GPU 압축 버튼이 있으면 사용하거나 GPU 설정에서 장치를 선택하세요. 압축은 시작하지 않았습니다.\n"+detail);
         }
         catch(OperationCanceledException){SetStatus("Diagnostics canceled or timed out.","진단이 취소되었거나 제한 시간을 초과했습니다.");}
         catch(Exception ex){SetStatus(ex.Message);}
@@ -246,7 +251,7 @@ public partial class MainWindow : Window
     }
     internal async Task LoadAsync(string path)
     {
-        current?.Cancel();ClearResult();appliedTarget=null;
+        current?.Cancel();ClearResult();appliedTarget=null;qualifiedDevices=[];RefreshGuidedGpu();
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;HardwareBox.SelectedIndex=-1;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
         CancelButton.IsEnabled=true;SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;StartJobProgress(true,"Analyzing");RefreshPreflightEta();
@@ -321,8 +326,40 @@ public partial class MainWindow : Window
     private void OnHardwareChoice(object sender,System.Windows.Controls.SelectionChangedEventArgs e)=>RefreshHardwareButton();
     private bool ResidentAllowed(string? backend)=>HardwareAllowed(backend)&&(media?.Codec is "h264" or "hevc")&&
         (!backend!.EndsWith("_amf",StringComparison.Ordinal)||activePlan?.Height==media?.Height);
+    // Short synthetic test evidence is session/source scoped, never a speed ranking.
+    internal void SetDeviceEvidence(IEnumerable<EncoderDiagnostic> results)
+    {
+        qualifiedDevices=results.Where(r=>r.State=="Sample passed"&&EncoderDiagnostics.HardwareCandidates.Contains(r.Encoder)).Select(r=>r.Encoder).Distinct().ToArray();
+        RefreshGuidedGpu();
+    }
+    internal string? GuidedBackend()
+    {
+        var eligible=qualifiedDevices.Where(HardwareAllowed).ToArray();
+        return eligible.Length==1?eligible[0]:null;
+    }
+    private void RefreshGuidedGpu()
+    {
+        if(GuidedGpuButton is null||GuidedGpuHint is null)return;
+        string? backend=GuidedBackend();
+        GuidedGpuButton.IsEnabled=backend is not null;
+        GuidedGpuButton.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
+        GuidedGpuHint.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
+        GuidedGpuHint.Text=backend is null?"":T(UiLanguage.DeviceName(backend)+" passed a short GPU test. Device defaults; actual speed and size unknown.",UiLanguage.DeviceName(backend)+" 짧은 GPU 검사 통과. 장치 기본 설정을 사용하며 실제 속도와 용량은 미측정입니다.");
+        // CPU remains an explicit alternative, and is the primary action when no
+        // unique tested device can be recommended.
+        if(EncodeButton is not null)
+        {
+            EncodeButton.Background=backend is null?System.Windows.Media.Brushes.Teal:System.Windows.Media.Brushes.White;
+            EncodeButton.Foreground=backend is null?System.Windows.Media.Brushes.White:System.Windows.Media.Brushes.Black;
+        }
+    }
+    private async void OnGuidedGpu(object sender,RoutedEventArgs e)
+    {
+        if(GuidedBackend() is string backend)await SaveAndEncodeAsync(backend,false,false);
+    }
     private void RefreshHardwareButton()
     {
+        RefreshGuidedGpu();
         if(HardwareHelp is not null)
         {
             string? selectedDevice=HardwareBox?.SelectedItem as string;
@@ -334,7 +371,7 @@ public partial class MainWindow : Window
                 :plan.Codec!=(selectedDevice.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")?T("Choose the same H.264 or HEVC family as the selected plan.","현재 압축 설정과 같은 H.264 또는 HEVC 장치를 선택하세요.")
                 :SplitBox.IsChecked==true||(ThreadsBox.SelectedItem as ThreadChoice)?.Count is not null?T("In detailed settings, turn off split and set threads to Auto.","세부 설정에서 분할 압축을 끄고 스레드를 자동으로 설정하세요.")
                 :!ResidentAllowed(selectedDevice)?T("Basic GPU encoding is available to try; full GPU processing is incompatible with this input or height.","GPU 압축은 시험할 수 있지만 현재 입력 형식 또는 해상도로는 GPU 연속 처리를 사용할 수 없습니다.")
-                :T("Use the GPU save button in this section. The bottom save button uses CPU. Full GPU processing is experimental; device qualification is required.","이 영역의 GPU 저장 버튼을 누르세요. 하단 저장 버튼은 CPU를 사용합니다. GPU 연속 처리는 실험 기능이며 장치 검사가 필요합니다.");
+                :T("Use the GPU save button here or the tested GPU shortcut below. The CPU button always uses CPU. Full GPU processing is experimental.","이 영역의 GPU 저장 버튼 또는 하단의 검사 통과 GPU 버튼을 사용하세요. CPU 버튼은 항상 CPU를 사용합니다. GPU 연속 처리는 실험 기능입니다.");
         }
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string);
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=ResidentAllowed(HardwareBox?.SelectedItem as string);
@@ -489,7 +526,7 @@ public partial class MainWindow : Window
         return true;
     }
     private async void OnEncode(object sender,RoutedEventArgs e)=>await SaveAndEncodeAsync(null);
-    private async Task SaveAndEncodeAsync(string? backend,bool resident=false)
+    private async Task SaveAndEncodeAsync(string? backend,bool resident=false,bool? fastOverride=null)
     {
         if(!ValidateEncodingRequest()||backend is not null&&!HardwareAllowed(backend)||resident&&!ResidentAllowed(backend))return;
         var input=sourcePath!;
@@ -502,9 +539,9 @@ public partial class MainWindow : Window
             {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         }
         catch(Exception ex){SetStatus(ex.Message);return;}
-        await EncodeToAsync(dlg.FileName,backend,resident);
+        await EncodeToAsync(dlg.FileName,backend,resident,fastOverride);
     }
-    internal async Task EncodeToAsync(string output,string? hardware=null,bool resident=false)
+    internal async Task EncodeToAsync(string output,string? hardware=null,bool resident=false,bool? fastOverride=null)
     {
         if(!ValidateEncodingRequest()||hardware is not null&&!HardwareAllowed(hardware)||resident&&!ResidentAllowed(hardware))return;
         var p=activePlan!;var input=sourcePath!;var resolved=tools!;var stamp=sourceStamp!;
@@ -513,7 +550,7 @@ public partial class MainWindow : Window
         if(System.IO.File.Exists(output)||System.IO.Directory.Exists(output))
         {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         ClearResult();
-        bool fastHardware=hardware is not null&&(hardware.EndsWith("_nvenc",StringComparison.Ordinal)||hardware.EndsWith("_qsv",StringComparison.Ordinal))&&HardwareFastBox.IsChecked==true;
+        bool fastHardware=hardware is not null&&(hardware.EndsWith("_nvenc",StringComparison.Ordinal)||hardware.EndsWith("_qsv",StringComparison.Ordinal))&&(fastOverride??(HardwareFastBox.IsChecked==true));
         var timingKey=hardware is null?CurrentTimingKey(p):null;
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         StartJobProgress(split,hardware is null?"Preparing":"Qualifying hardware");
