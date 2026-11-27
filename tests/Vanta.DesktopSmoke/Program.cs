@@ -16,6 +16,7 @@ internal static class DesktopSmoke
         if(args.Contains("--media")){RunMediaWorkflow(app);return;}
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
+        Check(Get<TextBlock>(main,"ActivePlanSummary").Visibility==Visibility.Collapsed,"No applied settings before source");
         Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(main,"EtaText").Text=="","No stale ETA on startup");
         Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled&&!Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Collapsed,"No result before successful encode");
         Check(Get<CheckBox>(main,"SplitBox").IsChecked!=true,"Split disabled initially");
@@ -65,6 +66,7 @@ internal static class DesktopSmoke
         Check(Get<ListBox>(main,"Plans").ItemTemplate is not null,"Recommendation tiles expose separate fields");
         var batch=new BatchWindow();
         Check(!Get<Button>(batch,"EditPlanButton").IsEnabled&&!Get<Button>(batch,"RemoveButton").IsEnabled&&!Get<Button>(batch,"OpenResultButton").IsEnabled&&!Get<Button>(batch,"StartButton").IsEnabled,"Empty queue disables row actions and encoding");
+        Check(!Get<Button>(batch,"QueueFirstButton").IsEnabled&&!Get<Button>(batch,"QueueUpButton").IsEnabled&&!Get<Button>(batch,"QueueDownButton").IsEnabled&&!Get<DataGrid>(batch,"Queue").CanUserSortColumns,"Empty queue and display order guard");
         Check(Get<TextBlock>(batch,"SelectedVideoText").Text=="No video selected","Selection is explicit");
         var language=Get<ComboBox>(main,"LanguageBox");
         var beforeThreads=Get<ComboBox>(main,"ThreadsBox").SelectedIndex;
@@ -160,6 +162,7 @@ internal static class DesktopSmoke
             Check(encode.IsEnabled,"Clearing target restores encoding");
             language.SelectedIndex=0;
             split.IsChecked=false;
+            Check(Get<TextBlock>(main,"ActivePlanSummary").Visibility==Visibility.Visible&&Get<TextBlock>(main,"ActivePlanSummary").Text.Contains("H.264")&&Get<TextBlock>(main,"ActivePlanSummary").Text.Contains("kbps"),"Applied plan visible near save command");
             var before=await File.ReadAllBytesAsync(source);
             var encodingTask=main.EncodeToAsync(output);
             Check(language.IsEnabled&&!encode.IsEnabled,"Language available during single encode");
@@ -193,7 +196,20 @@ internal static class DesktopSmoke
                 Check(start.IsEnabled&&(string)start.Content=="영상 2개 압축 시작","Batch action counts ready files");
                 Check(Get<TextBlock>(batch,"BatchPreflightText").Text.Contains("0/2"),"First batch preflight does not invent time");
                 var batchLanguage=Get<ComboBox>(batch,"LanguageBox");
+                var orderGrid=Get<DataGrid>(batch,"Queue");
+                var first=orderGrid.Items[0];var secondRow=orderGrid.Items[1];
+                orderGrid.SelectedItem=secondRow;
+                Check(Get<Button>(batch,"QueueFirstButton").IsEnabled&&Get<Button>(batch,"QueueUpButton").IsEnabled,"Ready row can move ahead");
+                Get<Button>(batch,"QueueFirstButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Check(ReferenceEquals(orderGrid.Items[0],secondRow)&&ReferenceEquals(orderGrid.SelectedItem,secondRow),"Move first preserves row selection and submission order");
+                Get<Button>(batch,"QueueDownButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Check(ReferenceEquals(orderGrid.Items[0],first),"Move down restores original order");
+                Get<Button>(batch,"QueueUpButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Check(ReferenceEquals(orderGrid.Items[0],secondRow),"Move up changes submission order");
                 var batchRun=batch.StartAsync();
+                Check(!Get<Button>(batch,"QueueDownButton").IsEnabled,"Running queue cannot reorder");
+                Get<Button>(batch,"QueueDownButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Check(ReferenceEquals(orderGrid.Items[0],secondRow),"Routed reorder event cannot bypass running guard");
                 Check(batchLanguage.IsEnabled&&!start.IsEnabled,"Language available during batch encode");
                 Check(Get<FrameworkElement>(batch,"BatchProgressCard").Visibility==Visibility.Visible&&Get<TextBlock>(batch,"BatchProgressText").Text.Contains("0/2"),"Batch progress card starts with current run count");
                 Check(Get<TextBlock>(batch,"BatchEtaText").Text.Contains("0/2"),"Unknown queue time reports absent references");

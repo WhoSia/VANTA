@@ -66,6 +66,13 @@ public partial class MainWindow : Window
         if(PreflightEta is null)return;
 
         PreflightEta.Text=activePlan is Plan p?TimingText(p,false):"";
+        if(ActivePlanSummary is not null)
+        {
+            ActivePlanSummary.Visibility=activePlan is null?Visibility.Collapsed:Visibility.Visible;
+            ActivePlanSummary.Text=activePlan is Plan applied
+                ?T("Applied: ","적용 설정: ")+(applied.Codec=="libx265"?"HEVC":"H.264")+" · "+UiLanguage.Preset(korean,applied.Preset)+$" · {applied.Height}p · {applied.VideoBitsPerSecond/1000d:0.###} kbps"+(SplitBox.IsChecked==true?T(" · experimental split"," · 실험적 분할"):"")
+                :"";
+        }
     }
     private string TimingText(Plan p,bool compact)
     {
@@ -131,7 +138,7 @@ public partial class MainWindow : Window
         RefreshEstimate();RefreshResult();RefreshJobProgress();Status.Text=T(statusEn,statusKo);
         if(persistLanguage){try{UiLanguage.Save(korean);}catch(Exception ex){SetStatus("Could not save language: "+ex.Message,"언어 설정을 저장하지 못했습니다: "+ex.Message);}}
     }
-    private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"),TimingText(p,true));
+    private PlanRow MakeRow(Plan p,MediaInfo m)=>new(p,UiLanguage.Tier(korean,p.Name),$"{p.EstimateBytes(m)/1e6:F1} MB",$"{p.Height}p · {(p.Codec=="libx265"?"HEVC":"H.264")} · {UiLanguage.Preset(korean,p.Preset)} · {p.VideoBitsPerSecond/1000d:F0} kbps",T($"{p.Savings(m):P1} budget savings",$"예산 절감률 {p.Savings(m):P1}"),TimingText(p,true));
     private void ClearResult()
     {
         completedOutput=null;completedReport=null;RefreshResult();
@@ -238,7 +245,7 @@ public partial class MainWindow : Window
             stamp.RequireUnchanged(path);
             if(current!=cts)return;
             var m=details.Info;
-            Source.Text=$"{System.IO.Path.GetFileName(path)} · {m.Width}×{m.Height} · {m.Fps:F2} fps · {m.Codec} · {m.Bytes/1e6:F1} MB";
+            Source.Text=$"{System.IO.Path.GetFileName(path)} · {m.Width}×{m.Height} · {m.Fps:F2} fps · {m.Codec} · {m.Bytes/1e6:F1} MB"+(double.IsFinite(m.Seconds)&&m.Seconds>0&&m.Seconds<=TimeSpan.FromDays(30).TotalSeconds?" · "+DurationText(TimeSpan.FromSeconds(m.Seconds)):"");
             if(!details.Supported){SetStatus(details.Reason);return;}
             tools=resolved;media=m;sourcePath=path;sourceStamp=stamp;
             HeightChoicesBox.ItemsSource=QuickSettings.Heights(m);

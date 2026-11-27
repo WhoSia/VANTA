@@ -219,10 +219,32 @@ public partial class BatchWindow:Window
     {
         if(initialized)UpdateSelection();
     }
+    private void OnQueueFirst(object sender,RoutedEventArgs e)=>MoveReady(-2);
+    private void OnQueueUp(object sender,RoutedEventArgs e)=>MoveReady(-1);
+    private void OnQueueDown(object sender,RoutedEventArgs e)=>MoveReady(1);
+    private void MoveReady(int direction)
+    {
+        if(current is not null||Queue.SelectedItem is not Row row||row.State!="Ready")return;
+        var ready=rows.Where(r=>r.State=="Ready").ToArray();
+        int index=Array.IndexOf(ready,row),target=direction==-2?0:index+direction;
+        if(index<0||target<0||target>=ready.Length||target==index)return;
+        // Move only the selected ready job; do not recompute settings or output names.
+        rows.Move(rows.IndexOf(row),rows.IndexOf(ready[target]));
+        Queue.SelectedItem=row;
+        UpdateSummary();
+    }
     private void UpdateSelection()
     {
         var row=Queue.SelectedItem as Row;
         bool idle=current is null;
+        int readyIndex=-1,readyCount=0;
+        foreach(var readyRow in rows.Where(r=>r.State=="Ready"))
+        {
+            if(ReferenceEquals(row,readyRow))readyIndex=readyCount;
+            readyCount++;
+        }
+        QueueFirstButton.IsEnabled=QueueUpButton.IsEnabled=idle&&readyIndex>0;
+        QueueDownButton.IsEnabled=idle&&readyIndex>=0&&readyIndex<readyCount-1;
         SelectedVideoText.Text=row is null?T("No video selected","선택된 영상 없음"):$"{row.InputName} — {row.DisplayState}";
         EditPlanButton.IsEnabled=idle&&tools is not null&&row is not null&&BatchRecovery.CanEdit(row.State,row.Media is not null);
         ResetPlanButton.IsEnabled=EditPlanButton.IsEnabled&&row?.ManualPlan is not null;
