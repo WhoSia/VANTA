@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "scope": "16 actual CPU encodes with retained 9s 1440x810 30fps AVC/AAC fixtures, FFmpeg 7.1.5 Linux 4 CPU quota, veryfast ABR1791kbps 4 requested threads and x265 pools4. Ordinary: encode then concurrent source FFprobe frame clock and strict decoded output clock; overlap: source FFprobe concurrent with encode, join then strict output clock. Both follow concurrent audio packet PTS/duration/hash checks. Independent oracle, strict reference decode and streamhash outside wall timer. All output/source SHA exact to earlier verified controls, 270 frames and 423 audio packets, clock agreement <=1us; temporary outputs deleted. Two reversed-order pairs each, final motion HEVC ordinary control completed in subsequent turn. No actual GPU or C# full workflow, no automatic promotion. Raw stage timestamps and harness retained locally, this file contains pair totals.",
+  "pairs": [
+    {
+      "id": "mixed",
+      "codec": "libx264",
+      "rep": 0,
+      "ordinary_s": 2.3284088199998223,
+      "overlap_s": 1.8927651550002338,
+      "reduction": 0.18709930200299696,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    },
+    {
+      "id": "mixed",
+      "codec": "libx264",
+      "rep": 1,
+      "ordinary_s": 2.2603198820015677,
+      "overlap_s": 2.204917241999283,
+      "reduction": 0.024510973178373585,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "output_sha": "ae97455e3c4c48949442020f0f2e1c1d0951d3cc25e34f496a73d7b67c865382",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    },
+    {
+      "id": "motion",
+      "codec": "libx264",
+      "rep": 0,
+      "ordinary_s": 2.5600884949999454,
+      "overlap_s": 2.0244754110008216,
+      "reduction": 0.20921662866155544,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    },
+    {
+      "id": "motion",
+      "codec": "libx264",
+      "rep": 1,
+      "ordinary_s": 2.4195480520011188,
+      "overlap_s": 2.2837587150006584,
+      "reduction": 0.056121777324552036,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "output_sha": "c7c88f8306ec896da00efcdbb30cdd85cde31d187427c304a62998f4aacd569b",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    },
+    {
+      "id": "mixed",
+      "codec": "libx265",
+      "rep": 0,
+      "ordinary_s": 4.741722537000896,
+      "overlap_s": 4.1142449300004955,
+      "reduction": 0.13233115225617476,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "output_sha": "5ee6d19f957010a760cd6f6c150180bc4bbb99cb396d5c06147f36aa320330d2",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    },
+    {
+      "id": "mixed",
+      "codec": "libx265",
+      "rep": 1,
+      "ordinary_s": 4.474176563000583,
+      "overlap_s": 4.502362295999774,
+      "reduction": -0.006299647008183307,
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "output_sha": "5ee6d19f957010a760cd6f6c150180bc4bbb99cb396d5c06147f36aa320330d2",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    },
+    {
+      "id": "motion",
+      "codec": "libx265",
+      "rep": 0,
+      "ordinary_s": 4.968557264000992,
+      "overlap_s": 5.715688341999339,
+      "reduction": -0.15037183598779946,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "output_sha": "7ac276e806daeff52a77505b3e6460cf6a58f629a52c47cd825b30e9f6add604",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    },
+    {
+      "id": "motion",
+      "codec": "libx265",
+      "rep": 1,
+      "ordinary_s": 4.669317551999484,
+      "overlap_s": 4.951852492000398,
+      "reduction": -0.060508829578302725,
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "output_sha": "7ac276e806daeff52a77505b3e6460cf6a58f629a52c47cd825b30e9f6add604",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 3.333333342681044e-7
+    }
+  ]
+}
