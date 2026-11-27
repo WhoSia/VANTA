@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "scope": "Local FFmpeg7.1.5 Linux 4 CPU quota. Retained 9s 1440x810 30fps AVC/AAC sources from owner-810p-speed-local.json. Same requested ABR1791000. SVT-AV1 preset12 lp=4; FFmpeg strict xerror exit check, SVT info/warn-prefixed stderr allowed (not retained); QSV veryfast nv12 and NVENC P1 yuv420p. MP4 av01, faststart, fps_mode passthrough, copied AAC. Two fully verified CPU AV1 encodes, one earlier CPU encode reached quality stage but filter path parser rejected colon and reran; two device refusals. Independent decoded clocks and AAC packet PTS/duration/SHA, full output decode, metadata and 270 SSIM frames; source hash unchanged. Temporary outputs removed, local script not uploaded. Timing excludes initial source oracle, SSIM, hashing, full product metadata/publication. Comparisons to earlier noncontemporaneous HEVC medium values are descriptive size/quality only; no matched speed claim or product AV1 implementation. No physical GPU.",
+  "rows": [
+    {
+      "id": "mixed",
+      "mode": "libsvtav1:12",
+      "state": "rejected",
+      "phase": "quality",
+      "elapsed": 4.029874969000957,
+      "error": "SSIM stats filename contained colon, FFmpeg filter parser rejected it; corrected filename and reran; not counted as verified",
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578"
+    },
+    {
+      "id": "mixed",
+      "mode": "libsvtav1:12",
+      "state": "verified",
+      "encode_s": 2.567288144999111,
+      "validation_s": 1.0168580039990047,
+      "total_s": 3.5841461489981157,
+      "bytes": 3050215,
+      "sha": "d916a4ff584dcfa39d6b52f131ce416a1f7584d86c7d99aaf9e906042c4868b3",
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0,
+      "mean_ssim": 0.9902731333333333,
+      "worst_second": 0.9784134,
+      "metadata": {
+        "codec_name": "av1",
+        "codec_tag_string": "av01",
+        "width": 1440,
+        "height": 810,
+        "pix_fmt": "yuv420p"
+      }
+    },
+    {
+      "id": "motion",
+      "mode": "libsvtav1:12",
+      "state": "verified",
+      "encode_s": 2.097211284999503,
+      "validation_s": 1.0158512769994559,
+      "total_s": 3.1130625619989587,
+      "bytes": 2352871,
+      "sha": "186e5693cd50fe44d59bf1f69b35f2e1dc49d218cc1c0fbbb94aa59c2a8f32af",
+      "source_sha": "26bc545c9d87790ed13c2c6f902395e335083c3a83155b8c0b334ecccbe53cb6",
+      "frames": 270,
+      "audio_packets": 423,
+      "drift": 0,
+      "mean_ssim": 0.9841845296296297,
+      "worst_second": 0.9801742,
+      "metadata": {
+        "codec_name": "av1",
+        "codec_tag_string": "av01",
+        "width": 1440,
+        "height": 810,
+        "pix_fmt": "yuv420p"
+      }
+    },
+    {
+      "id": "mixed",
+      "mode": "av1_qsv",
+      "state": "rejected",
+      "phase": "encode",
+      "elapsed": 0.5931055900000501,
+      "exit": 171,
+      "error": "Error creating a MFX session: -9; no packets written",
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578"
+    },
+    {
+      "id": "mixed",
+      "mode": "av1_nvenc",
+      "state": "rejected",
+      "phase": "encode",
+      "elapsed": 0.5836206229996606,
+      "exit": 255,
+      "error": "Cannot load libcuda.so.1; no packets written",
+      "source_sha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578"
+    }
+  ],
+  "pairs": [
+    {
+      "id": "mixed",
+      "reference": "earlier HEVC medium, noncontemporaneous",
+      "byteDelta": 1.0787235492554603,
+      "meanDelta": -0.0033937962966666957,
+      "worstDelta": -0.010129633330000054,
+      "sourceByteDelta": 0.08945471455976817
+    },
+    {
+      "id": "motion",
+      "reference": "earlier HEVC medium, noncontemporaneous",
+      "byteDelta": 0.06224136638907529,
+      "meanDelta": -0.008062522220370294,
+      "worstDelta": -0.010249199999999958,
+      "sourceByteDelta": -0.12202636826613644
+    }
+  ]
+}
