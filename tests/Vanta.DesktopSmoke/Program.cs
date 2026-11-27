@@ -147,7 +147,8 @@ internal static class DesktopSmoke
             hardware.SelectedItem="h264_nvenc";Check(!hardwareTrial.IsEnabled,"Mismatched hardware family disabled");
             hardware.SelectedItem="hevc_nvenc";Check(hardwareTrial.IsEnabled,"Matching explicit device choice available");
             var residentTrial=Get<Button>(main,"ResidentTrialButton");Check(residentTrial.IsEnabled,"Matching NVIDIA resident trial available");
-            hardware.SelectedItem="hevc_qsv";Check(hardwareTrial.IsEnabled&&!residentTrial.IsEnabled,"QSV does not offer CUDA path");hardware.SelectedItem="hevc_nvenc";
+            var fastHardware=Get<CheckBox>(main,"HardwareFastBox");Check(fastHardware.IsEnabled,"NVIDIA P1 is explicit");fastHardware.IsChecked=true;
+            hardware.SelectedItem="hevc_qsv";Check(hardwareTrial.IsEnabled&&residentTrial.IsEnabled&&!fastHardware.IsEnabled&&fastHardware.IsChecked!=true,"QSV resident and no NVIDIA preset");hardware.SelectedItem="hevc_nvenc";
             split.IsChecked=true;Check(!hardwareTrial.IsEnabled,"Split excludes hardware trial");split.IsChecked=false;
             threads.SelectedIndex=1;Check(!hardwareTrial.IsEnabled,"Manual thread budget excludes device trial");threads.SelectedIndex=0;
             target.Text="invalid";Check(!hardwareTrial.IsEnabled&&!residentTrial.IsEnabled,"Pending target excludes hardware trial");

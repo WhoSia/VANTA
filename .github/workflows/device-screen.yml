@@ -10,8 +10,12 @@ permissions:
   contents: read
 jobs:
   screen:
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [hevc_nvenc, hevc_qsv, hevc_amf]
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,10 +33,10 @@ jobs:
           }
           ffmpeg -version
           if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
-      - name: Compare CPU and NVIDIA on synthetic source
-        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --device-screen hevc_nvenc device-screen.json
+      - name: Compare CPU and selected device on synthetic source
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --device-screen ${{ matrix.backend }} device-screen.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: synthetic-device-screen
+          name: synthetic-device-screen-${{ matrix.backend }}
           path: device-screen.json

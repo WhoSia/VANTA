@@ -27,13 +27,17 @@ internal static class HardwareResearchScreen
                 Check(rejected,"Invalid hardware research option accepted");
             }
         }
-        Check(HardwareEncoderPolicy.InputArguments(true).SequenceEqual(new[]{"-hwaccel","cuda","-hwaccel_output_format","cuda"})&&HardwareEncoderPolicy.InputArguments(false).Length==0,"Resident input option isolation");
-        Check(HardwareEncoderPolicy.ResidentFilter(plan).SequenceEqual(new[]{"-vf",$"scale_cuda=-2:{plan.Height}:format=nv12","-pix_fmt","+cuda"}),"Explicit device frames and no implicit software conversion");
+        Check(HardwareEncoderPolicy.InputArguments(true,"h264_nvenc","h264").SequenceEqual(new[]{"-hwaccel","cuda","-hwaccel_output_format","cuda"})&&HardwareEncoderPolicy.InputArguments(false).Length==0,"Resident input option isolation");
+        Check(HardwareEncoderPolicy.ResidentFilter(plan,"h264_nvenc",plan.Height+2).SequenceEqual(new[]{"-vf",$"scale_cuda=-2:{plan.Height}:format=nv12","-pix_fmt","+cuda"}),"Explicit device frames and no implicit software conversion");
         Check(!HardwareEncoderPolicy.Arguments("h264_nvenc",plan,true).Contains("yuv420p"),"Resident encoder does not force CPU pixel format");
         string bad=Path.Combine(root,"hardware-invalid.mp4");
+        Check(HardwareEncoderPolicy.ResidentFilter(plan,"h264_nvenc",plan.Height).SequenceEqual(new[]{"-pix_fmt","+cuda"}),"No redundant GPU scale for original height");
+        Check(HardwareEncoderPolicy.InputArguments(true,"hevc_qsv","h264").Contains("h264_qsv")&&HardwareEncoderPolicy.ResidentFilter(plan,"hevc_qsv",plan.Height).SequenceEqual(new[]{"-pix_fmt","+qsv"}),"QSV input decoder selected independently of output family");
+        if(OperatingSystem.IsWindows())Check(HardwareEncoderPolicy.InputArguments(true,"h264_amf","h264").Contains("d3d11")&&HardwareEncoderPolicy.ResidentFilter(plan,"h264_amf",plan.Height).SequenceEqual(new[]{"-pix_fmt","+d3d11"}),"AMF D3D11 original-resolution path");
+        Check(HardwareEncoderPolicy.Arguments("h264_nvenc",plan,true,true).TakeLast(2).SequenceEqual(new[]{"-preset","p1"}),"NVENC P1 isolated from software preset");
         bool badResident=false;
-        try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,"h264_qsv",ct,gpuResident:true);}catch(ArgumentException){badResident=true;}
-        Check(badResident&&!File.Exists(bad),"Non-NVIDIA resident path rejected");
+        try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,"h264_qsv",ct,gpuResident:true,fastHardware:true);}catch(ArgumentException){badResident=true;}
+        Check(badResident&&!File.Exists(bad),"Non-NVIDIA P1 rejected");
         bool invalidRejected=false;
         try{await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,bad,plan,ct,researchHardwareEncoder:"unknown");}
         catch(ArgumentException){invalidRejected=true;}
@@ -92,7 +96,7 @@ internal static class HardwareResearchScreen
             finally{if(File.Exists(output))File.Delete(output);}
             Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Hardware research leaked temporary output");
         }
-        foreach(var d in diagnostics.Where(d=>d.State=="Sample passed"&&d.Encoder.EndsWith("_nvenc",StringComparison.Ordinal)))
+        foreach(var d in diagnostics.Where(d=>d.State=="Sample passed"&&(OperatingSystem.IsWindows()||!d.Encoder.EndsWith("_amf",StringComparison.Ordinal))))
         {
             string output=Path.Combine(root,d.Encoder+"-resident.mp4");
             using var deadline=CancellationTokenSource.CreateLinkedTokenSource(ct);

@@ -34,6 +34,7 @@ public partial class MainWindow : Window
     private void StartJobProgress(bool split,string stage="Preparing")
     {
         if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=false;
+        if(HardwareFastBox is not null)HardwareFastBox.IsEnabled=false;
         jobClock.Restart();eta=split?null:new EncodingEta(media?.Seconds);jobProgress=new(stage,null);validationStarted=null;previousTail=null;
         ProgressCard.Visibility=Visibility.Visible;etaTimer.Start();RefreshJobProgress();
     }
@@ -148,7 +149,7 @@ public partial class MainWindow : Window
     }
     private string ResultText(EncodeReport r)=>T(
         $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · {1-r.OutputBytes/(double)r.InputBytes:P1} actual savings · {r.Total.TotalSeconds:F1}s (encoding {r.Encoding.TotalSeconds:F1}s, validation {r.Validation.TotalSeconds:F1}s)",
-        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (인코딩 {r.Encoding.TotalSeconds:F1}초, 검증 {r.Validation.TotalSeconds:F1}초)")+(r.HardwareEncoder is string backend?T($"\n{backend} · {(r.GpuResident?"GPU-resident":"CPU decode")} · device defaults · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · qualification {r.HardwareQualification.TotalSeconds:F1}s",$"\n{backend} · {(r.GpuResident?"GPU 연속 처리":"CPU 디코딩")} · 장치 기본 설정 · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 장치 검사 {r.HardwareQualification.TotalSeconds:F1}초"):T($"\n{r.AppliedPlan?.Codec??"—"} · {r.AppliedPlan?.Preset??"—"} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · threads {r.RequestedEncoderThreads?.ToString()??"auto"}",$"\n{r.AppliedPlan?.Codec??"—"} · {UiLanguage.Preset(true,r.AppliedPlan?.Preset??"—")} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 스레드 {r.RequestedEncoderThreads?.ToString()??"자동"}"));
+        $"{r.InputBytes/1e6:F2} → {r.OutputBytes/1e6:F2} MB · 실제 절감률 {1-r.OutputBytes/(double)r.InputBytes:P1} · {r.Total.TotalSeconds:F1}초 (인코딩 {r.Encoding.TotalSeconds:F1}초, 검증 {r.Validation.TotalSeconds:F1}초)")+(r.HardwareEncoder is string backend?T($"\n{backend} · {(r.GpuResident?"GPU-resident":"CPU decode")} · {r.HardwarePreset??"device defaults"} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · qualification {r.HardwareQualification.TotalSeconds:F1}s",$"\n{backend} · {(r.GpuResident?"GPU 연속 처리":"CPU 디코딩")} · {r.HardwarePreset??"장치 기본 설정"} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 장치 검사 {r.HardwareQualification.TotalSeconds:F1}초"):T($"\n{r.AppliedPlan?.Codec??"—"} · {r.AppliedPlan?.Preset??"—"} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · threads {r.RequestedEncoderThreads?.ToString()??"auto"}",$"\n{r.AppliedPlan?.Codec??"—"} · {UiLanguage.Preset(true,r.AppliedPlan?.Preset??"—")} · {r.AppliedPlan?.Height}p · {r.AppliedPlan?.VideoBitsPerSecond/1000d:F0} kbps · 스레드 {r.RequestedEncoderThreads?.ToString()??"자동"}"));
     private void RefreshResult()
     {
         ResultPath.Text=completedOutput??"";
@@ -310,11 +311,13 @@ public partial class MainWindow : Window
         p.Codec==(backend.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")&&
         SplitBox.IsChecked!=true&&(ThreadsBox.SelectedItem as ThreadChoice)?.Count is null;
     private void OnHardwareChoice(object sender,System.Windows.Controls.SelectionChangedEventArgs e)=>RefreshHardwareButton();
-    private bool ResidentAllowed(string? backend)=>HardwareAllowed(backend)&&(backend is "h264_nvenc" or "hevc_nvenc")&&media?.Codec is "h264" or "hevc";
+    private bool ResidentAllowed(string? backend)=>HardwareAllowed(backend)&&(media?.Codec is "h264" or "hevc")&&
+        (!backend!.EndsWith("_amf",StringComparison.Ordinal)||activePlan?.Height==media?.Height);
     private void RefreshHardwareButton()
     {
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string);
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=ResidentAllowed(HardwareBox?.SelectedItem as string);
+        if(HardwareFastBox is not null){HardwareFastBox.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string)&&HardwareBox.SelectedItem is string nv&&nv.EndsWith("_nvenc",StringComparison.Ordinal);if(!HardwareFastBox.IsEnabled&&current is null)HardwareFastBox.IsChecked=false;}
         if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=current is null&&!encoding&&HardwareBox?.SelectedItem is string selected&&EncoderDiagnostics.HardwareCandidates.Contains(selected);
     }
     private async void OnHardwareBenchmark(object sender,RoutedEventArgs e)
@@ -350,7 +353,7 @@ public partial class MainWindow : Window
     {
         var dialog=new Window{Owner=this,Title=T("VANTA · Device screen","VANTA · 장치 성능 비교"),Width=820,Height=540,MinWidth=480,MinHeight=320,WindowStartupLocation=WindowStartupLocation.CenterOwner,Background=new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(233,237,242))};
         var panel=new System.Windows.Controls.DockPanel{Margin=new Thickness(16)};
-        var copy=new System.Windows.Controls.Button{Content=T("Copy full JSON report","전체 JSON 결과 복사"),Padding=new Thickness(12,8),Margin=new Thickness(0,8,0,0)};
+        var copy=new System.Windows.Controls.Button{Content=T("Copy full JSON report","전체 JSON 결과 복사"),Padding=new Thickness(12,8,12,8),Margin=new Thickness(0,8,0,0)};
         System.Windows.Controls.DockPanel.SetDock(copy,System.Windows.Controls.Dock.Bottom);panel.Children.Add(copy);
         copy.Click+=(_,_)=>{try{Clipboard.SetText(result.Json());copy.Content=T("Copied","복사됨");}catch(Exception ex){MessageBox.Show(dialog,ex.Message,"VANTA");}};
         var header=new System.Windows.Controls.TextBlock{Text=T("810p · 30fps · 3s · 1791kbps · one synthetic trial per path","810p · 30fps · 3초 · 1791kbps · 경로당 합성 영상 1회"),FontSize=16,FontWeight=FontWeights.Bold,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,10)};
@@ -408,6 +411,7 @@ public partial class MainWindow : Window
         if(FastHevcButton is not null)FastHevcButton.IsEnabled=false;
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=false;
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=false;
+        if(HardwareFastBox is not null)HardwareFastBox.IsEnabled=false;
         if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=current is null&&!encoding&&HardwareBox?.SelectedItem is string selected&&EncoderDiagnostics.HardwareCandidates.Contains(selected);
         if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
         EncodeButton.IsEnabled=false;
@@ -488,6 +492,7 @@ public partial class MainWindow : Window
         if(System.IO.File.Exists(output)||System.IO.Directory.Exists(output))
         {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         ClearResult();
+        bool fastHardware=hardware is not null&&hardware.EndsWith("_nvenc",StringComparison.Ordinal)&&HardwareFastBox.IsChecked==true;
         var timingKey=hardware is null?CurrentTimingKey(p):null;
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         StartJobProgress(split,hardware is null?"Preparing":"Qualifying hardware");
@@ -506,7 +511,7 @@ public partial class MainWindow : Window
             });
             var report=hardware is null
                 ?await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp)
-                :await Encoder.EncodeHardwareTrialAsync(resolved,input,output,p,hardware,cts.Token,progress,stamp,resident);
+                :await Encoder.EncodeHardwareTrialAsync(resolved,input,output,p,hardware,cts.Token,progress,stamp,resident,fastHardware);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
             if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report;
                 if(!split&&media is MediaInfo measured)timingHistory.Record(new(timingKey.Path,measured,timingKey.Plan,timingKey.Threads,timingKey.Ffmpeg+"|"+timingKey.Ffprobe,report.Total));}

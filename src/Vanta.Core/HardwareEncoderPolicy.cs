@@ -17,16 +17,48 @@ internal static class HardwareEncoderPolicy
     }
     internal static void ValidateResident(string encoder)
     {
-        if(encoder is not ("h264_nvenc" or "hevc_nvenc"))throw new ArgumentException("GPU-resident trial requires NVIDIA NVENC.");
+        _=SoftwareFamily(encoder);
+        if(encoder.EndsWith("_amf",StringComparison.Ordinal)&&!OperatingSystem.IsWindows())
+            throw new NotSupportedException("D3D11/AMF resident trial requires Windows.");
     }
-    internal static string[] InputArguments(bool resident)=>resident?["-hwaccel","cuda","-hwaccel_output_format","cuda"]:[];
-    internal static string[] ResidentFilter(Plan plan)=>["-vf",$"scale_cuda=-2:{plan.Height}:format=nv12","-pix_fmt","+cuda"];
-    internal static string[] Arguments(string encoder,Plan plan,bool resident=false)
+    internal static void ValidateFast(string encoder,bool fast)
+    {
+        if(fast&&!encoder.EndsWith("_nvenc",StringComparison.Ordinal))throw new ArgumentException("P1 is an NVIDIA-only preset.");
+    }
+    internal static string[] InputArguments(bool resident,string? encoder=null,string? sourceCodec=null)
+    {
+        if(!resident)return [];
+        ValidateResident(encoder??"");
+        if(encoder!.EndsWith("_nvenc",StringComparison.Ordinal))
+            return ["-hwaccel","cuda","-hwaccel_output_format","cuda"];
+        if(encoder.EndsWith("_qsv",StringComparison.Ordinal))
+        {
+            string decoder=sourceCodec switch{"h264"=>"h264_qsv","hevc"=>"hevc_qsv",_=>throw new ArgumentException("Unsupported QSV source")};
+            string device=OperatingSystem.IsWindows()?"qsv=vanta:hw,child_device_type=d3d11va":"qsv=vanta:hw";
+            return ["-init_hw_device",device,"-hwaccel","qsv","-hwaccel_device","vanta","-hwaccel_output_format","qsv","-c:v",decoder];
+        }
+        return ["-hwaccel","d3d11va","-hwaccel_output_format","d3d11"];
+    }
+    internal static string[] ResidentFilter(Plan plan,string encoder,int sourceHeight)
+    {
+        ValidateResident(encoder);
+        if(encoder.EndsWith("_nvenc",StringComparison.Ordinal))
+            return plan.Height==sourceHeight?["-pix_fmt","+cuda"]:["-vf",$"scale_cuda=-2:{plan.Height}:format=nv12","-pix_fmt","+cuda"];
+        if(encoder.EndsWith("_qsv",StringComparison.Ordinal))
+            return plan.Height==sourceHeight?["-pix_fmt","+qsv"]:["-vf",$"vpp_qsv=w=-2:h={plan.Height}","-pix_fmt","+qsv"];
+        if(plan.Height!=sourceHeight)throw new NotSupportedException("D3D11/AMF resident trial preserves original resolution.");
+        return ["-pix_fmt","+d3d11"];
+    }
+    internal static string[] Arguments(string encoder,Plan plan,bool resident=false,bool fast=false)
     {
         Validate(encoder,plan,false,null,null);
         // Backend defaults are intentionally not presented as equivalent
         // quality/speed presets. The actual output must pass the same gates.
-        if(resident){ValidateResident(encoder);return ["-c:v",encoder,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture)];}
-        return ["-c:v",encoder,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture),"-pix_fmt","yuv420p"];
+        ValidateFast(encoder,fast);
+        if(resident)ValidateResident(encoder);
+        var args=new List<string>{"-c:v",encoder,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture)};
+        if(fast)args.AddRange(["-preset","p1"]);
+        if(!resident)args.AddRange(["-pix_fmt","yuv420p"]);
+        return args.ToArray();
     }
 }

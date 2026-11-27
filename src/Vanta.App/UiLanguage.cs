@@ -99,10 +99,12 @@ internal static class UiLanguage
         ("Ui091","Select a matching H.264 or HEVC backend. Device defaults, current height and bitrate.","현재 코덱과 일치하는 장치를 선택하세요. 장치 기본 설정, 현재 해상도와 비트레이트를 사용합니다."),
         ("Ui092","Try GPU and save…","GPU 시험 압축 및 저장…"),
         ("Ui093","Requires automatic threads and split off. Tests the selected device first; no CPU fallback. Full validation before saving.","스레드 자동, 분할 해제 필요. 선택한 장치부터 검사하며 CPU로 자동 전환하지 않습니다. 전체 검증 후 저장합니다."),
-        ("Ui094","Try full NVIDIA GPU pipeline…","NVIDIA GPU 연속 처리 시험…"),
-        ("Ui095","Experimental NVDEC + CUDA scale + NVENC. AVC/HEVC 8-bit input only. No automatic fallback; output validation remains on CPU.","실험용 NVDEC + CUDA 스케일 + NVENC. 8비트 AVC/HEVC 입력만 지원. 자동 전환 없이 CPU 출력 검증 유지."),
+        ("Ui094","Try GPU-resident pipeline…","GPU 연속 처리 시험…"),
+        ("Ui095","Experimental CUDA / QSV / D3D11 paths. AVC/HEVC 8-bit input; AMD original resolution only. No automatic fallback; CPU output verification.","실험용 CUDA / QSV / D3D11 경로. 8비트 AVC/HEVC 입력, AMD는 원본 해상도 유지. 자동 전환 없이 CPU 출력 검증."),
         ("Ui096","Compare CPU / selected GPU…","CPU / 선택 GPU 성능 비교…"),
         ("Ui097","Synthetic 3-second benchmark. Compares full verified time, bytes and SSIM. Does not read your video or save a video; may take several minutes.","3초 합성 영상 비교. 검증 포함 전체 시간·용량·SSIM을 측정합니다. 사용자 영상 접근 및 영상 저장 없음. 수 분 소요될 수 있습니다."),
+        ("Ui098","NVIDIA P1 · maximum-speed preset","NVIDIA P1 · 속도 최우선 프리셋"),
+        ("Ui099","Explicit NVENC P1. Quality and size may differ from device defaults.","NVENC P1 직접 선택. 장치 기본 설정과 화질·용량이 다를 수 있습니다."),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
