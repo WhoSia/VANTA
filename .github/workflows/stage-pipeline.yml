@@ -1,0 +1,41 @@
+name: Synthetic stage pipeline
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/Vanta.Core/Batch.cs'
+      - 'tests/Vanta.Integration/PipelineScreen.cs'
+      - '.github/workflows/stage-pipeline.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pipeline:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Resolve FFmpeg
+        shell: pwsh
+        run: |
+          if (!(Get-Command ffmpeg -ErrorAction SilentlyContinue) -or !(Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+            $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path
+          }
+          ffmpeg -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFmpeg unavailable' }
+          ffprobe -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFprobe unavailable' }
+      - name: Run pipeline comparison
+        run: dotnet run --project tests/Vanta.Integration/Vanta.Integration.csproj -c Release -- --pipeline-screen stage-pipeline.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stage-pipeline
+          path: stage-pipeline.jsonl

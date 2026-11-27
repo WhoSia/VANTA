@@ -33,10 +33,25 @@ public static class BatchEncoder
         =>RunCoreAsync(tools,jobs,parallelism,progress,ct,totalEncoderThreads,true);
     internal static Task<IReadOnlyList<BatchUpdate>> RunGatedResearchAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,IProgress<BatchUpdate> progress,int totalEncoderThreads,CancellationToken ct)
         =>RunCoreAsync(tools,jobs,2,progress,ct,totalEncoderThreads,false,true);
-    private static async Task<IReadOnlyList<BatchUpdate>> RunCoreAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct,int? totalEncoderThreads,bool adaptive,bool serializeValidation=false)
+    // Explicit research only. At most two in-flight jobs, one encoder (including
+    // device qualification) and one verifier. No automatic backend fallback.
+    internal static Task<IReadOnlyList<BatchUpdate>> RunPipelineResearchAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,IProgress<BatchUpdate> progress,CancellationToken ct,bool overlap,int? threads=null,string? backend=null,bool resident=false,bool fast=false)
+    {
+        if(backend is not null)
+        {
+            _=HardwareEncoderPolicy.SoftwareFamily(backend);
+            HardwareEncoderPolicy.ValidateFast(backend,fast);
+            if(resident)HardwareEncoderPolicy.ValidateResident(backend);
+            if(threads.HasValue)throw new ArgumentException("Device trials require automatic threads.");
+        }
+        else if(resident||fast)throw new ArgumentException("Device options require an explicit backend.");
+        return RunCoreAsync(tools,jobs,overlap?2:1,progress,ct,threads,false,overlap,overlap,backend,resident,fast);
+    }
+    private static async Task<IReadOnlyList<BatchUpdate>> RunCoreAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct,int? totalEncoderThreads,bool adaptive,bool serializeValidation=false,bool stagePipeline=false,string? backend=null,bool resident=false,bool fast=false)
     {
         if(parallelism is <1 or >2)throw new ArgumentOutOfRangeException(nameof(parallelism));
-        var jobThreads=ThreadBudget.PerJob(totalEncoderThreads,parallelism);
+        var jobThreads=ThreadBudget.PerJob(totalEncoderThreads,stagePipeline?1:parallelism);
+        using var encoderGate=stagePipeline?new SemaphoreSlim(1,1):null;
         using var validationGate=serializeValidation?new SemaphoreSlim(1,1):null;
         var allocator=adaptive?new BatchThreadAllocator(totalEncoderThreads!.Value,parallelism,jobs.Count):null;
         var inputs=jobs.Select(j=>Path.GetFullPath(j.Input)).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -67,10 +82,18 @@ public static class BatchEncoder
                 {
                     using var lease=allocator?.Acquire();
                     Notify(new(i,"Preparing",null));
-                    report=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
+                    var forwarded=new InlineProgress(x=>
                     {
                         if(x.Stage!="Complete")Notify(new BatchUpdate(i,x.Stage,x.Fraction){Verification=x.Verification});
-                    }),encoderThreads:lease?.Count??jobThreads,expectedSource:j.ExpectedSource,validationGate:validationGate);
+                    });
+                    if(backend is not null)
+                        report=await Encoder.EncodeHardwareTrialCoreAsync(tools,j.Input,j.Output,j.Plan,backend,token,forwarded,j.ExpectedSource,resident,fast,null,encoderGate,validationGate);
+                    else
+                    {
+                        if(encoderGate is not null)Notify(new(i,"Waiting for encoder",null));
+                        using var encodeLease=await ValidationLease.EnterAsync(encoderGate,token);
+                        report=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,forwarded,encoderThreads:lease?.Count??jobThreads,expectedSource:j.ExpectedSource,validationGate:validationGate,encodeLease:encodeLease);
+                    }
                 }
                 catch(OperationCanceledException) when(token.IsCancellationRequested){Finish(new(i,"Canceled",null));return;}
                 catch(Exception ex){Finish(new(i,"Failed",null,ex.Message));return;}

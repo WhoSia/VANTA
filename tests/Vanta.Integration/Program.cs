@@ -77,6 +77,12 @@ if(args.Length==5&&args[0]=="--scale-offset")
     await ScaleScreen.RunOffsetsAsync(args[1..4],args[4],offsetTimeout.Token);
     return;
 }
+if(args.Length==2&&args[0]=="--pipeline-screen")
+{
+    using var pipelineTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(8));
+    await PipelineScreen.RunAsync(args[1],pipelineTimeout.Token);
+    return;
+}
 if(args.Length==3&&args[0]=="--device-screen")
 {
     using var screenTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(15));

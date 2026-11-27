@@ -8,7 +8,9 @@ public static class Encoder
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Explicit single-job device trial. No automatic backend selection or CPU fallback.
     // A successful tiny diagnostic is necessary, not sufficient; full validation still applies.
-    public static async Task<EncodeReport> EncodeHardwareTrialAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,SourceStamp? expectedSource=null,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null)
+    public static Task<EncodeReport> EncodeHardwareTrialAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,SourceStamp? expectedSource=null,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null)
+        =>EncodeHardwareTrialCoreAsync(tools,input,output,plan,backend,ct,progress,expectedSource,gpuResident,fastHardware,qsvAsyncDepth,null,null);
+    internal static async Task<EncodeReport> EncodeHardwareTrialCoreAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct,IProgress<EncodeProgress>? progress,SourceStamp? expectedSource,bool gpuResident,bool fastHardware,int? qsvAsyncDepth,SemaphoreSlim? encoderGate,SemaphoreSlim? validationGate)
     {
         ct.ThrowIfCancellationRequested();
         // Software presets do not map to hardware presets. Use backend defaults.
@@ -24,6 +26,9 @@ public static class Encoder
             throw new IOException("Choose a new MP4 in an existing folder.");
         var stamp=expectedSource??SourceStamp.Capture(input);
         stamp.RequireUnchanged(input);
+        // Keep device qualification under the same exclusive admission as the encode.
+        if(encoderGate is not null)progress?.Report(new("Waiting for encoder",null));
+        using var encoderLease=await ValidationLease.EnterAsync(encoderGate,ct);
         var clock=Stopwatch.StartNew();
         progress?.Report(new("Qualifying hardware",null));
         var diagnostic=(await EncoderDiagnostics.CheckAsync(tools,[backend],ct)).Single();
@@ -32,11 +37,11 @@ public static class Encoder
         stamp.RequireUnchanged(input);
         var qualification=clock.Elapsed;
         var report=await EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,input,output,applied,ct,progress,
-            expectedSource:stamp,researchHardwareEncoder:backend,gpuResident:gpuResident,fastHardware:fastHardware,qsvAsyncDepth:qsvAsyncDepth);
+            expectedSource:stamp,researchHardwareEncoder:backend,gpuResident:gpuResident,fastHardware:fastHardware,qsvAsyncDepth:qsvAsyncDepth,validationGate:validationGate,encodeLease:encoderLease);
         return report with {HardwareQualification=qualification,Preparation=report.Preparation+qualification,Total=report.Total+qualification};
     }
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
-    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false,MotionSearchMode motionSearch=MotionSearchMode.Default,bool interleavedFallback=false,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null)
+    internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false,MotionSearchMode motionSearch=MotionSearchMode.Default,bool interleavedFallback=false,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null,ValidationLease? encodeLease=null)
     {
         var clock=Stopwatch.StartNew();
         var mark=TimeSpan.Zero;
@@ -120,6 +125,9 @@ public static class Encoder
             var encoding=Lap();
             TimeSpan admissionWait=TimeSpan.Zero;
             if(validationGate is not null)progress?.Report(new("Waiting for validation",null));
+            // The child has exited and its staging output is closed. Release only
+            // encoder admission, retaining the source lease and scratch reservation.
+            encodeLease?.Dispose();
             using var validationLease=await ValidationLease.EnterAsync(validationGate,ct);
             if(validationGate is not null)admissionWait=Lap();
             void VerifyPhase(VerificationPhase phase)=>progress?.Report(new EncodeProgress("Validating",null){Verification=phase});
