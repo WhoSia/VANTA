@@ -10,6 +10,12 @@ if(args.Length==7&&args[0]=="-v"&&args[1]=="error"&&args[2]=="-show_format"&&arg
         Console.Error.WriteLine("Synthetic error-level probe diagnostic");
     return;
 }
+if(args.Length==4&&args[0]=="--public-confirmation-fixture")
+{
+    using var shardTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(28));
+    await AccelerationCohortScreen.RunAsync(args[3],shardTimeout.Token,args[2],args[1]);
+    return;
+}
 if(args.Length==3&&args[0]=="--public-confirmation")
 {
     using var confirmationTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(28));

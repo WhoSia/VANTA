@@ -54,4 +54,13 @@ with tempfile.TemporaryDirectory() as directory:
                 assert acquire.call_count == expected and sleep.call_count == expected-1
     with patch.object(prepare, "_acquire_once", side_effect=[HTTPError(URL,504,"test",None,None),item["sha256"]]) as acquire, patch.object(prepare.time,"sleep"):
         assert prepare.acquire(item,dest)==item["sha256"] and acquire.call_count==2
-print("Streaming acquisition pin, content, retry and cleanup tests passed.")
+catalog = [{"id": "first"}, {"id": "second"}]
+assert prepare.select_sources(catalog) == catalog
+assert prepare.select_sources(catalog, "second") == [catalog[1]]
+for items, only in ((catalog, "missing"), (catalog, ""), (catalog + [catalog[0]], "first"), ([], None)):
+    try:
+        prepare.select_sources(items, only)
+        raise AssertionError("Invalid selection accepted")
+    except ValueError:
+        pass
+print("Streaming acquisition pin, content, retry, cleanup and exact fixture selection tests passed.")

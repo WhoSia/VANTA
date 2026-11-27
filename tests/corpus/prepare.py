@@ -184,16 +184,33 @@ def diagnose_video(raw):
             "last_frame": frames[-1] if frames else None,
             "error": result.stderr[-2000:]}
 
+def select_sources(items, only=None):
+    """Require exact IDs, reject duplicate catalog entries and unknown selections."""
+    ids = [item["id"] for item in items]
+    if not ids or len(set(ids)) != len(ids):
+        raise ValueError("Empty or duplicate corpus catalog")
+    if only is None:
+        return items
+    chosen = [item for item in items if item["id"] == only]
+    if len(chosen) != 1:
+        raise ValueError("Unknown corpus fixture: " + only)
+    return chosen
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--work", type=pathlib.Path, required=True)
     parser.add_argument("--report", type=pathlib.Path, required=True)
     parser.add_argument("--local", type=pathlib.Path, help="Explicit local replacement inputs for harness smoke, never public-corpus evidence")
+    parser.add_argument("--only", help="Exact catalog ID for an independently reported fixture")
     args = parser.parse_args()
+    try:
+        items = select_sources(json.loads((ROOT / "sources.json").read_text(encoding="utf-8")), args.only)
+    except ValueError as exc:
+        parser.error(str(exc))
     args.work.mkdir(parents=True, exist_ok=False)
     args.report.mkdir(parents=True, exist_ok=True)
     records = []
-    for item in json.loads((ROOT / "sources.json").read_text(encoding="utf-8")):
+    for item in items:
         raw = args.work / (item["id"] + pathlib.Path(item["file"]).suffix)
         dest = args.work / (item["id"] + "-normalized.mp4")
         record = dict(item, status="failed", origin="local-replacement" if args.local else "public", raw=str(raw.resolve()), fixture=str(dest.resolve()))

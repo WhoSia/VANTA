@@ -10,8 +10,9 @@ internal static class AccelerationCohortScreen
     private static string Hash(string path){using var f=File.OpenRead(path);return Convert.ToHexString(SHA256.HashData(f));}
     private static void Check(bool ok,string message){if(!ok)throw new InvalidDataException(message);}
     private static string Str(JsonElement e,string key)=>e.GetProperty(key).GetString()??throw new InvalidDataException("Missing "+key);
-    internal static async Task RunAsync(string reportPath,CancellationToken ct,string? publicManifest=null)
+    internal static async Task RunAsync(string reportPath,CancellationToken ct,string? publicManifest=null,string? publicFixture=null)
     {
+        if(publicFixture is not null&&publicManifest is null)throw new ArgumentException("A public fixture requires an explicit manifest.");
         string root=Path.Combine(Path.GetTempPath(),"VANTA-cohort-"+Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);
@@ -23,7 +24,7 @@ internal static class AccelerationCohortScreen
             var ff=await ProcessRunner.RunAsync(tools.Ffmpeg,["-version"],ct);
             var fp=await ProcessRunner.RunAsync(tools.Ffprobe,["-version"],ct);
             Check(ff.ExitCode==0&&fp.ExitCode==0,"Tool versions");
-            Row(new{kind="environment",commit=Environment.GetEnvironmentVariable("GITHUB_SHA"),ffmpeg=ff.Output.Split('\n')[0],ffprobe=fp.Output.Split('\n')[0],ffmpegImageBytes=new FileInfo(tools.Ffmpeg).Length,ffprobeImageBytes=new FileInfo(tools.Ffprobe).Length,ffmpegSha=Hash(tools.Ffmpeg),ffprobeSha=Hash(tools.Ffprobe),cpuCount=Environment.ProcessorCount,resourceScope="direct child only; launchers may hide descendants",pairsPerFixture=5,cohort=publicManifest is null?"synthetic":"public-confirmation"});
+            Row(new{kind="environment",commit=Environment.GetEnvironmentVariable("GITHUB_SHA"),ffmpeg=ff.Output.Split('\n')[0],ffprobe=fp.Output.Split('\n')[0],ffmpegImageBytes=new FileInfo(tools.Ffmpeg).Length,ffprobeImageBytes=new FileInfo(tools.Ffprobe).Length,ffmpegSha=Hash(tools.Ffmpeg),ffprobeSha=Hash(tools.Ffprobe),cpuCount=Environment.ProcessorCount,resourceScope="direct child only; launchers may hide descendants",pairsPerFixture=5,cohort=publicManifest is null?"synthetic":publicFixture is null?"public-confirmation":"public-confirmation-shard",requestedFixture=publicFixture});
             Fixture[] fixtures=[
                 new("ntsc-720p-two-audio",1280,720,"30000/1001",30000d/1001,20,2,"libx264","testsrc2"),
                 new("mixed-1080p-hevc",1920,1080,"30",30,16,1,"libx265","testsrc2"),
@@ -33,7 +34,9 @@ internal static class AccelerationCohortScreen
             if(publicManifest is not null)
             {
                 using var manifest=JsonDocument.Parse(await File.ReadAllTextAsync(publicManifest,ct));
-                string[] ids=["animation-bbb","waterfall-portrait","screen-recording","slow-motion-drops","earth-1080p60","earth-4k60"];
+                string[] allIds=["animation-bbb","waterfall-portrait","screen-recording","slow-motion-drops","earth-1080p60","earth-4k60"];
+                Check(publicFixture is null||allIds.Contains(publicFixture),"Unknown requested public fixture");
+                string[] ids=publicFixture is null?allIds:[publicFixture];
                 foreach(var item in manifest.RootElement.EnumerateArray())
                 {
                     string id=Str(item,"id");
@@ -43,7 +46,7 @@ internal static class AccelerationCohortScreen
                           string.Equals(Str(item,"raw_sha256"),Str(item,"sha256"),StringComparison.OrdinalIgnoreCase),"Pinned raw identity: "+id);
                     Check(string.Equals(Hash(Str(item,"fixture")),Str(item,"fixture_sha256"),StringComparison.OrdinalIgnoreCase),"Fixture identity: "+id);
                 }
-                Check(records.Count==ids.Length,"All six public fixtures required");
+                Check(records.Count==ids.Length,"Every explicitly requested public fixture is required");
                 var publicFixtures=new List<Fixture>();
                 foreach(string id in ids)
                 {
@@ -131,7 +134,7 @@ internal static class AccelerationCohortScreen
                 }
                 else File.Delete(source);
             }
-            Row(new{kind="summary",completed,qualified,required=fixtures.Length,interpretation="completion tests evidence integrity, not promotion"});
+            Row(new{kind="summary",completed,qualified,required=fixtures.Length,requestedFixture=publicFixture,interpretation=publicFixture is null?"completion tests evidence integrity, not promotion":"single public shard only; aggregate acceptance requires every shard"});
             Check(completed==fixtures.Length&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Incomplete cohort or scratch leak");
         }
         finally{Directory.Delete(root,true);}
