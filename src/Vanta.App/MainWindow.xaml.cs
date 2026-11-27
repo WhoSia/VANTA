@@ -20,7 +20,8 @@ public partial class MainWindow : Window
     private EncodingEta? eta;
     private EncodeProgress? jobProgress;
     private sealed record TimingKey(string Path,SourceStamp Stamp,Plan Plan,int? Threads,bool Split,string Ffmpeg,string Ffprobe);
-    private readonly Dictionary<TimingKey,TimeSpan> timings=new();
+    private readonly Dictionary<TimingKey,EncodeReport> timings=new();
+    private TimeSpan? previousTail,validationStarted;
     private readonly TimingHistory timingHistory=new();
     private TimingKey? CurrentTimingKey(Plan p)=>sourcePath is not null&&sourceStamp is not null&&tools is not null
         ?new(sourcePath,sourceStamp,p with{Name=""},(ThreadsBox.SelectedItem as ThreadChoice)?.Count,SplitBox.IsChecked==true,tools.Ffmpeg,tools.Ffprobe):null;
@@ -31,28 +32,32 @@ public partial class MainWindow : Window
     }
     private void StartJobProgress(bool split,string stage="Preparing")
     {
-        jobClock.Restart();eta=split?null:new EncodingEta();jobProgress=new(stage,null);
+        jobClock.Restart();eta=split?null:new EncodingEta();jobProgress=new(stage,null);validationStarted=null;previousTail=null;
         ProgressCard.Visibility=Visibility.Visible;etaTimer.Start();RefreshJobProgress();
     }
     private void RefreshJobProgress()
     {
         if(jobProgress is not EncodeProgress p)return;
-        ProgressStage.Text=UiLanguage.Stage(korean,p.Stage);
+        ProgressStage.Text=p.Stage=="Validating"?UiLanguage.Verification(korean,p.Verification):UiLanguage.Stage(korean,p.Stage);
         ProgressPercent.Text=p.DisplayPercent is int percent?$"{percent}%":"";
         BusyBar.IsIndeterminate=p.Fraction is null;BusyBar.Value=p.DisplayPercent??0;
         ElapsedText.Text=T("Elapsed: ","경과: ")+DurationText(jobClock.Elapsed);
         EtaText.Text=current?.IsCancellationRequested==true?T("Canceling…","취소 중…"):
-            p.Stage=="Validating"?T("Verifying output · remaining time unknown","출력 검증 중 · 남은 시간 미정"):
+            p.Stage=="Validating"?(validationStarted is TimeSpan started&&CompletionReference.ValidationRemaining(previousTail,jobClock.Elapsed-started) is TimeSpan tail
+                ?T("Remaining ≈ ","예상 잔여 ≈ ")+DurationText(tail)+T(" · previous run reference"," · 이전 실행 참고")
+                :T("Verification · remaining time unknown","검증 중 · 남은 시간 미정")):
             p.Stage=="Complete"?T("Verified","검증 완료"):
             p.Stage is "Analyzing" or "Diagnostics"?T("Remaining time unknown","남은 시간 미정"):
             eta is null?T("Remaining time unknown for split encoding","분할 압축 · 남은 시간 미정"):
             eta?.Remaining(jobClock.Elapsed) is TimeSpan remaining
-                ?T("Encoding ETA ≈ ","압축 예상 잔여 ≈ ")+DurationText(remaining)
+                ?(CompletionReference.TotalRemaining(remaining,previousTail) is TimeSpan total
+                    ?T("Total ETA ≈ ","전체 예상 잔여 ≈ ")+DurationText(total)+T(" · previous verification time"," · 이전 검증 시간 참고")
+                    :T("Encoding ETA ≈ ","압축 예상 잔여 ≈ ")+DurationText(remaining))
                 :T("Estimating · verification time excluded","예상 시간 계산 중 · 검증 시간 제외");
     }
     private void StopJobProgress()
     {
-        etaTimer.Stop();jobClock.Stop();eta=null;jobProgress=null;
+        etaTimer.Stop();jobClock.Stop();eta=null;jobProgress=null;previousTail=null;validationStarted=null;
         ProgressCard.Visibility=Visibility.Collapsed;EtaText.Text="";ElapsedText.Text="";ProgressPercent.Text="";ProgressStage.Text="";
     }
     private void RefreshPreflightEta()
@@ -65,7 +70,7 @@ public partial class MainWindow : Window
     {
         if(CurrentTimingKey(p) is not TimingKey k||media is null)return "";
         if(timings.TryGetValue(k,out var t))
-            return (compact?T("Previous: ","이전: "):T("Previous same-setting total: ","동일 설정 이전 전체 시간: "))+DurationText(t)+T(" · reference only"," · 참고값");
+            return (compact?T("Previous: ","이전: "):T("Previous same-setting total: ","동일 설정 이전 전체 시간: "))+DurationText(t.Total)+T(" · reference only"," · 참고값");
         if(!k.Split&&timingHistory.Estimate(k.Path,media,k.Plan,k.Threads,k.Ffmpeg+"|"+k.Ffprobe) is TimingRange range)
             return T("Observed range ≈ ","관측 범위 ≈ ")+DurationText(range.Low)+"–"+DurationText(range.High)+T($" ({range.Sources} sources; not guaranteed)",$" (영상 {range.Sources}개 · 보장 없음)");
         return compact?T("Time not measured","시간 미측정"):T("Time estimate available after encoding starts.","예상 시간은 압축 시작 후 표시됩니다.");
@@ -399,18 +404,20 @@ public partial class MainWindow : Window
         var timingKey=CurrentTimingKey(p);
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         StartJobProgress(split);
+        if(!split&&timingKey is not null&&timings.TryGetValue(timingKey,out var prior))previousTail=CompletionReference.Tail(prior);
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;ProgressCard.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
         try
         {
             var progress=new Progress<EncodeProgress>(x=>
             {
                 if(current!=cts||cts.IsCancellationRequested)return;
+                if(x.Stage=="Validating"&&validationStarted is null)validationStarted=jobClock.Elapsed;
                 jobProgress=x;eta?.Observe(x,jobClock.Elapsed);RefreshJobProgress();
                 var suffix=x.DisplayPercent is int percent?$" · {percent}%":"…";SetStatus(x.Stage+suffix,UiLanguage.Stage(true,x.Stage)+suffix);
             });
             var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
-            if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report.Total;
+            if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report;
                 if(!split&&media is MediaInfo measured)timingHistory.Record(new(timingKey.Path,measured,timingKey.Plan,timingKey.Threads,timingKey.Ffmpeg+"|"+timingKey.Ffprobe,report.Total));}
             RefreshPlanTimes();
             RefreshResult();

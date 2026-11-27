@@ -1,7 +1,10 @@
 using System.Globalization;
 namespace Vanta.Core;
+public enum VerificationPhase { Metadata, Timeline, AudioIdentity, FullDecode, Combined, DecodedAudio, Publishing }
 public sealed record EncodeProgress(string Stage,double? Fraction)
 {
+    // Informational only: no phase implies verification success or a percentage.
+    public VerificationPhase? Verification {get;init;}
     public int? DisplayPercent=>Fraction is double f&&double.IsFinite(f)
         ? Stage=="Complete"?100:(int)Math.Floor(Math.Clamp(f,0,.99)*100)
         :null;

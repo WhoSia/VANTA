@@ -86,7 +86,8 @@ public static class Encoder
             if(validationGate is not null)progress?.Report(new("Waiting for validation",null));
             using var validationLease=await ValidationLease.EnterAsync(validationGate,ct);
             if(validationGate is not null)admissionWait=Lap();
-            progress?.Report(new("Validating",null));
+            void VerifyPhase(VerificationPhase phase)=>progress?.Report(new EncodeProgress("Validating",null){Verification=phase});
+            VerifyPhase(VerificationPhase.Metadata);
             var actualDetails=await Probe.InspectResearchAsync(ffprobe,temp,ct,tenBitSdr,extendedAudioResearch);
             if(!actualDetails.Supported) throw new InvalidDataException(actualDetails.Reason);
             var actual=actualDetails.Info;
@@ -105,16 +106,18 @@ public static class Encoder
             Task CheckDecode(CancellationToken token)=>Checked(ffmpeg,["-v","error","-xerror","-nostdin","-i",temp,"-map","0:V:0","-map","0:a?","-f","null","-"],token);
             if(singleDecodeValidation)
             {
+                VerifyPhase(VerificationPhase.Combined);
                 if(interleavedAudioValidation)
                     audioPending=interleavedFallback
                         ?await PacketTimeline.ValidateSingleDecodeInterleavedWithFallbackAsync(ffmpeg,ffprobe,input,temp,details.AudioStreamIndices,actualDetails.AudioStreamIndices,ct,sourceClockSnapshot)
                         :await PacketTimeline.ValidateSingleDecodeInterleavedAsync(ffmpeg,ffprobe,input,temp,details.AudioStreamIndices,actualDetails.AudioStreamIndices,ct,sourceClockSnapshot);
                 else await PacketTimeline.ValidateSingleDecodeAsync(ffmpeg,ffprobe,input,temp,source.AudioTracks,ct,sourceClockSnapshot,compareAudioPayloads:extendedAudio);
                 timeline=Lap();decode=TimeSpan.Zero;
-                if(source.AudioTracks>0&&!interleavedAudioValidation){await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
+                if(source.AudioTracks>0&&!interleavedAudioValidation){VerifyPhase(VerificationPhase.AudioIdentity);await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
             }
             else if(parallelDecodeValidation)
             {
+                VerifyPhase(VerificationPhase.Combined);
                 using var linked=CancellationTokenSource.CreateLinkedTokenSource(ct);
                 async Task<TimeSpan> Timed(Func<CancellationToken,Task> work)
                 {
@@ -127,25 +130,30 @@ public static class Encoder
                 // Join both before leaving this scope, even when either fails.
                 var durations=await Task.WhenAll(t,d);
                 timeline=durations[0];decode=durations[1];overlap=Lap();
-                if(source.AudioTracks>0){await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
+                if(source.AudioTracks>0){VerifyPhase(VerificationPhase.AudioIdentity);await ValidateAudioAsync(ffmpeg,input,temp,ct);audioHash=Lap();}
             }
             else
             {
+                VerifyPhase(VerificationPhase.Timeline);
                 await CheckTimeline(ct);timeline=Lap();
                 if(source.AudioTracks>0&&!fusedAudioValidation)
                 {
+                    VerifyPhase(VerificationPhase.AudioIdentity);
                     await ValidateAudioAsync(ffmpeg,input,temp,ct,parallelAudioHash);
                     audioHash=Lap();
                 }
+                VerifyPhase(VerificationPhase.FullDecode);
                 await CheckDecode(ct);decode=Lap();
             }
             // New codecs require exact decoded PCM too: packet bytes do not
             // capture edit-list, priming and discard effects.
             if(extendedAudio)
             {
+                VerifyPhase(VerificationPhase.DecodedAudio);
                 await DecodedAudioIdentity.ValidateAsync(ffmpeg,input,temp,source.AudioTracks,ct);
                 audioHash+=Lap();
             }
+            VerifyPhase(VerificationPhase.Publishing);
             var bytes=new FileInfo(temp).Length;
             ct.ThrowIfCancellationRequested();
             stamp.RequireUnchanged(input);

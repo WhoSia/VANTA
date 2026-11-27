@@ -171,6 +171,9 @@ try
     Check(firstReport.Preparation+firstReport.Encoding+firstReport.Validation+firstReport.Publication==firstReport.Total,"Phase time accounting");
     Console.WriteLine("Encode report accounting passed.");
     Check(events.Any(x=>x.Stage=="Encoding"&&x.Fraction>0)&&events.Any(x=>x.Stage=="Validating")&&events.Last().Stage=="Complete","Actual progress stages");
+    Check(events.Where(x=>x.Stage=="Validating").Select(x=>x.Verification).SequenceEqual(new VerificationPhase?[]{VerificationPhase.Metadata,VerificationPhase.Timeline,VerificationPhase.AudioIdentity,VerificationPhase.FullDecode,VerificationPhase.Publishing}),"Ordered ordinary verification phases");
+    Check(events.Where(x=>x.Stage=="Validating").All(x=>x.DisplayPercent is null),"No verification percentage");
+    Check(CompletionReference.Tail(firstReport)==firstReport.Validation+firstReport.Publication,"Verified historical tail");
     Check(File.Exists(output),"Output not published");
     Check(Hash(input)==before,"Source changed");
     var dest=await Probe.InspectAsync("ffprobe",output,ct);

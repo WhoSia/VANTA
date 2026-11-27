@@ -81,6 +81,13 @@ Check(eta.Remaining(Sec(22)) is null,"ETA does not forecast verification");
 eta.Observe(new("Encoding",double.NaN),Sec(23));
 Check(eta.Remaining(Sec(23)) is null,"ETA invalid sample");
 
+Check(CompletionReference.TotalRemaining(Sec(30),Sec(12))==Sec(42),"Whole-job reference adds previous validation tail");
+Check(CompletionReference.TotalRemaining(Sec(30),null) is null,"No invented verification time");
+Check(CompletionReference.TotalRemaining(TimeSpan.FromDays(30),Sec(1)) is null,"Bounded total ETA");
+Check(CompletionReference.ValidationRemaining(Sec(12),Sec(5))==Sec(7),"Historical validation countdown");
+Check(CompletionReference.ValidationRemaining(Sec(12),Sec(12)) is null&&CompletionReference.ValidationRemaining(Sec(12),Sec(13)) is null,"Overrun never reports zero or negative ETA");
+Check(CompletionReference.ValidationRemaining(Sec(12),Sec(-1)) is null&&CompletionReference.ValidationRemaining(null,Sec(1)) is null,"Invalid or absent reference withheld");
+Check(new EncodeProgress("Validating",null){Verification=VerificationPhase.FullDecode}.DisplayPercent is null,"Verification phase never claims percent");
 var history=new TimingHistory();
 var historyMedia=new MediaInfo(100_000_000,60,1920,1080,30,"h264",0,0,60,0,12_000_000);
 var historyPlan=new Plan("Balanced","libx264",1080,8_000_000,0,"veryfast",false);

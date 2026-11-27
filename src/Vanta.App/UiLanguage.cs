@@ -106,6 +106,17 @@ internal static class UiLanguage
         if(stage.StartsWith("Encoding ",StringComparison.Ordinal))return "압축 중 "+stage["Encoding ".Length..];
         return stage switch {"Diagnostics"=>"하드웨어 진단 중","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
     }
+    internal static string Verification(bool korean,Vanta.Core.VerificationPhase? phase)=>phase switch
+    {
+        Vanta.Core.VerificationPhase.Metadata=>Text(korean,"Checking output metadata","출력 정보 검사"),
+        Vanta.Core.VerificationPhase.Timeline=>Text(korean,"Checking frame and audio timing","영상·오디오 시간축 검사"),
+        Vanta.Core.VerificationPhase.AudioIdentity=>Text(korean,"Checking copied audio payload","복사된 오디오 검사"),
+        Vanta.Core.VerificationPhase.FullDecode=>Text(korean,"Decoding output for integrity","출력 전체 디코딩 검사"),
+        Vanta.Core.VerificationPhase.Combined=>Text(korean,"Combined timeline and decode checks","시간축·디코딩 통합 검사"),
+        Vanta.Core.VerificationPhase.DecodedAudio=>Text(korean,"Checking decoded audio identity","디코딩된 오디오 검사"),
+        Vanta.Core.VerificationPhase.Publishing=>Text(korean,"Final source check and saving","최종 원본 검사 및 저장"),
+        _=>Text(korean,"Verifying output","출력 검증 중")
+    };
     public static void Apply(Window window,bool korean)
     {
         foreach(var (key,en,ko) in Captions)window.Resources[key]=Text(korean,en,ko);

@@ -21,7 +21,10 @@ public static class OutputNames
     }
 }
 public sealed record BatchJob(string Input,string Output,Plan Plan,SourceStamp? ExpectedSource=null);
-public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null,EncodeReport? Report=null);
+public sealed record BatchUpdate(int Index,string Stage,double? Fraction,string? Detail=null,EncodeReport? Report=null)
+{
+    public VerificationPhase? Verification {get;init;}
+}
 public static class BatchEncoder
 {
     public static Task<IReadOnlyList<BatchUpdate>> RunAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,int parallelism,IProgress<BatchUpdate> progress,CancellationToken ct=default,int? totalEncoderThreads=null)
@@ -65,7 +68,7 @@ public static class BatchEncoder
                     using var lease=allocator?.Acquire();
                     report=await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,j.Input,j.Output,j.Plan,token,new InlineProgress(x=>
                     {
-                        if(x.Stage!="Complete")Notify(new(i,x.Stage,x.Fraction));
+                        if(x.Stage!="Complete")Notify(new BatchUpdate(i,x.Stage,x.Fraction){Verification=x.Verification});
                     }),encoderThreads:lease?.Count??jobThreads,expectedSource:j.ExpectedSource,validationGate:validationGate);
                 }
                 catch(OperationCanceledException) when(token.IsCancellationRequested){Finish(new(i,"Canceled",null));return;}
