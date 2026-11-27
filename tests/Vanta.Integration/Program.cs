@@ -77,6 +77,16 @@ if(args.Length==5&&args[0]=="--scale-offset")
     await ScaleScreen.RunOffsetsAsync(args[1..4],args[4],offsetTimeout.Token);
     return;
 }
+if(args.Length==3&&args[0]=="--device-screen")
+{
+    using var screenTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(8));
+    var screenTools=await Toolchain.DiscoverAsync(screenTimeout.Token);
+    var screen=await DeviceBenchmark.RunAsync(screenTools,args[1],screenTimeout.Token);
+    using(var report=new FileStream(args[2],FileMode.CreateNew,FileAccess.Write))using(var writer=new StreamWriter(report))await writer.WriteAsync(screen.Json());
+    Console.WriteLine(screen.Json());
+    if(screen.Rows.Count<3||screen.Rows.Count(r=>r.Mode.StartsWith("CPU")&&r.State=="Verified")!=2)throw new InvalidDataException("CPU device screen controls failed");
+    return;
+}
 if(args.Length==1&&args[0]=="--ten-bit")
 {
     using var bitDepthTimeout=new CancellationTokenSource(TimeSpan.FromMinutes(3));

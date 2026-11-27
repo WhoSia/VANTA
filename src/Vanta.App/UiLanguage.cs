@@ -101,6 +101,8 @@ internal static class UiLanguage
         ("Ui093","Requires automatic threads and split off. Tests the selected device first; no CPU fallback. Full validation before saving.","스레드 자동, 분할 해제 필요. 선택한 장치부터 검사하며 CPU로 자동 전환하지 않습니다. 전체 검증 후 저장합니다."),
         ("Ui094","Try full NVIDIA GPU pipeline…","NVIDIA GPU 연속 처리 시험…"),
         ("Ui095","Experimental NVDEC + CUDA scale + NVENC. AVC/HEVC 8-bit input only. No automatic fallback; output validation remains on CPU.","실험용 NVDEC + CUDA 스케일 + NVENC. 8비트 AVC/HEVC 입력만 지원. 자동 전환 없이 CPU 출력 검증 유지."),
+        ("Ui096","Compare CPU / selected GPU…","CPU / 선택 GPU 성능 비교…"),
+        ("Ui097","Synthetic 3-second benchmark. Compares full verified time, bytes and SSIM. Does not read your video or save a video; may take several minutes.","3초 합성 영상 비교. 검증 포함 전체 시간·용량·SSIM을 측정합니다. 사용자 영상 접근 및 영상 저장 없음. 수 분 소요될 수 있습니다."),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;

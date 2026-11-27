@@ -33,6 +33,7 @@ public partial class MainWindow : Window
     }
     private void StartJobProgress(bool split,string stage="Preparing")
     {
+        if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=false;
         jobClock.Restart();eta=split?null:new EncodingEta(media?.Seconds);jobProgress=new(stage,null);validationStarted=null;previousTail=null;
         ProgressCard.Visibility=Visibility.Visible;etaTimer.Start();RefreshJobProgress();
     }
@@ -314,6 +315,52 @@ public partial class MainWindow : Window
     {
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string);
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=ResidentAllowed(HardwareBox?.SelectedItem as string);
+        if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=current is null&&!encoding&&HardwareBox?.SelectedItem is string selected&&EncoderDiagnostics.HardwareCandidates.Contains(selected);
+    }
+    private async void OnHardwareBenchmark(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||encoding||HardwareBox.SelectedItem is not string backend||!EncoderDiagnostics.HardwareCandidates.Contains(backend))return;
+        using var cts=new CancellationTokenSource();current=cts;encoding=true;
+        OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
+        Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=HardwareBox.IsEnabled=false;
+        CancelButton.IsEnabled=true;
+        SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;
+        StartJobProgress(true,"Diagnostics");
+        SetStatus("Synthetic device benchmark; no user media is read.","합성 영상 장치 비교 중 · 사용자 영상은 읽지 않습니다.");
+        DeviceBenchmarkResult? result=null;
+        try
+        {
+            var resolved=await Toolchain.DiscoverAsync(cts.Token);
+            result=await DeviceBenchmark.RunAsync(resolved,backend,cts.Token,new Progress<string>(stage=>
+            {
+                if(current==cts&&!cts.IsCancellationRequested)SetStatus("Device screen: "+stage,"장치 비교: "+stage);
+            }));
+            SetStatus("Device screen finished. Results are synthetic, not a prediction for your video.","장치 비교 완료. 합성 영상 결과이며 사용자 영상의 예상 시간이 아닙니다.");
+        }
+        catch(OperationCanceledException){SetStatus("Device screen canceled; temporary files removed.","장치 비교 취소 · 임시 파일 정리.");}
+        catch(Exception ex){SetStatus(ex.Message);}
+        finally
+        {
+            current=null;encoding=false;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=Plans.IsEnabled=HardwareBox.IsEnabled=true;
+            Editor.IsEnabled=RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;StopJobProgress();RefreshEstimate();
+        }
+        if(result is not null)ShowDeviceReport(result);
+    }
+    private void ShowDeviceReport(DeviceBenchmarkResult result)
+    {
+        var dialog=new Window{Owner=this,Title=T("VANTA · Device screen","VANTA · 장치 성능 비교"),Width=820,Height=540,MinWidth=480,MinHeight=320,WindowStartupLocation=WindowStartupLocation.CenterOwner,Background=new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(233,237,242))};
+        var panel=new System.Windows.Controls.DockPanel{Margin=new Thickness(16)};
+        var copy=new System.Windows.Controls.Button{Content=T("Copy full JSON report","전체 JSON 결과 복사"),Padding=new Thickness(12,8),Margin=new Thickness(0,8,0,0)};
+        System.Windows.Controls.DockPanel.SetDock(copy,System.Windows.Controls.Dock.Bottom);panel.Children.Add(copy);
+        copy.Click+=(_,_)=>{try{Clipboard.SetText(result.Json());copy.Content=T("Copied","복사됨");}catch(Exception ex){MessageBox.Show(dialog,ex.Message,"VANTA");}};
+        var header=new System.Windows.Controls.TextBlock{Text=T("810p · 30fps · 3s · 1791kbps · one synthetic trial per path","810p · 30fps · 3초 · 1791kbps · 경로당 합성 영상 1회"),FontSize=16,FontWeight=FontWeights.Bold,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,10)};
+        System.Windows.Controls.DockPanel.SetDock(header,System.Windows.Controls.Dock.Top);panel.Children.Add(header);
+        string detail=string.Join(Environment.NewLine+Environment.NewLine,result.Rows.Select(row=>row.Report is EncodeReport r
+            ?$"{row.Mode} — {row.State}\n"+T($"Total {r.Total.TotalSeconds:F2}s · encode {r.Encoding.TotalSeconds:F2}s · validate {r.Validation.TotalSeconds:F2}s",$"전체 {r.Total.TotalSeconds:F2}초 · 압축 {r.Encoding.TotalSeconds:F2}초 · 검증 {r.Validation.TotalSeconds:F2}초")+
+             $"\n{r.OutputBytes/1e6:F3} MB · SSIM {row.MeanSsim:F5} / worst 1s {row.WorstSecond:F5}\n"+T($"Fixed output check: {row.OrdinaryCheckSeconds:F2}s ordinary / {row.CombinedCheckSeconds:F2}s combined",$"고정 출력 검사: 기존 {row.OrdinaryCheckSeconds:F2}초 / 통합 {row.CombinedCheckSeconds:F2}초")
+            :$"{row.Mode} — {row.State}\n{row.Detail}"));
+        var body=new System.Windows.Controls.TextBox{Text=detail,IsReadOnly=true,TextWrapping=TextWrapping.Wrap,VerticalScrollBarVisibility=System.Windows.Controls.ScrollBarVisibility.Auto,Padding=new Thickness(12),FontSize=14};
+        panel.Children.Add(body);dialog.Content=panel;dialog.ShowDialog();
     }
     private async void OnResidentTrial(object sender,RoutedEventArgs e)
     {
@@ -361,6 +408,7 @@ public partial class MainWindow : Window
         if(FastHevcButton is not null)FastHevcButton.IsEnabled=false;
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=false;
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=false;
+        if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=current is null&&!encoding&&HardwareBox?.SelectedItem is string selected&&EncoderDiagnostics.HardwareCandidates.Contains(selected);
         if(EncodeButton is null||MoreCompressionButton is null||media is null)return;
         EncodeButton.IsEnabled=false;
         if(TargetPending)

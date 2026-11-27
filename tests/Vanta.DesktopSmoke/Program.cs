@@ -17,6 +17,8 @@ internal static class DesktopSmoke
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
         Check(!Get<Button>(main,"HardwareTrialButton").IsEnabled&&Get<ComboBox>(main,"HardwareBox").SelectedIndex==-1,"No automatic hardware path");
+        Check(!Get<Button>(main,"HardwareBenchButton").IsEnabled,"Benchmark requires explicit backend");
+        Get<ComboBox>(main,"HardwareBox").SelectedItem="hevc_nvenc";Check(Get<Button>(main,"HardwareBenchButton").IsEnabled,"Synthetic benchmark does not need user source");Get<ComboBox>(main,"HardwareBox").SelectedIndex=-1;
         Check(Get<TextBlock>(main,"ActivePlanSummary").Visibility==Visibility.Collapsed,"No applied settings before source");
         Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(main,"EtaText").Text==""&&Get<TextBlock>(main,"ThroughputText").Text=="","No stale ETA or speed on startup");
         Check(!Get<Button>(main,"ResultFolderButton").IsEnabled&&!Get<Button>(main,"CopyResultButton").IsEnabled&&!Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Collapsed,"No result before successful encode");
