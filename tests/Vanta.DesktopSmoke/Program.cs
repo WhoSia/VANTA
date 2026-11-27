@@ -245,7 +245,7 @@ internal static class DesktopSmoke
                 // Restore the initial shared codec to keep the prior timing-context scenario comparable.
                 Get<ComboBox>(batch,"RecommendationBox").SelectedIndex=0;
                 var start=Get<Button>(batch,"StartButton");
-                Check(start.IsEnabled&&(string)start.Content=="영상 2개 압축 시작","Batch action counts ready files");
+                Check(start.IsEnabled&&(string)start.Content=="CPU로 영상 2개 압축 시작","Batch action counts ready files");
                 Check(Get<TextBlock>(batch,"BatchPreflightText").Text.Contains("0/2"),"First batch preflight does not invent time");
                 var batchLanguage=Get<ComboBox>(batch,"LanguageBox");
                 var orderGrid=Get<DataGrid>(batch,"Queue");
