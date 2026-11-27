@@ -1,0 +1,363 @@
+{
+  "schema": 1,
+  "scope": "Seven retained synthetic sources, six 12s CBR filler 720p30 and one 30s CRF18 mixed 1080p30. One observed execution each. Read-only packet size CV and 64x36 grayscale fps4 thumbnails; whole decode vs 3 separate input seeks to 0/middle/end seconds. Spatial and within-window temporal differences (not previous TemporalProbePolicy cross-window definition). Sampled raw thumbnail bytes independently matched corresponding full-decode windows 21/21. Source SHA unchanged. Timings include subprocess and feature calculation but exclude initial/final SHA and metadata probe; packet scan reads entire packet table. Buffered local script, short known fixtures only, not bounded production implementation. Reduced rows transcribed from actual JSONL; script emits full per-window values. No new encodes or causal ETA/quality classifier claim.",
+  "environment": "Linux FFmpeg7.1.5, 4 CPU cgroup quota",
+  "rows": [
+    {
+      "id": "detail",
+      "bytes": 6209185,
+      "sha": "812097e644a75b1d67e59c8738e548297b15c51d4f641f4e7d5d09df85cedd49",
+      "seconds": 12,
+      "packet_count": 360,
+      "packet_cv": 0.09911638863175304,
+      "packet_s": 0.12854333799987216,
+      "full_s": 0.31657475699921633,
+      "sample_s": 0.5282764900002803,
+      "windows": [
+        0,
+        6,
+        11
+      ],
+      "pixel_equal": [
+        true,
+        true,
+        true
+      ],
+      "feature_error": [
+        0,
+        0,
+        0
+      ],
+      "full_max": 0.02153458605664488,
+      "sample_max": 0.019667982933914308,
+      "sample": [
+        [
+          0.022888795275054465,
+          0.010886437908496732
+        ],
+        [
+          0.025219354234749455,
+          0.014893677378358752
+        ],
+        [
+          0.024318321078431373,
+          0.019667982933914308
+        ]
+      ],
+      "source_unchanged": true,
+      "sampleReduction": -0.6687258801294382,
+      "peakMiss": 0.08667931288860786
+    },
+    {
+      "id": "grain",
+      "bytes": 6020675,
+      "sha": "fe49dadc8f0a5a7955b3eea47ab5377840865b94d3c8cce77a664b6b6eab0757",
+      "seconds": 12,
+      "packet_count": 360,
+      "packet_cv": 0.36427355340599804,
+      "packet_s": 0.09129379099977086,
+      "full_s": 0.3314034200002425,
+      "sample_s": 0.45158224899932975,
+      "windows": [
+        0,
+        6,
+        11
+      ],
+      "pixel_equal": [
+        true,
+        true,
+        true
+      ],
+      "feature_error": [
+        0,
+        0,
+        0
+      ],
+      "full_max": 0.0215425290486565,
+      "sample_max": 0.019917619825708062,
+      "sample": [
+        [
+          0.023444095520152506,
+          0.01110770697167756
+        ],
+        [
+          0.024857026143790848,
+          0.0146576570442992
+        ],
+        [
+          0.024246195874183005,
+          0.019917619825708062
+        ]
+      ],
+      "source_unchanged": true,
+      "sampleReduction": -0.3626360554728112,
+      "peakMiss": 0.07542796944956542
+    },
+    {
+      "id": "inverted",
+      "bytes": 6187038,
+      "sha": "36a4435a57fdcf4aab94ed005ee876dd448863508c4bfcc3eda4199289956f52",
+      "seconds": 12,
+      "packet_count": 360,
+      "packet_cv": 0.14381954464244256,
+      "packet_s": 0.08228363800026273,
+      "full_s": 0.24550265800007764,
+      "sample_s": 0.40158899200014275,
+      "windows": [
+        0,
+        6,
+        11
+      ],
+      "pixel_equal": [
+        true,
+        true,
+        true
+      ],
+      "feature_error": [
+        0,
+        0,
+        0
+      ],
+      "full_max": 0.02124920570079884,
+      "sample_max": 0.019477918482207698,
+      "sample": [
+        [
+          0.022360089869281046,
+          0.010783746368917938
+        ],
+        [
+          0.024395126974400872,
+          0.014621913580246913
+        ],
+        [
+          0.023445584831154685,
+          0.019477918482207698
+        ]
+      ],
+      "source_unchanged": true,
+      "sampleReduction": -0.6357826643164726,
+      "peakMiss": 0.08335780845326146
+    },
+    {
+      "id": "late",
+      "bytes": 6271285,
+      "sha": "bc6ea6b38dd3d9424196da9f556d9e3bb21724aa6e5a2efeb6ac875aec978ed0",
+      "seconds": 12,
+      "packet_count": 360,
+      "packet_cv": 0.5496562864517444,
+      "packet_s": 0.07192795599985402,
+      "full_s": 0.24361416500050836,
+      "sample_s": 0.46179534399925615,
+      "windows": [
+        0,
+        6,
+        11
+      ],
+      "pixel_equal": [
+        true,
+        true,
+        true
+      ],
+      "feature_error": [
+        0,
+        0,
+        0
+      ],
+      "full_max": 0.021258283405954974,
+      "sample_max": 0.019483024691358024,
+      "sample": [
+        [
+          0.00005446623093681917,
+          0
+        ],
+        [
+          0.00005446623093681917,
+          0
+        ],
+        [
+          0.023374310661764704,
+          0.019483024691358024
+        ]
+      ],
+      "source_unchanged": true,
+      "sampleReduction": -0.8956013661943365,
+      "peakMiss": 0.08350903413488486
+    },
+    {
+      "id": "mixed",
+      "bytes": 6270546,
+      "sha": "dc7f39ff89ea0646e47d04e9316e5df30a61cb2a707e47be3daa1125327f34f0",
+      "seconds": 12,
+      "packet_count": 360,
+      "packet_cv": 0.4335119536538995,
+      "packet_s": 0.08074397700056579,
+      "full_s": 0.27944374099934066,
+      "sample_s": 0.4100307079997947,
+      "windows": [
+        0,
+        6,
+        11
+      ],
+      "pixel_equal": [
+        true,
+        true,
+        true
+      ],
+      "feature_error": [
+        0,
+        0,
+        0
+      ],
+      "full_max": 0.01995790214233842,
+      "sample_max": 0.01952671114742193,
+      "sample": [
+        [
+          0.022354132625272333,
+          0.010762186819172114
+        ],
+        [
+          0.00005446623093681917,
+          0
+        ],
+        [
+          0.023384735838779955,
+          0.01952671114742193
+        ]
+      ],
+      "source_unchanged": true,
+      "sampleReduction": -0.4673104022063681,
+      "peakMiss": 0.02160502601131431
+    },
+    {
+      "id": "motion",
+      "bytes": 6189319,
+      "sha": "0c494bcb7b543906928fe91bfce3064d5fbbe588a05e90859eac64b151141c2f",
+      "seconds": 12,
+      "packet_count": 360,
+      "packet_cv": 0.1436822213092649,
+      "packet_s": 0.0899323280000317,
+      "full_s": 0.2723362360002284,
+      "sample_s": 0.44810022199999366,
+      "windows": [
+        0,
+        6,
+        11
+      ],
+      "pixel_equal": [
+        true,
+        true,
+        true
+      ],
+      "feature_error": [
+        0,
+        0,
+        0
+      ],
+      "full_max": 0.021269063180827885,
+      "sample_max": 0.019525009077705158,
+      "sample": [
+        [
+          0.022354132625272333,
+          0.010762186819172114
+        ],
+        [
+          0.024401084218409586,
+          0.01464233841684822
+        ],
+        [
+          0.023476647603485837,
+          0.019525009077705158
+        ]
+      ],
+      "source_unchanged": true,
+      "sampleReduction": -0.6453933144600628,
+      "peakMiss": 0.0819995731967561
+    },
+    {
+      "id": "long-mixed",
+      "bytes": 50750661,
+      "sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+      "seconds": 30,
+      "packet_count": 900,
+      "packet_cv": 0.7089041342536034,
+      "packet_s": 0.09304137999970408,
+      "full_s": 0.9990830040005676,
+      "sample_s": 0.7188197870000295,
+      "windows": [
+        0,
+        15,
+        29
+      ],
+      "pixel_equal": [
+        true,
+        true,
+        true
+      ],
+      "feature_error": [
+        0,
+        0,
+        0
+      ],
+      "full_max": 0.016690495642701524,
+      "sample_max": 0.009184935548293392,
+      "sample": [
+        [
+          0.019798687704248367,
+          0.0072048611111111115
+        ],
+        [
+          0.00005446623093681917,
+          0
+        ],
+        [
+          0.02081673815359477,
+          0.009184935548293392
+        ]
+      ],
+      "source_unchanged": true,
+      "sampleReduction": 0.2805204531338208,
+      "peakMiss": 0.44969066557889725
+    }
+  ],
+  "etaReplay": {
+    "scope": "Actual prior two 12-second traces replayed in Python with initial (0,0); no new encodes. Synthetic 7200-second denominator uses same observed media times, not actual 2-hour outcome.",
+    "short": [
+      {
+        "id": "motion",
+        "old": 16,
+        "new": 16,
+        "identical": true
+      },
+      {
+        "id": "late",
+        "old": 11,
+        "new": 11,
+        "identical": true
+      }
+    ],
+    "longReplay": [
+      {
+        "id": "motion",
+        "old": 0,
+        "new": 16,
+        "firstAt": 3.5934469720000095
+      },
+      {
+        "id": "late",
+        "old": 0,
+        "new": 11,
+        "firstAt": 3.0793872860000135
+      }
+    ],
+    "constant7200": {
+      "old": 0,
+      "new": 5,
+      "firstAt": 3,
+      "at6Remaining": 7194,
+      "stallAt17": null,
+      "resumeAt18": null,
+      "at19": null,
+      "at22Remaining": 7189
+    }
+  }
+}
