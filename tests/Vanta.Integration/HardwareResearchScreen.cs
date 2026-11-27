@@ -36,8 +36,9 @@ internal static class HardwareResearchScreen
         if(OperatingSystem.IsWindows())Check(HardwareEncoderPolicy.InputArguments(true,"h264_amf","h264").Contains("d3d11")&&HardwareEncoderPolicy.ResidentFilter(plan,"h264_amf",plan.Height).SequenceEqual(new[]{"-pix_fmt","+d3d11"}),"AMF D3D11 original-resolution path");
         Check(HardwareEncoderPolicy.Arguments("h264_nvenc",plan,true,true).TakeLast(2).SequenceEqual(new[]{"-preset","p1"}),"NVENC P1 isolated from software preset");
         bool badResident=false;
-        try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,"h264_qsv",ct,gpuResident:true,fastHardware:true);}catch(ArgumentException){badResident=true;}
-        Check(badResident&&!File.Exists(bad),"Non-NVIDIA P1 rejected");
+        try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,"h264_amf",ct,fastHardware:true);}catch(ArgumentException){badResident=true;}
+        Check(badResident&&!File.Exists(bad),"Unsupported AMF fast preset rejected");
+        Check(HardwareEncoderPolicy.Arguments("h264_qsv",plan,true,true).TakeLast(2).SequenceEqual(new[]{"-preset","veryfast"}),"Intel speed preset isolated");
         bool invalidRejected=false;
         try{await Encoder.EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,source,bad,plan,ct,researchHardwareEncoder:"unknown");}
         catch(ArgumentException){invalidRejected=true;}

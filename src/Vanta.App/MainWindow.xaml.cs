@@ -317,7 +317,7 @@ public partial class MainWindow : Window
     {
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string);
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=ResidentAllowed(HardwareBox?.SelectedItem as string);
-        if(HardwareFastBox is not null){HardwareFastBox.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string)&&HardwareBox.SelectedItem is string nv&&nv.EndsWith("_nvenc",StringComparison.Ordinal);if(!HardwareFastBox.IsEnabled&&current is null)HardwareFastBox.IsChecked=false;}
+        if(HardwareFastBox is not null){HardwareFastBox.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string)&&HardwareBox.SelectedItem is string nv&&(nv.EndsWith("_nvenc",StringComparison.Ordinal)||nv.EndsWith("_qsv",StringComparison.Ordinal));if(!HardwareFastBox.IsEnabled&&current is null)HardwareFastBox.IsChecked=false;}
         if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=current is null&&!encoding&&HardwareBox?.SelectedItem is string selected&&EncoderDiagnostics.HardwareCandidates.Contains(selected);
     }
     private async void OnHardwareBenchmark(object sender,RoutedEventArgs e)
@@ -492,7 +492,7 @@ public partial class MainWindow : Window
         if(System.IO.File.Exists(output)||System.IO.Directory.Exists(output))
         {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         ClearResult();
-        bool fastHardware=hardware is not null&&hardware.EndsWith("_nvenc",StringComparison.Ordinal)&&HardwareFastBox.IsChecked==true;
+        bool fastHardware=hardware is not null&&(hardware.EndsWith("_nvenc",StringComparison.Ordinal)||hardware.EndsWith("_qsv",StringComparison.Ordinal))&&HardwareFastBox.IsChecked==true;
         var timingKey=hardware is null?CurrentTimingKey(p):null;
         using var cts=new CancellationTokenSource();current=cts;encoding=true;
         StartJobProgress(split,hardware is null?"Preparing":"Qualifying hardware");

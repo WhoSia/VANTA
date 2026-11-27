@@ -23,7 +23,12 @@ internal static class HardwareEncoderPolicy
     }
     internal static void ValidateFast(string encoder,bool fast)
     {
-        if(fast&&!encoder.EndsWith("_nvenc",StringComparison.Ordinal))throw new ArgumentException("P1 is an NVIDIA-only preset.");
+        if(fast&&!encoder.EndsWith("_nvenc",StringComparison.Ordinal)&&!encoder.EndsWith("_qsv",StringComparison.Ordinal))throw new ArgumentException("Fast preset requires NVENC or QSV.");
+    }
+    internal static string? FastPreset(string encoder,bool fast)
+    {
+        ValidateFast(encoder,fast);
+        return !fast?null:encoder.EndsWith("_qsv",StringComparison.Ordinal)?"veryfast":"p1";
     }
     internal static string[] InputArguments(bool resident,string? encoder=null,string? sourceCodec=null)
     {
@@ -57,7 +62,7 @@ internal static class HardwareEncoderPolicy
         ValidateFast(encoder,fast);
         if(resident)ValidateResident(encoder);
         var args=new List<string>{"-c:v",encoder,"-b:v",plan.VideoBitsPerSecond.ToString(CultureInfo.InvariantCulture)};
-        if(fast)args.AddRange(["-preset","p1"]);
+        if(FastPreset(encoder,fast) is string preset)args.AddRange(["-preset",preset]);
         if(!resident)args.AddRange(["-pix_fmt","yuv420p"]);
         return args.ToArray();
     }

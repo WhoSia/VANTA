@@ -103,8 +103,8 @@ internal static class UiLanguage
         ("Ui095","Experimental CUDA / QSV / D3D11 paths. AVC/HEVC 8-bit input; AMD original resolution only. No automatic fallback; CPU output verification.","실험용 CUDA / QSV / D3D11 경로. 8비트 AVC/HEVC 입력, AMD는 원본 해상도 유지. 자동 전환 없이 CPU 출력 검증."),
         ("Ui096","Compare CPU / selected GPU…","CPU / 선택 GPU 성능 비교…"),
         ("Ui097","Synthetic 3-second benchmark. Compares full verified time, bytes and SSIM. Does not read your video or save a video; may take several minutes.","3초 합성 영상 비교. 검증 포함 전체 시간·용량·SSIM을 측정합니다. 사용자 영상 접근 및 영상 저장 없음. 수 분 소요될 수 있습니다."),
-        ("Ui098","NVIDIA P1 · maximum-speed preset","NVIDIA P1 · 속도 최우선 프리셋"),
-        ("Ui099","Explicit NVENC P1. Quality and size may differ from device defaults.","NVENC P1 직접 선택. 장치 기본 설정과 화질·용량이 다를 수 있습니다."),
+        ("Ui098","Fast device preset · NVENC P1 / QSV veryfast","장치 속도 우선 · NVENC P1 / QSV veryfast"),
+        ("Ui099","Explicit NVENC P1 or Intel QSV veryfast. Quality and size may differ from device defaults.","NVENC P1 또는 Intel QSV veryfast 직접 선택. 장치 기본 설정과 화질·용량이 다를 수 있습니다."),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
