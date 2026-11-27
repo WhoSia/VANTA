@@ -1,0 +1,1307 @@
+{
+  "head": "a3ba38fca222ae7cbeeb7b3d9fe0ddcbefc518ed",
+  "run": 46028905424,
+  "job": 140607341082,
+  "artifacts": [
+    {
+      "id": 15214170832,
+      "digest": "sha256:3da647198aafc59c2a27bb8ae29389201638f243f06e4f4238fd6c7464fc7fff",
+      "size": 3016
+    }
+  ],
+  "scope": "Exact C# CPU stage-pipeline experiment. No actual GPU performance.",
+  "rows": [
+    {
+      "kind": "environment",
+      "version": "ffmpeg version 9.1-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers\r",
+      "logicalProcessors": 4,
+      "sourceSha": [
+        "BD1390F025FBB59219A2FA20D925C984981D1914D209A2BAA3197C6B09F8883A",
+        "06BB29314F9CAF3562CF2A42B921744FF303CEAFA2D731DB4A7346BCC42FC2FF"
+      ],
+      "threads": 4,
+      "frames": 180
+    },
+    {
+      "kind": "job",
+      "rep": 0,
+      "overlap": false,
+      "index": 0,
+      "sha": "2A0BAC407D444A5B9555A428ADAA1F8F431B44E2C857893BF1C152A6A2B9607A",
+      "report": {
+        "Preparation": "00:00:00.1797608",
+        "Encoding": "00:00:01.3982283",
+        "OutputProbe": "00:00:00.0802264",
+        "TimelineCheck": "00:00:00.5704761",
+        "AudioHashCheck": "00:00:00.1565810",
+        "FullDecode": "00:00:00.2425940",
+        "Publication": "00:00:00.0005828",
+        "Total": "00:00:02.6284494",
+        "OutputBytes": 1520187,
+        "InputBytes": 1857664,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00",
+        "Validation": "00:00:01.0498775"
+      }
+    },
+    {
+      "kind": "job",
+      "rep": 0,
+      "overlap": false,
+      "index": 1,
+      "sha": "7A6D050930ADDB58E285C6FD2ABBA77E88FF0F713B8707E7C5242E78C2B6EC50",
+      "report": {
+        "Preparation": "00:00:00.0747438",
+        "Encoding": "00:00:01.5387952",
+        "OutputProbe": "00:00:00.0691305",
+        "TimelineCheck": "00:00:00.5194105",
+        "AudioHashCheck": "00:00:00.1304292",
+        "FullDecode": "00:00:00.1961405",
+        "Publication": "00:00:00.0004363",
+        "Total": "00:00:02.5290860",
+        "OutputBytes": 1448034,
+        "InputBytes": 1781392,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00",
+        "Validation": "00:00:00.9151107"
+      }
+    },
+    {
+      "kind": "trial",
+      "rep": 0,
+      "overlap": false,
+      "seconds": 5.3089699,
+      "events": [
+        {
+          "Index": 0,
+          "Stage": "Preparing",
+          "Seconds": 0.1331465
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.3211528
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.912914
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.4255221
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.7027309
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.719055
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.7989691
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.3694482
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.5260265
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.7686218
+        },
+        {
+          "Index": 0,
+          "Stage": "Complete",
+          "Seconds": 2.7786234
+        },
+        {
+          "Index": 1,
+          "Stage": "Preparing",
+          "Seconds": 2.778925
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.8536852
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 3.4183806
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 3.9213885
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 4.3798271
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.3924873
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.4616048
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.9810177
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 5.1114451
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 5.3075985
+        },
+        {
+          "Index": 1,
+          "Stage": "Complete",
+          "Seconds": 5.3080926
+        }
+      ]
+    },
+    {
+      "kind": "job",
+      "rep": 0,
+      "overlap": true,
+      "index": 0,
+      "sha": "2A0BAC407D444A5B9555A428ADAA1F8F431B44E2C857893BF1C152A6A2B9607A",
+      "report": {
+        "Preparation": "00:00:00.0605982",
+        "Encoding": "00:00:01.0830980",
+        "OutputProbe": "00:00:00.0768472",
+        "TimelineCheck": "00:00:00.7369197",
+        "AudioHashCheck": "00:00:00.1995277",
+        "FullDecode": "00:00:00.2403735",
+        "Publication": "00:00:00.0005918",
+        "Total": "00:00:02.3982711",
+        "OutputBytes": 1520187,
+        "InputBytes": 1857664,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00.0003150",
+        "Validation": "00:00:01.2536681"
+      }
+    },
+    {
+      "kind": "job",
+      "rep": 0,
+      "overlap": true,
+      "index": 1,
+      "sha": "7A6D050930ADDB58E285C6FD2ABBA77E88FF0F713B8707E7C5242E78C2B6EC50",
+      "report": {
+        "Preparation": "00:00:00.0766811",
+        "Encoding": "00:00:01.6081138",
+        "OutputProbe": "00:00:00.0612153",
+        "TimelineCheck": "00:00:00.4657004",
+        "AudioHashCheck": "00:00:00.1260005",
+        "FullDecode": "00:00:00.2342835",
+        "Publication": "00:00:00.0004569",
+        "Total": "00:00:02.5724736",
+        "OutputBytes": 1448034,
+        "InputBytes": 1781392,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00.0000221",
+        "Validation": "00:00:00.8871997"
+      }
+    },
+    {
+      "kind": "trial",
+      "rep": 0,
+      "overlap": true,
+      "seconds": 3.7174876,
+      "events": [
+        {
+          "Index": 0,
+          "Stage": "Preparing",
+          "Seconds": 0.0001062
+        },
+        {
+          "Index": 0,
+          "Stage": "Waiting for encoder",
+          "Seconds": 0.0001077
+        },
+        {
+          "Index": 1,
+          "Stage": "Preparing",
+          "Seconds": 0.000117
+        },
+        {
+          "Index": 1,
+          "Stage": "Waiting for encoder",
+          "Seconds": 0.0001183
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.0607991
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.6285141
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.1309253
+        },
+        {
+          "Index": 0,
+          "Stage": "Waiting for validation",
+          "Seconds": 1.1439096
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.1442013
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.2210552
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 1.2214887
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 1.8016915
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.9579743
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.1575024
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.3079201
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.3978745
+        },
+        {
+          "Index": 0,
+          "Stage": "Complete",
+          "Seconds": 2.3986014
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.8116748
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.8168059
+        },
+        {
+          "Index": 1,
+          "Stage": "Waiting for validation",
+          "Seconds": 2.8296137
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 2.8296208
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 2.8908402
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.3565438
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.4825425
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.716827
+        },
+        {
+          "Index": 1,
+          "Stage": "Complete",
+          "Seconds": 3.7173805
+        }
+      ]
+    },
+    {
+      "kind": "pair",
+      "rep": 0,
+      "exact": true,
+      "reduction": 0.2997723343656554
+    },
+    {
+      "kind": "job",
+      "rep": 1,
+      "overlap": true,
+      "index": 0,
+      "sha": "2A0BAC407D444A5B9555A428ADAA1F8F431B44E2C857893BF1C152A6A2B9607A",
+      "report": {
+        "Preparation": "00:00:00.0681615",
+        "Encoding": "00:00:01.1957564",
+        "OutputProbe": "00:00:00.0760074",
+        "TimelineCheck": "00:00:00.8518103",
+        "AudioHashCheck": "00:00:00.2093752",
+        "FullDecode": "00:00:00.2578747",
+        "Publication": "00:00:00.0005154",
+        "Total": "00:00:02.6595855",
+        "OutputBytes": 1520187,
+        "InputBytes": 1857664,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00.0000846",
+        "Validation": "00:00:01.3950676"
+      }
+    },
+    {
+      "kind": "job",
+      "rep": 1,
+      "overlap": true,
+      "index": 1,
+      "sha": "7A6D050930ADDB58E285C6FD2ABBA77E88FF0F713B8707E7C5242E78C2B6EC50",
+      "report": {
+        "Preparation": "00:00:00.0728237",
+        "Encoding": "00:00:01.7224008",
+        "OutputProbe": "00:00:00.0640990",
+        "TimelineCheck": "00:00:00.5486634",
+        "AudioHashCheck": "00:00:00.1270227",
+        "FullDecode": "00:00:00.2049150",
+        "Publication": "00:00:00.0003652",
+        "Total": "00:00:02.7403043",
+        "OutputBytes": 1448034,
+        "InputBytes": 1781392,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00.0000145",
+        "Validation": "00:00:00.9447001"
+      }
+    },
+    {
+      "kind": "trial",
+      "rep": 1,
+      "overlap": true,
+      "seconds": 4.0045758,
+      "events": [
+        {
+          "Index": 0,
+          "Stage": "Preparing",
+          "Seconds": 0.0000613
+        },
+        {
+          "Index": 0,
+          "Stage": "Waiting for encoder",
+          "Seconds": 0.0000625
+        },
+        {
+          "Index": 1,
+          "Stage": "Preparing",
+          "Seconds": 0.000066
+        },
+        {
+          "Index": 1,
+          "Stage": "Waiting for encoder",
+          "Seconds": 0.0000663
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.0682391
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.6327539
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.1390163
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.2504561
+        },
+        {
+          "Index": 0,
+          "Stage": "Waiting for validation",
+          "Seconds": 1.2639919
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.2640843
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 1.3369867
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.3400827
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 1.9178517
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.1918968
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.4012749
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.4204821
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.6591447
+        },
+        {
+          "Index": 0,
+          "Stage": "Complete",
+          "Seconds": 2.6597416
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.9217448
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 3.0439206
+        },
+        {
+          "Index": 1,
+          "Stage": "Waiting for validation",
+          "Seconds": 3.059381
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.0593892
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.1234913
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.6721566
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.7991776
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.004093
+        },
+        {
+          "Index": 1,
+          "Stage": "Complete",
+          "Seconds": 4.0045328
+        }
+      ]
+    },
+    {
+      "kind": "job",
+      "rep": 1,
+      "overlap": false,
+      "index": 0,
+      "sha": "2A0BAC407D444A5B9555A428ADAA1F8F431B44E2C857893BF1C152A6A2B9607A",
+      "report": {
+        "Preparation": "00:00:00.0618185",
+        "Encoding": "00:00:01.0623516",
+        "OutputProbe": "00:00:00.0621264",
+        "TimelineCheck": "00:00:00.4892176",
+        "AudioHashCheck": "00:00:00.1314593",
+        "FullDecode": "00:00:00.1958509",
+        "Publication": "00:00:00.0003770",
+        "Total": "00:00:02.0032013",
+        "OutputBytes": 1520187,
+        "InputBytes": 1857664,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00",
+        "Validation": "00:00:00.8786542"
+      }
+    },
+    {
+      "kind": "job",
+      "rep": 1,
+      "overlap": false,
+      "index": 1,
+      "sha": "7A6D050930ADDB58E285C6FD2ABBA77E88FF0F713B8707E7C5242E78C2B6EC50",
+      "report": {
+        "Preparation": "00:00:00.0632945",
+        "Encoding": "00:00:01.2677801",
+        "OutputProbe": "00:00:00.0609206",
+        "TimelineCheck": "00:00:00.4861025",
+        "AudioHashCheck": "00:00:00.1331712",
+        "FullDecode": "00:00:00.1968164",
+        "Publication": "00:00:00.0003788",
+        "Total": "00:00:02.2084641",
+        "OutputBytes": 1448034,
+        "InputBytes": 1781392,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00",
+        "Validation": "00:00:00.8770107"
+      }
+    },
+    {
+      "kind": "trial",
+      "rep": 1,
+      "overlap": false,
+      "seconds": 4.212048,
+      "events": [
+        {
+          "Index": 0,
+          "Stage": "Preparing",
+          "Seconds": 0.0000723
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.0619081
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.6217764
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.1114465
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.1242551
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.1863999
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.6756
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.8070569
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.0029072
+        },
+        {
+          "Index": 0,
+          "Stage": "Complete",
+          "Seconds": 2.0033762
+        },
+        {
+          "Index": 1,
+          "Stage": "Preparing",
+          "Seconds": 2.003387
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.0666951
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.63091
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 3.1331777
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 3.3212201
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.3344873
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.3953902
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.8814943
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.0146647
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.2114815
+        },
+        {
+          "Index": 1,
+          "Stage": "Complete",
+          "Seconds": 4.212019
+        }
+      ]
+    },
+    {
+      "kind": "pair",
+      "rep": 1,
+      "exact": true,
+      "reduction": 0.049256846075828364
+    },
+    {
+      "kind": "job",
+      "rep": 2,
+      "overlap": false,
+      "index": 0,
+      "sha": "2A0BAC407D444A5B9555A428ADAA1F8F431B44E2C857893BF1C152A6A2B9607A",
+      "report": {
+        "Preparation": "00:00:00.0673791",
+        "Encoding": "00:00:01.0837684",
+        "OutputProbe": "00:00:00.0619110",
+        "TimelineCheck": "00:00:00.4934522",
+        "AudioHashCheck": "00:00:00.1405009",
+        "FullDecode": "00:00:00.2304157",
+        "Publication": "00:00:00.0003708",
+        "Total": "00:00:02.0777981",
+        "OutputBytes": 1520187,
+        "InputBytes": 1857664,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00",
+        "Validation": "00:00:00.9262798"
+      }
+    },
+    {
+      "kind": "job",
+      "rep": 2,
+      "overlap": false,
+      "index": 1,
+      "sha": "7A6D050930ADDB58E285C6FD2ABBA77E88FF0F713B8707E7C5242E78C2B6EC50",
+      "report": {
+        "Preparation": "00:00:00.0654251",
+        "Encoding": "00:00:01.2769323",
+        "OutputProbe": "00:00:00.0654714",
+        "TimelineCheck": "00:00:00.4996207",
+        "AudioHashCheck": "00:00:00.1335793",
+        "FullDecode": "00:00:00.1972796",
+        "Publication": "00:00:00.0004077",
+        "Total": "00:00:02.2387161",
+        "OutputBytes": 1448034,
+        "InputBytes": 1781392,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00",
+        "Validation": "00:00:00.8959510"
+      }
+    },
+    {
+      "kind": "trial",
+      "rep": 2,
+      "overlap": false,
+      "seconds": 4.3167716,
+      "events": [
+        {
+          "Index": 0,
+          "Stage": "Preparing",
+          "Seconds": 0.0000616
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.0674524
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.6276896
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.1287518
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.1382729
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.1512187
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.2131265
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.7065798
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.8470803
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.0774957
+        },
+        {
+          "Index": 0,
+          "Stage": "Complete",
+          "Seconds": 2.077939
+        },
+        {
+          "Index": 1,
+          "Stage": "Preparing",
+          "Seconds": 2.0779511
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.1433867
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.7044432
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 3.206172
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 3.4072064
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.4203175
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.485786
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.9854077
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.1189869
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 4.3162666
+        },
+        {
+          "Index": 1,
+          "Stage": "Complete",
+          "Seconds": 4.3167317
+        }
+      ]
+    },
+    {
+      "kind": "job",
+      "rep": 2,
+      "overlap": true,
+      "index": 0,
+      "sha": "2A0BAC407D444A5B9555A428ADAA1F8F431B44E2C857893BF1C152A6A2B9607A",
+      "report": {
+        "Preparation": "00:00:00.0660588",
+        "Encoding": "00:00:01.0741060",
+        "OutputProbe": "00:00:00.0742453",
+        "TimelineCheck": "00:00:00.7220994",
+        "AudioHashCheck": "00:00:00.1703681",
+        "FullDecode": "00:00:00.2504032",
+        "Publication": "00:00:00.0004378",
+        "Total": "00:00:02.3577405",
+        "OutputBytes": 1520187,
+        "InputBytes": 1857664,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00.0000219",
+        "Validation": "00:00:01.2171160"
+      }
+    },
+    {
+      "kind": "job",
+      "rep": 2,
+      "overlap": true,
+      "index": 1,
+      "sha": "7A6D050930ADDB58E285C6FD2ABBA77E88FF0F713B8707E7C5242E78C2B6EC50",
+      "report": {
+        "Preparation": "00:00:00.0744992",
+        "Encoding": "00:00:01.5963445",
+        "OutputProbe": "00:00:00.0635019",
+        "TimelineCheck": "00:00:00.5048779",
+        "AudioHashCheck": "00:00:00.1336009",
+        "FullDecode": "00:00:00.2106386",
+        "Publication": "00:00:00.0003917",
+        "Total": "00:00:02.5838775",
+        "OutputBytes": 1448034,
+        "InputBytes": 1781392,
+        "ConcurrentTimelineDecode": null,
+        "SingleDecodeValidation": false,
+        "RequestedEncoderThreads": 4,
+        "AppliedPlan": {
+          "Name": "Pipeline screen",
+          "Codec": "libx264",
+          "Height": 810,
+          "VideoBitsPerSecond": 1791000,
+          "AudioBitsPerSecond": 0,
+          "Preset": "veryfast",
+          "TwoPass": false,
+          "CopyAudio": true
+        },
+        "HardwareEncoder": null,
+        "GpuResident": false,
+        "HardwarePreset": null,
+        "QsvAsyncDepth": null,
+        "HardwareQualification": "00:00:00",
+        "InterleavedAudioPeakPending": null,
+        "InterleavedAudioFallbackUsed": false,
+        "ValidationAdmissionWait": "00:00:00.0000228",
+        "Validation": "00:00:00.9126193"
+      }
+    },
+    {
+      "kind": "trial",
+      "rep": 2,
+      "overlap": true,
+      "seconds": 3.7242559,
+      "events": [
+        {
+          "Index": 0,
+          "Stage": "Preparing",
+          "Seconds": 0.0000526
+        },
+        {
+          "Index": 0,
+          "Stage": "Waiting for encoder",
+          "Seconds": 0.0000532
+        },
+        {
+          "Index": 1,
+          "Stage": "Preparing",
+          "Seconds": 0.0000582
+        },
+        {
+          "Index": 1,
+          "Stage": "Waiting for encoder",
+          "Seconds": 0.0000585
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.0661213
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 0.6389793
+        },
+        {
+          "Index": 0,
+          "Stage": "Encoding",
+          "Seconds": 1.1242822
+        },
+        {
+          "Index": 0,
+          "Stage": "Waiting for validation",
+          "Seconds": 1.1402225
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.1402447
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.21449
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 1.2147784
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 1.7868952
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 1.9365904
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.1069585
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.3085929
+        },
+        {
+          "Index": 0,
+          "Stage": "Validating",
+          "Seconds": 2.3573621
+        },
+        {
+          "Index": 0,
+          "Stage": "Complete",
+          "Seconds": 2.3578789
+        },
+        {
+          "Index": 1,
+          "Stage": "Encoding",
+          "Seconds": 2.7979495
+        },
+        {
+          "Index": 1,
+          "Stage": "Waiting for validation",
+          "Seconds": 2.8111165
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 2.8111399
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 2.8746422
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.379521
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.513122
+        },
+        {
+          "Index": 1,
+          "Stage": "Validating",
+          "Seconds": 3.7237608
+        },
+        {
+          "Index": 1,
+          "Stage": "Complete",
+          "Seconds": 3.7242304
+        }
+      ]
+    },
+    {
+      "kind": "pair",
+      "rep": 2,
+      "exact": true,
+      "reduction": 0.13725898771202072
+    },
+    {
+      "kind": "controls",
+      "preCancel": true,
+      "activeCancel": true,
+      "failureRecovery": true,
+      "deviceMismatch": true,
+      "sourceUnchanged": true
+    }
+  ]
+}
