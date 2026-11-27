@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "environment": {
+    "ffmpeg": "7.1.5-0+deb13u1",
+    "ffprobe": "7.1.5-0+deb13u1",
+    "ffmpeg_sha": "e8a8d46f5225f3062cec7c07fb145d58ae73c603cb740dcd5bad34bfb54e455a",
+    "ffprobe_sha": "cefc5f81c0b18429cdbf8fa5a89e1e9c759235e10f93f9b329ff1b2fdff26f46",
+    "platform": "Linux 4 CPU quota; no CUDA device"
+  },
+  "source": {
+    "sha": "b3044f140efa5f107751b241d1be2759fd641f375bf751516f431d6501316e14",
+    "bytes": 888502,
+    "frames": 90,
+    "audio_packets": 142,
+    "seconds": 3
+  },
+  "initialAttempt": [
+    {
+      "mode": "cpu-medium",
+      "exit": 0,
+      "elapsed_s": 2.6014144890013995,
+      "reason": "x265 informational stderr; rejected by harness; not a completed verified trial"
+    },
+    {
+      "mode": "cpu-veryfast",
+      "exit": 0,
+      "elapsed_s": 1.5021671520007658,
+      "reason": "x265 informational stderr; rejected by harness; not a completed verified trial"
+    },
+    {
+      "mode": "gpu-encode",
+      "exit": 255,
+      "elapsed_s": 0.5999963369995385,
+      "reason": "missing CUDA library"
+    },
+    {
+      "mode": "gpu-resident",
+      "exit": 255,
+      "elapsed_s": 0.07532240100044874,
+      "reason": "missing CUDA library"
+    }
+  ],
+  "rows": [
+    {
+      "mode": "cpu-medium",
+      "status": "verified",
+      "encode_s": 2.301369713000895,
+      "validation_s": 0.8068612500010204,
+      "total_s": 3.1082309630019154,
+      "bytes": 713724,
+      "sha": "313ada762da1d663d4507f0125f762156d91dda629e8a347559ff4526109bbd0",
+      "frames": 90,
+      "audio_packets": 142,
+      "drift": 0,
+      "mean_ssim": 0.9921869666666666,
+      "worst_second": 0.9917208
+    },
+    {
+      "mode": "cpu-veryfast",
+      "status": "verified",
+      "encode_s": 1.3562294130006194,
+      "validation_s": 0.7238130760015338,
+      "total_s": 2.080042489002153,
+      "bytes": 715881,
+      "sha": "289b15627df7e7bc96a5ee5b83ca3ea4084f37d16ca594eb3741f9e083d401d4",
+      "frames": 90,
+      "audio_packets": 142,
+      "drift": 0,
+      "mean_ssim": 0.9907857777777778,
+      "worst_second": 0.9887564
+    },
+    {
+      "mode": "gpu-encode",
+      "status": "rejected",
+      "phase": "encoding",
+      "elapsed_s": 0.5891622550007014,
+      "exit": 255,
+      "error": "Cannot load libcuda.so.1; no packets written"
+    },
+    {
+      "mode": "gpu-resident",
+      "status": "rejected",
+      "phase": "encoding",
+      "elapsed_s": 0.07451090599897725,
+      "exit": 255,
+      "error": "Cannot load libcuda.so.1; CUDA device setup failed"
+    }
+  ],
+  "sourceUnchanged": true,
+  "actualResidentCommandControls": [
+    {
+      "backend": "h264_nvenc",
+      "exit": 255,
+      "seconds": 0.11719728000025498,
+      "temporary_bytes": null
+    },
+    {
+      "backend": "hevc_nvenc",
+      "exit": 255,
+      "seconds": 0.07699233699895558,
+      "temporary_bytes": null
+    }
+  ],
+  "controlSourceSha": "f74cf65bfae76f1c6fad22181350ac7854757ecbfee8335b74a8b9da985f0578",
+  "scope": "Corrected local benchmark, CPU automatic threads, 1440x810 30fps HEVC1791kbps, separate SSIM and source oracle outside timed interval; not full C# nor device success. Repository script adds no-optimized-Python guard after local run. Output temporary and removed. First attempt retained as failures. Local direct resident command controls used retained 9s source, both no output, source SHA unchanged. Failure elapsed not throughput."
+}
