@@ -334,7 +334,7 @@ public partial class MainWindow : Window
                 :plan.Codec!=(selectedDevice.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")?T("Choose the same H.264 or HEVC family as the selected plan.","현재 압축 설정과 같은 H.264 또는 HEVC 장치를 선택하세요.")
                 :SplitBox.IsChecked==true||(ThreadsBox.SelectedItem as ThreadChoice)?.Count is not null?T("In detailed settings, turn off split and set threads to Auto.","세부 설정에서 분할 압축을 끄고 스레드를 자동으로 설정하세요.")
                 :!ResidentAllowed(selectedDevice)?T("Basic GPU encoding is available to try; full GPU processing is incompatible with this input or height.","GPU 압축은 시험할 수 있지만 현재 입력 형식 또는 해상도로는 GPU 연속 처리를 사용할 수 없습니다.")
-                :T("Start with GPU encoding. Full GPU processing is an experimental alternative; neither is guaranteed until the device test passes.","먼저 GPU 압축을 시험해 보세요. GPU 연속 처리는 실험 기능이며 장치 검사에 성공해야 사용할 수 있습니다.");
+                :T("Use the GPU save button in this section. The bottom save button uses CPU. Full GPU processing is experimental; device qualification is required.","이 영역의 GPU 저장 버튼을 누르세요. 하단 저장 버튼은 CPU를 사용합니다. GPU 연속 처리는 실험 기능이며 장치 검사가 필요합니다.");
         }
         if(HardwareTrialButton is not null)HardwareTrialButton.IsEnabled=HardwareAllowed(HardwareBox?.SelectedItem as string);
         if(ResidentTrialButton is not null)ResidentTrialButton.IsEnabled=ResidentAllowed(HardwareBox?.SelectedItem as string);

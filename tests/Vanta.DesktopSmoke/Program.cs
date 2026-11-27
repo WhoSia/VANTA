@@ -83,7 +83,7 @@ internal static class DesktopSmoke
         Check((string)Get<Button>(main,"OpenButton").Content=="Open videos… (one or many)","English main captions restored");
         var koreanBatch=new BatchWindow(korean:true);
         Check(Get<TextBlock>(koreanBatch,"Summary").Text.Contains("영상 0개 · 준비 0"),"Korean queue summary");
-        Check((string)Get<Button>(koreanBatch,"StartButton").Content=="일괄 압축 시작","Batch has distinct primary action");
+        Check((string)Get<Button>(koreanBatch,"StartButton").Content=="CPU 일괄 압축 시작","Batch has distinct primary action");
         Check((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedValue=="medium"||PlanRules.Presets.Contains((string)Get<ComboBox>(koreanBatch,"SharedPresetBox").SelectedValue),"Shared speed is valid");
         Check((string)Get<Button>(koreanBatch,"AddButton").Content=="영상 추가…"&&!Get<Button>(koreanBatch,"StartButton").IsEnabled,"Korean batch labels and idle gate");
         Check((string)Get<DataGrid>(koreanBatch,"Queue").Columns[0].Header=="원본","Korean grid header");
@@ -193,7 +193,7 @@ internal static class DesktopSmoke
             Check(language.IsEnabled&&!encode.IsEnabled,"Language available during single encode");
             Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Visible&&Get<TextBlock>(main,"ElapsedText").Text.StartsWith("Elapsed:"),"Live progress card at encode start");
             language.SelectedIndex=1;
-            Check((string)encode.Content=="압축 파일 저장…"&&Get<ComboBox>(main,"PresetBox").SelectedValue is string&&!encode.IsEnabled,"Active encode settings preserved on language switch");
+            Check((string)encode.Content=="CPU로 압축 및 저장…"&&Get<ComboBox>(main,"PresetBox").SelectedValue is string&&!encode.IsEnabled,"Active encode settings preserved on language switch");
             await encodingTask;
             language.SelectedIndex=0;
             Check(Get<FrameworkElement>(main,"ProgressCard").Visibility==Visibility.Collapsed&&Get<TextBlock>(main,"EtaText").Text==""&&Get<TextBlock>(main,"ThroughputText").Text==""&&Get<TextBlock>(main,"PreflightEta").Text.Contains("Previous same-setting total"),"Live ETA cleared and same-setting total retained");
@@ -206,7 +206,7 @@ internal static class DesktopSmoke
             Check(!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Desktop workflow leaves no temporary files");
             language.SelectedIndex=1;
             Check(Get<TextBlock>(main,"ResultPath").Text==output&&Get<Button>(main,"ResultFolderButton").IsEnabled,"Completed result survives localization");
-            Check((string)encode.Content=="압축 파일 저장…","Single action is a save command");
+            Check((string)encode.Content=="CPU로 압축 및 저장…","Single action is a save command");
             Check(Get<TextBlock>(main,"ResultSummary").Text.Contains("실제 절감률")&&(string)Get<Button>(main,"PlayResultButton").Content=="결과 재생","Persistent result localizes after unrelated status changes");
             var second=Path.Combine(root,"second source.mp4");File.Copy(source,second);
             var batchHistory=new TimingHistory();

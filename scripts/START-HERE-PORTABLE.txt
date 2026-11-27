@@ -1,0 +1,23 @@
+VANTA — Windows x64 개발 미리 보기 / Development preview
+
+한국어
+1. 내려받은 ZIP을 새 폴더에 한 번만 압축 해제하세요.
+2. Vanta.App.exe를 실행하세요. 폴더 내 DLL과 JSON은 그대로 두세요.
+3. 실행에 문제가 있으면 PowerShell에서 .\Start-VANTA.ps1 -CheckOnly
+   를 실행해 필요한 구성 요소를 확인하세요.
+   기존 .NET 10 Desktop Runtime(x64), FFmpeg/FFprobe를 재사용합니다.
+   누락된 구성 요소 설치를 직접 요청하려면 -InstallMissing 옵션을 사용하세요.
+4. 새 개발본은 새 폴더에 풀고 기존 폴더는 보관하세요.
+
+English
+1. Extract the downloaded ZIP once into a new folder.
+2. Run Vanta.App.exe. Keep the DLL and JSON files together.
+3. If launch fails, run .\Start-VANTA.ps1 -CheckOnly in PowerShell.
+   Existing .NET 10 Desktop Runtime (x64) and matching FFmpeg/FFprobe are reused.
+   Use -InstallMissing only to explicitly request missing dependencies.
+4. Keep earlier previews in separate folders for rollback.
+
+No inner ZIP, SDK, or installer is required. This is an unsigned preview,
+not a tagged release. package.json records the exact build commit.
+The Actions artifact SHA-256 identifies the downloaded ZIP, not a publisher.
+Do not bypass Windows security checks.

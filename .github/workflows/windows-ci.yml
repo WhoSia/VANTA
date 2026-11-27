@@ -68,15 +68,20 @@ jobs:
         shell: pwsh
         run: |
           & ./tests/Install-VANTA.Tests.ps1 -PackageDirectory artifacts/package -Version 0.4.0
+      - name: Prepare single-extraction download
+        shell: pwsh
+        run: |
+          Copy-Item -LiteralPath scripts/START-HERE-PORTABLE.txt -Destination artifacts/VANTA/START-HERE.txt
+          & ./tests/Portable-VANTA.Tests.ps1 -PublishedDirectory artifacts/VANTA -PackageDirectory artifacts/package -Version 0.4.0 -Commit $env:GITHUB_SHA
       - name: Measure preview
         shell: pwsh
         run: |
           $bytes = (Get-ChildItem artifacts/VANTA -Recurse -File | Measure-Object Length -Sum).Sum
           "Application files: $bytes bytes (external runtime and FFmpeg excluded)" >> $env:GITHUB_STEP_SUMMARY
-          "Download only **VANTA-0.4.0-win-x64-package** below. Extract the outer ZIP, read START-HERE.txt, and extract the inner application ZIP to a new folder. No SDK required." >> $env:GITHUB_STEP_SUMMARY
+          "Download only **VANTA-0.4.0-win-x64-package** below. Extract once into a new folder and run Vanta.App.exe. No inner ZIP or SDK required." >> $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v4
         with:
           name: VANTA-0.4.0-win-x64-package
-          path: artifacts/package/
+          path: artifacts/VANTA/
           if-no-files-found: error
           retention-days: 7

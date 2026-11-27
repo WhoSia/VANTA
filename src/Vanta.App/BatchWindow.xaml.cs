@@ -250,7 +250,7 @@ public partial class BatchWindow:Window
         var ready=rows.Where(r=>r.State=="Ready"&&r.Plan is not null).ToArray();
         string? problem=HardwareProblem(backend,BatchResidentBox.IsChecked==true,BatchHardwareFastBox.IsChecked==true,ready);
         BatchHardwareStartButton.IsEnabled=idle&&tools is not null&&problem is null;
-        BatchHardwareStatus.Text=idle?(problem??T("Explicit trial · same codec, height and rate; device preset replaces software preset. No CPU fallback. CPU timing references do not apply.","명시적 시험 · 코덱·해상도·비트레이트 유지, 소프트웨어 프리셋 대신 장치 설정 사용. CPU 자동 전환 없음. CPU 시간 참고값 미적용.")):T("Settings locked during processing.","작업 중 설정 변경 불가.");
+        BatchHardwareStatus.Text=idle?(problem??T("Use the GPU batch button here. The bottom start button uses CPU. Size settings stay the same; no automatic CPU fallback or CPU time estimate.","이 영역의 GPU 일괄 시험 버튼을 누르세요. 하단 시작 버튼은 CPU를 사용합니다. 용량 설정은 유지하며 CPU 자동 전환 및 CPU 예상 시간 적용은 하지 않습니다.")):T("Settings locked during processing.","작업 중 설정 변경 불가.");
     }
     private void SetBusy(bool busy)
     {
