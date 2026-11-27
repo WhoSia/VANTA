@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "source": {
+    "sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3",
+    "bytes": 50750661,
+    "seconds": 30,
+    "frames": 900
+  },
+  "environment": "Linux FFmpeg 7.1.5, 4 CPU quota",
+  "scope": "Actual local sample encodes from retained mixed 1080p30 source. Input seek at 0,14,24 seconds, 2s samples per codec and additional 4s AVC samples; silent samples, full output copies audio. Fixed ABR8Mbps, 4 requested threads, HEVC pools=4. Timed encoding separately from output PTS/count and strict decode; full AVC also copied audio streamhash matched. Source hashes unchanged. Sample pixel identity/SSIM not measured. Sample timing is not product ETA or quality acceptance. One full HEVC attempt exceeded 45s invocation limit; retained output SHA matches previously independently verified full output, no fresh time or newly completed validation claimed.",
+  "rows": [
+    {
+      "codec": "libx264",
+      "preset": "veryfast",
+      "start": 0,
+      "seconds": 2,
+      "encoding_s": 1.0165668850004295,
+      "integrity_s": 0.6271872400002394,
+      "frames": 60,
+      "drift": 0,
+      "bytes": 2029673,
+      "sha": "e0f5ea788924b9d1aed9b988e1160871e994ae333271c3af212224f08b0f048a",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx264",
+      "preset": "veryfast",
+      "start": 14,
+      "seconds": 2,
+      "encoding_s": 0.5769525179994162,
+      "integrity_s": 0.35581574800016824,
+      "frames": 60,
+      "drift": 0,
+      "bytes": 6925,
+      "sha": "bdb7fd1a02e1ca44c94a2a2261332f238d8388fdbfc7bd000811527b7960d96f",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx264",
+      "preset": "veryfast",
+      "start": 24,
+      "seconds": 2,
+      "encoding_s": 1.0936318860003666,
+      "integrity_s": 0.7247907970004235,
+      "frames": 60,
+      "drift": 0,
+      "bytes": 2029959,
+      "sha": "d5370b86da32e280736c7acc7d82f62228fb7a152dadf98cfaab7a1f50b51e4c",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx264",
+      "preset": "veryfast",
+      "start": null,
+      "seconds": 30,
+      "encoding_s": 8.046190955000384,
+      "integrity_s": 6.49798220699995,
+      "frames": 900,
+      "drift": 0,
+      "bytes": 30767733,
+      "sha": "4ae83874032a7ee246af1cda0c37c8643a078b72544d14f8289260b72c924809",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx265",
+      "preset": "medium",
+      "start": 24,
+      "seconds": 2,
+      "encoding_s": 3.222653218999767,
+      "integrity_s": 0.9123675260007076,
+      "frames": 60,
+      "drift": 0,
+      "bytes": 1932732,
+      "sha": "525dff8f04efd752b93d815288b5f0c941ab2cedd91b48cf926a1e7f98f71d95",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx265",
+      "preset": "medium",
+      "start": 14,
+      "seconds": 2,
+      "encoding_s": 1.358811551999679,
+      "integrity_s": 0.40612578200034477,
+      "frames": 60,
+      "drift": 0,
+      "bytes": 12442,
+      "sha": "9e33d6071d00599fb9cb1005e09efa630024b6c616175547dc53c62f52c375e9",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx265",
+      "preset": "medium",
+      "start": 0,
+      "seconds": 2,
+      "encoding_s": 2.5525443570004427,
+      "integrity_s": 1.0181704849992457,
+      "frames": 60,
+      "drift": 0,
+      "bytes": 1905733,
+      "sha": "70e5a541d3b28107cbad6169bf71cb48ca1fc0509b9a5ebc2a39b747da7dc40e",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx264",
+      "preset": "veryfast",
+      "start": 0,
+      "seconds": 4,
+      "encoding_s": 1.6380787010002678,
+      "integrity_s": 1.063556723000147,
+      "frames": 120,
+      "drift": 0,
+      "bytes": 4016972,
+      "sha": "944c20f00a5f6c4b55ae97ad66862542c93034eee26a942fdc1ccabe3885890c",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx264",
+      "preset": "veryfast",
+      "start": 14,
+      "seconds": 4,
+      "encoding_s": 0.845769153999754,
+      "integrity_s": 0.5204504250004902,
+      "frames": 120,
+      "drift": 1.7763568394002505e-15,
+      "bytes": 11920,
+      "sha": "fd400b8b2fb0ab5ad23dd8bb919dc44f1cb65a905b3d08be8d2fc8ed6ad51dfa",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    },
+    {
+      "codec": "libx264",
+      "preset": "veryfast",
+      "start": 24,
+      "seconds": 4,
+      "encoding_s": 1.62213014200006,
+      "integrity_s": 1.037285477000296,
+      "frames": 120,
+      "drift": 0,
+      "bytes": 4012482,
+      "sha": "876cc7d7beae1d5fb3c727b52ec848af38ab69906ba192a8d0dbcd24cd2b8735",
+      "source_sha": "8b8c41265561740e8d2215e97ac1d28475f75f4a249f44f03b0b6110f4f90fc3"
+    }
+  ],
+  "aborted": {
+    "codec": "libx265",
+    "outputBytes": 21551135,
+    "outputSha": "c7ffdf4e3fbbe284f8655b21e088c5a0b2af51ebd4cd103005834fba1cac6835",
+    "freshElapsed": null
+  },
+  "results": [
+    {
+      "codec": "libx264",
+      "anchorSeconds": 8.046190955000384,
+      "anchorScope": "fresh",
+      "prefixPrediction": 15.248503275006442,
+      "prefixRelativeError": 0.8951207298318107,
+      "dispersedPrediction": 13.435756445001061,
+      "dispersedRelativeError": 0.6698281858015411,
+      "prefixCost": 1.0165668850004295,
+      "dispersedCost": 2.6871512890002123,
+      "slopePrediction": 7.094133539999348,
+      "slopeRelativeError": -0.11832398961515711,
+      "slopeEncodeCost": 6.793129286000294,
+      "slopeVerifiedCost": 11.122215696002058
+    },
+    {
+      "codec": "libx265",
+      "anchorSeconds": 27.22767234999992,
+      "anchorScope": "previous retained full encode; fresh attempt timed out",
+      "prefixPrediction": 38.28816535500664,
+      "prefixRelativeError": 0.4062224953653357,
+      "dispersedPrediction": 35.670045639999444,
+      "dispersedRelativeError": 0.3100659204898779,
+      "prefixCost": 2.5525443570004427,
+      "dispersedCost": 7.134009127999889,
+      "slopePrediction": null,
+      "slopeRelativeError": null,
+      "slopeEncodeCost": null,
+      "slopeVerifiedCost": null
+    }
+  ]
+}
