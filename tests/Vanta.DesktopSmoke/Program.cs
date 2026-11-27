@@ -215,6 +215,17 @@ internal static class DesktopSmoke
                 Check(batchFast.IsEnabled,"Shared fast path available for analyzed files");
                 batchFast.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Check(Get<ComboBox>(batch,"RecommendationBox").SelectedItem?.ToString()=="H.264"&&Get<ComboBox>(batch,"SharedPresetBox").SelectedValue as string=="veryfast","Batch fast path selects AVC veryfast");
+                var gpuBox=Get<ComboBox>(batch,"BatchHardwareBox");
+                var gpuStart=Get<Button>(batch,"BatchHardwareStartButton");
+                Check(!gpuStart.IsEnabled,"GPU batch requires explicit device");
+                gpuBox.SelectedItem="hevc_qsv";Check(!gpuStart.IsEnabled,"Mismatched family disables GPU batch");
+                await batch.StartAsync("hevc_qsv",true,true,true);
+                Check(!File.Exists(Path.Combine(root,"source clip_vanta.mp4")),"Mismatched direct call does not publish");
+                gpuBox.SelectedItem="h264_qsv";Check(gpuStart.IsEnabled,"Matching GPU batch available");
+                Get<CheckBox>(batch,"BatchResidentBox").IsChecked=true;
+                Get<ComboBox>(batch,"ThreadsBox").SelectedIndex=1;Check(!gpuStart.IsEnabled,"GPU batch requires auto threads");
+                Get<ComboBox>(batch,"ThreadsBox").SelectedIndex=0;Check(gpuStart.IsEnabled,"Auto threads restore GPU trial");
+                gpuBox.SelectedIndex=-1;Check(!gpuStart.IsEnabled,"Device deselection disables GPU trial");
                 // Restore the initial shared codec to keep the prior timing-context scenario comparable.
                 Get<ComboBox>(batch,"RecommendationBox").SelectedIndex=0;
                 var start=Get<Button>(batch,"StartButton");
@@ -233,7 +244,7 @@ internal static class DesktopSmoke
                 Check(ReferenceEquals(orderGrid.Items[0],secondRow),"Move up changes submission order");
                 var batchRun=batch.StartAsync();
                 Check(!Get<Button>(batch,"QueueDownButton").IsEnabled,"Running queue cannot reorder");
-                Check(!batchFast.IsEnabled&&!Get<Button>(batch,"BatchHevcButton").IsEnabled,"Running batch disables shared fast paths");
+                Check(!batchFast.IsEnabled&&!Get<Button>(batch,"BatchHevcButton").IsEnabled&&!gpuStart.IsEnabled&&!gpuBox.IsEnabled,"Running batch disables shared fast paths and device selection");
                 Get<Button>(batch,"QueueDownButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Check(ReferenceEquals(orderGrid.Items[0],secondRow),"Routed reorder event cannot bypass running guard");
                 Check(batchLanguage.IsEnabled&&!start.IsEnabled,"Language available during batch encode");

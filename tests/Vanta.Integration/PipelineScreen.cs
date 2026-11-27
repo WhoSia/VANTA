@@ -79,6 +79,9 @@ internal static class PipelineScreen
             var mismatch=Jobs("device-mismatch");
             var refused=await BatchEncoder.RunPipelineResearchAsync(tools,mismatch,new Progress(_=>{}),ct,true,backend:"hevc_qsv",resident:true,fast:true);
             Check(refused.All(x=>x.Stage=="Failed")&&mismatch.All(x=>!File.Exists(x.Output)),"Device family mismatch refuses without fallback");
+            bool rejectedQueue=false;
+            try{await BatchEncoder.RunHardwareTrialAsync(tools,mismatch,"hevc_qsv",new Progress(_=>{}),ct,overlap:true,resident:true,fast:true);}catch(ArgumentException){rejectedQueue=true;}
+            Check(rejectedQueue&&mismatch.All(x=>!File.Exists(x.Output)),"Public GPU trial rejects entire mismatched queue before admission");
             Check(sources.Select(Hash).SequenceEqual(before)&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Source identity and staging cleanup");
             Row(new{kind="controls",preCancel=true,activeCancel=true,failureRecovery=true,deviceMismatch=true,sourceUnchanged=true});
         }

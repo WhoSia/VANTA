@@ -105,6 +105,11 @@ internal static class UiLanguage
         ("Ui097","Synthetic 3-second benchmark. Compares full verified time, bytes and SSIM. Does not read your video or save a video; may take several minutes.","3초 합성 영상 비교. 검증 포함 전체 시간·용량·SSIM을 측정합니다. 사용자 영상 접근 및 영상 저장 없음. 수 분 소요될 수 있습니다."),
         ("Ui098","Fast device preset · NVENC P1 / QSV veryfast","장치 속도 우선 · NVENC P1 / QSV veryfast"),
         ("Ui099","Explicit NVENC P1 or Intel QSV veryfast. Quality and size may differ from device defaults.","NVENC P1 또는 Intel QSV veryfast 직접 선택. 장치 기본 설정과 화질·용량이 다를 수 있습니다."),
+        ("Ui100","GPU LAB","GPU 시험"),
+        ("Ui101","Resident","GPU 연속 처리"),
+        ("Ui102","Fast preset","속도 우선"),
+        ("Ui103","Overlap verification","검증 중첩"),
+        ("Ui104","Try GPU batch","GPU 일괄 시험"),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
@@ -128,7 +133,7 @@ internal static class UiLanguage
     {
         if(!korean)return stage;
         if(stage.StartsWith("Encoding ",StringComparison.Ordinal))return "압축 중 "+stage["Encoding ".Length..];
-        return stage switch {"Diagnostics"=>"하드웨어 진단 중","Qualifying hardware"=>"하드웨어 초기화 검사 중","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
+        return stage switch {"Diagnostics"=>"하드웨어 진단 중","Qualifying hardware"=>"하드웨어 초기화 검사 중","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Waiting for encoder"=>"인코더 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
     }
     internal static string Verification(bool korean,Vanta.Core.VerificationPhase? phase)=>phase switch
     {

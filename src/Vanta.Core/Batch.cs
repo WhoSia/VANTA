@@ -33,6 +33,14 @@ public static class BatchEncoder
         =>RunCoreAsync(tools,jobs,parallelism,progress,ct,totalEncoderThreads,true);
     internal static Task<IReadOnlyList<BatchUpdate>> RunGatedResearchAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,IProgress<BatchUpdate> progress,int totalEncoderThreads,CancellationToken ct)
         =>RunCoreAsync(tools,jobs,2,progress,ct,totalEncoderThreads,false,true);
+    // Explicit device trial only: preserve each job's codec family, height and rate.
+    // Reject mixed families up front, rather than partially publishing a mismatched queue.
+    public static Task<IReadOnlyList<BatchUpdate>> RunHardwareTrialAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,string backend,IProgress<BatchUpdate> progress,CancellationToken ct=default,bool overlap=false,bool resident=false,bool fast=false)
+    {
+        string family=HardwareEncoderPolicy.SoftwareFamily(backend);
+        if(jobs.Any(j=>j.Plan.Codec!=family))throw new ArgumentException("All ready jobs must match the selected hardware codec.");
+        return RunPipelineResearchAsync(tools,jobs,progress,ct,overlap,backend:backend,resident:resident,fast:fast);
+    }
     // Explicit research only. At most two in-flight jobs, one encoder (including
     // device qualification) and one verifier. No automatic backend fallback.
     internal static Task<IReadOnlyList<BatchUpdate>> RunPipelineResearchAsync(Toolchain tools,IReadOnlyList<BatchJob> jobs,IProgress<BatchUpdate> progress,CancellationToken ct,bool overlap,int? threads=null,string? backend=null,bool resident=false,bool fast=false)

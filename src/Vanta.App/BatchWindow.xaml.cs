@@ -17,6 +17,7 @@ public partial class BatchWindow:Window
     private Row[]? activeRun;
     private readonly TimingHistory batchHistory;
     private int activeParallel;
+    private bool activeHardware;
     private int? activeThreads;
     private string activeToolKey="";
     private string? destinationDirectory;
@@ -29,7 +30,8 @@ public partial class BatchWindow:Window
         public string OutputName=>System.IO.Path.GetFileName(Output);
         public string Paths=>UiLanguage.Text(Korean,$"Source: {Input}\nOutput: {Output}",$"원본: {Input}\n출력: {Output}");
         public bool Korean {get;set;}=korean;
-        public string Budget=>Plan is Plan p&&Media is MediaInfo m?$"{UiLanguage.Tier(Korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {UiLanguage.Preset(Korean,p.Preset)} · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB":"";
+        public string Budget=>Plan is Plan p&&Media is MediaInfo m?$"{UiLanguage.Tier(Korean,p.Name)} · {(p.Codec=="libx265"?"HEVC":"H.264")} · {p.Height}p · {DeviceRequest??UiLanguage.Preset(Korean,p.Preset)} · {p.VideoBitsPerSecond/1000d:F0} kbps · {p.EstimateBytes(m)/1e6:F2} MB":"";
+        public string? DeviceRequest {get;set;}
         public EncodingEta? Eta {get;set;}
         public TimeSpan? Remaining {get;set;}
         public double? Rate {get;set;}
@@ -62,6 +64,7 @@ public partial class BatchWindow:Window
         UiLanguage.SetPresets(SharedPresetBox,korean);SharedPresetBox.SelectedValue="medium";
         RecommendationBox.ItemsSource=RecommendationChoices.Create(korean:korean);RecommendationBox.SelectedIndex=0;
         ParallelBox.ItemsSource=new[]{1,2};ParallelBox.SelectedIndex=1;
+        BatchHardwareBox.ItemsSource=EncoderDiagnostics.HardwareCandidates;
         ThreadsBox.ItemsSource=ThreadChoices.Create(korean);ThreadsBox.SelectedIndex=0;
         string? settingsError=null;
         try
@@ -223,6 +226,32 @@ public partial class BatchWindow:Window
     }
     private void OnProfile(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)Replan();}
     private void OnResourceSettings(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized&&current is null)UpdateSummary();}
+    private void OnHardwareSettings(object sender,System.Windows.Controls.SelectionChangedEventArgs e){if(initialized)UpdateSelection();}
+    private void OnHardwareToggle(object sender,RoutedEventArgs e){if(initialized)UpdateSelection();}
+    private static bool FastDevice(string? backend)=>backend is not null&&(backend.EndsWith("_nvenc",StringComparison.Ordinal)||backend.EndsWith("_qsv",StringComparison.Ordinal));
+    private string? HardwareProblem(string? backend,bool resident,bool fast,Row[] ready)
+    {
+        if(backend is null||!EncoderDiagnostics.HardwareCandidates.Contains(backend))return T("Select an explicit GPU backend.","GPU 장치를 직접 선택하세요.");
+        if((ThreadsBox.SelectedItem as ThreadChoice)?.Count is not null)return T("GPU trials require automatic threads.","GPU 시험은 스레드 자동 설정이 필요합니다.");
+        if(ready.Length==0)return T("Add ready videos first.","준비된 영상을 먼저 추가하세요.");
+        string family=backend.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264";
+        if(ready.Any(r=>r.Plan?.Codec!=family))return T("All ready videos must match the GPU codec family.","준비된 모든 영상의 코덱이 선택한 GPU 코덱과 일치해야 합니다.");
+        if(fast&&!FastDevice(backend))return T("Fast preset is available for NVENC/QSV only.","속도 우선 프리셋은 NVENC/QSV만 지원합니다.");
+        if(resident&&ready.Any(r=>r.Media?.Codec is not ("h264" or "hevc")||(backend.EndsWith("_amf",StringComparison.Ordinal)&&r.Plan?.Height!=r.Media?.Height)))return T("Resident trials require AVC/HEVC input; AMD preserves original height.","연속 처리 시험은 AVC/HEVC 입력이 필요하며 AMD는 원본 해상도를 유지해야 합니다.");
+        return null;
+    }
+    private void RefreshHardwareControls(bool idle)
+    {
+        string? backend=BatchHardwareBox.SelectedItem as string;
+        BatchHardwareBox.IsEnabled=idle;
+        BatchResidentBox.IsEnabled=BatchOverlapBox.IsEnabled=idle&&backend is not null;
+        BatchHardwareFastBox.IsEnabled=idle&&FastDevice(backend);
+        if(idle&&!FastDevice(backend))BatchHardwareFastBox.IsChecked=false;
+        var ready=rows.Where(r=>r.State=="Ready"&&r.Plan is not null).ToArray();
+        string? problem=HardwareProblem(backend,BatchResidentBox.IsChecked==true,BatchHardwareFastBox.IsChecked==true,ready);
+        BatchHardwareStartButton.IsEnabled=idle&&tools is not null&&problem is null;
+        BatchHardwareStatus.Text=idle?(problem??T("Explicit trial · same codec, height and rate; device preset replaces software preset. No CPU fallback. CPU timing references do not apply.","명시적 시험 · 코덱·해상도·비트레이트 유지, 소프트웨어 프리셋 대신 장치 설정 사용. CPU 자동 전환 없음. CPU 시간 참고값 미적용.")):T("Settings locked during processing.","작업 중 설정 변경 불가.");
+    }
     private void SetBusy(bool busy)
     {
         AddButton.IsEnabled=ClearButton.IsEnabled=RemoveButton.IsEnabled=ProfileBox.IsEnabled=SharedPresetBox.IsEnabled=ParallelBox.IsEnabled=ThreadsBox.IsEnabled=RecommendationBox.IsEnabled=!busy;
@@ -251,6 +280,7 @@ public partial class BatchWindow:Window
     {
         var row=Queue.SelectedItem as Row;
         bool idle=current is null;
+        RefreshHardwareControls(idle);
         bool canFast=idle&&tools is not null&&rows.Any(r=>r.Media is not null&&(r.State is "Ready" or "Skipped"));
         BatchSpeedButton.IsEnabled=canFast&&tools?.Codecs.Contains("libx264")==true;
         BatchHevcButton.IsEnabled=canFast&&tools?.Codecs.Contains("libx265")==true;
@@ -293,7 +323,7 @@ public partial class BatchWindow:Window
         StartButton.Content=current is not null?T("Processing…","작업 중…"):ready>0?T($"Start compression · {ready} video(s)",$"영상 {ready}개 압축 시작"):T("Start batch compression","일괄 압축 시작");
         var pending=rows.Where(r=>r.State=="Ready"&&r.Plan is not null&&r.Media is not null).ToArray();
         double inputBytes=pending.Sum(r=>(double)r.Media!.Bytes), budget=pending.Sum(r=>r.Plan!.EstimateBytes(r.Media!));
-        int running=rows.Count(r=>r.State.StartsWith("Encoding")||r.State is "Preparing" or "Validating"), queued=rows.Count(r=>r.State=="Queued"), analyzing=rows.Count(r=>r.State=="Analyzing");
+        int running=rows.Count(r=>r.State.StartsWith("Encoding")||r.State is "Preparing" or "Validating" or "Waiting for encoder" or "Waiting for validation" or "Qualifying hardware"), queued=rows.Count(r=>r.State=="Queued"), analyzing=rows.Count(r=>r.State=="Analyzing");
         int complete=rows.Count(r=>r.State=="Complete"), failed=rows.Count(r=>r.State=="Failed"), canceled=rows.Count(r=>r.State=="Canceled"), skipped=rows.Count(r=>r.State=="Skipped");
         Summary.Text=T($"{rows.Count} videos · {ready} ready · {complete} complete · {running} running · {queued} queued · {analyzing} analyzing · {failed} failed · {canceled} canceled · {skipped} skipped",$"영상 {rows.Count}개 · 준비 {ready} · 완료 {complete} · 진행 {running} · 대기 {queued} · 분석 {analyzing} · 실패 {failed} · 취소 {canceled} · 건너뜀 {skipped}");
         if(pending.Length>0)Summary.Text+=T($" | Ready: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB bitrate budget (not guaranteed)",$" | 대기: {inputBytes/1e6:F1} MB → {budget/1e6:F1} MB 용량 예산 (보장 없음)");
@@ -337,6 +367,7 @@ public partial class BatchWindow:Window
         BatchProgressText.Text=T($"Settled {settled}/{run.Length} · verified {complete}",$"처리 종료 {settled}/{run.Length} · 검증 완료 {complete}");
         BatchElapsedText.Text=T("Elapsed: ","경과: ")+UiLanguage.Duration(batchClock.Elapsed);
         if(current?.IsCancellationRequested==true){BatchEtaText.Text=T("Canceling…","취소 중…");return;}
+        if(activeHardware){BatchEtaText.Text=T("GPU queue ETA unknown · CPU references excluded","GPU 전체 ETA 미정 · CPU 시간 참고값 미적용");return;}
         if(run.Length>100){BatchEtaText.Text=T("Queue ETA unknown · large queue","전체 ETA 미정 · 대규모 대기열");return;}
         var active=new List<DurationRange?>();var queued=new List<DurationRange?>();
         foreach(var r in run.Where(r=>r.State is not ("Complete" or "Failed" or "Canceled")))
@@ -355,7 +386,7 @@ public partial class BatchWindow:Window
         foreach(var r in rows.Where(r=>r.State=="Complete"))reserved.Add(r.Output);
         foreach(var r in rows.Where(r=>r.Media is not null&&(r.State is "Ready" or "Skipped" or "Analyzing")))
         {
-            r.Plan=null;r.Output="";
+            r.Plan=null;r.Output="";r.DeviceRequest=null;
             try
             {
                 var m=r.Media!;
@@ -403,20 +434,25 @@ public partial class BatchWindow:Window
     }
     private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
     private async void OnStart(object sender,RoutedEventArgs e)=>await StartAsync();
-    internal async Task StartAsync()
+    private async void OnHardwareStart(object sender,RoutedEventArgs e)
+    {
+        if(BatchHardwareBox.SelectedItem is string backend)await StartAsync(backend,BatchResidentBox.IsChecked==true,BatchHardwareFastBox.IsChecked==true,BatchOverlapBox.IsChecked==true);
+    }
+    internal async Task StartAsync(string? backend=null,bool resident=false,bool fast=false,bool overlap=false)
     {
         if(current is not null||tools is null)return;
         var ready=rows.Where(r=>r.State=="Ready"&&r.Plan is not null).ToArray();
         if(ready.Length==0)return;
-        int parallel=(int)ParallelBox.SelectedItem;
+        if(backend is not null&&HardwareProblem(backend,resident,fast,ready) is string problem){BatchHardwareStatus.Text=problem;return;}
+        int parallel=backend is null?(int)ParallelBox.SelectedItem:overlap?2:1;
         var totalThreads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
         int? effectiveThreads;
         try{effectiveThreads=ThreadBudget.PerJob(totalThreads,parallel);}catch(ArgumentException ex){Summary.Text=ex.Message;return;}
         var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!,r.Stamp)).ToArray();
         using var cts=new CancellationTokenSource();current=cts;
-        foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Eta=new EncodingEta(r.Media?.Seconds);r.Remaining=null;r.Rate=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
+        foreach(var r in ready){r.DeviceRequest=backend is null?null:backend+(resident?" · resident":"")+(fast?(backend.EndsWith("_qsv",StringComparison.Ordinal)?" · veryfast":" · p1"):" · default");r.State="Queued";r.Detail="";r.Report=null;r.Eta=new EncodingEta(r.Media?.Seconds);r.Remaining=null;r.Rate=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
         lastBatchElapsed=null;
-        activeRun=ready;activeParallel=parallel;activeThreads=effectiveThreads;
+        activeRun=ready;activeParallel=parallel;activeThreads=effectiveThreads;activeHardware=backend is not null;
         activeToolKey=ToolScope(parallel);
         batchClock.Restart();BatchProgressCard.Visibility=Visibility.Visible;batchTimer.Start();
         SetBusy(true);RefreshBatchProgress();
@@ -427,7 +463,7 @@ public partial class BatchWindow:Window
             {
                 var r=ready[x.Index];
                 if(x.Stage=="Preparing"&&r.AdmittedAt is null)r.AdmittedAt=batchClock.Elapsed;
-                if(x.Stage=="Complete"&&r.State!="Complete"&&x.Report is EncodeReport observed&&r.Media is MediaInfo m&&r.Plan is Plan p&&r.Stamp is SourceStamp stamp)
+                if(!activeHardware&&x.Stage=="Complete"&&r.State!="Complete"&&x.Report is EncodeReport observed&&r.Media is MediaInfo m&&r.Plan is Plan p&&r.Stamp is SourceStamp stamp)
                     batchHistory.Record(new(r.Input,m,p,activeThreads,OutputScope(r,activeToolKey),observed.Total,stamp));
                 var state=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercentText is string percent?$"Encoding {percent}":x.Stage;
                 r.Eta?.Observe(new(x.Stage,x.Fraction),batchClock.Elapsed);
@@ -439,17 +475,18 @@ public partial class BatchWindow:Window
                 r.State=state;r.Detail=x.Detail??"";r.Report=x.Report;r.Refresh();
             }
             var progress=new UiProgress(x=>Dispatcher.Invoke(()=>{ApplyUpdate(x);UpdateSummary();RefreshBatchProgress();}));
-            var terminal=await BatchEncoder.RunAsync(tools,jobs,parallel,progress,cts.Token,totalEncoderThreads:totalThreads);
+            var terminal=backend is null?await BatchEncoder.RunAsync(tools,jobs,parallel,progress,cts.Token,totalEncoderThreads:totalThreads)
+                :await BatchEncoder.RunHardwareTrialAsync(tools,jobs,backend,progress,cts.Token,overlap,resident,fast);
             foreach(var result in terminal)ApplyUpdate(result);
         }
         catch(OperationCanceledException){}
         catch(Exception ex){MessageBox.Show(this,ex.Message,"VANTA");}
         finally
         {
-            foreach(var r in ready.Where(r=>r.State is "Queued" or "Preparing" or "Validating"||r.State.StartsWith("Encoding")))
+            foreach(var r in ready.Where(r=>r.State is "Queued" or "Preparing" or "Validating" or "Waiting for encoder" or "Waiting for validation" or "Qualifying hardware"||r.State.StartsWith("Encoding")))
             {r.State=cts.IsCancellationRequested?"Canceled":"Failed";r.Refresh();}
             foreach(var r in ready){r.Eta=null;r.Remaining=null;r.Rate=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
-            batchTimer.Stop();batchClock.Stop();lastBatchElapsed=batchClock.Elapsed;activeRun=null;
+            batchTimer.Stop();batchClock.Stop();lastBatchElapsed=batchClock.Elapsed;activeRun=null;activeHardware=false;
             BatchProgressCard.Visibility=Visibility.Collapsed;BatchProgressText.Text=BatchElapsedText.Text=BatchEtaText.Text="";
             current=null;SetBusy(false);
         }
