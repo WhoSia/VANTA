@@ -32,15 +32,15 @@ public partial class MainWindow : Window
     }
     private void StartJobProgress(bool split,string stage="Preparing")
     {
-        jobClock.Restart();eta=split?null:new EncodingEta();jobProgress=new(stage,null);validationStarted=null;previousTail=null;
+        jobClock.Restart();eta=split?null:new EncodingEta(media?.Seconds);jobProgress=new(stage,null);validationStarted=null;previousTail=null;
         ProgressCard.Visibility=Visibility.Visible;etaTimer.Start();RefreshJobProgress();
     }
     private void RefreshJobProgress()
     {
         if(jobProgress is not EncodeProgress p)return;
         ProgressStage.Text=p.Stage=="Validating"?UiLanguage.Verification(korean,p.Verification):UiLanguage.Stage(korean,p.Stage);
-        ProgressPercent.Text=p.DisplayPercent is int percent?$"{percent}%":"";
-        BusyBar.IsIndeterminate=p.Fraction is null;BusyBar.Value=p.DisplayPercent??0;
+        ProgressPercent.Text=p.DisplayPercentText??"";
+        BusyBar.IsIndeterminate=p.DisplayPercent is null;BusyBar.Value=p.DisplayPercent==100?100:p.Fraction is double fraction&&double.IsFinite(fraction)?Math.Clamp(fraction*100,0,99):0;
         ElapsedText.Text=T("Elapsed: ","경과: ")+DurationText(jobClock.Elapsed);
         EtaText.Text=current?.IsCancellationRequested==true?T("Canceling…","취소 중…"):
             p.Stage=="Validating"?(validationStarted is TimeSpan started&&CompletionReference.ValidationRemaining(previousTail,jobClock.Elapsed-started) is TimeSpan tail
@@ -413,7 +413,7 @@ public partial class MainWindow : Window
                 if(current!=cts||cts.IsCancellationRequested)return;
                 if(x.Stage=="Validating"&&validationStarted is null)validationStarted=jobClock.Elapsed;
                 jobProgress=x;eta?.Observe(x,jobClock.Elapsed);RefreshJobProgress();
-                var suffix=x.DisplayPercent is int percent?$" · {percent}%":"…";SetStatus(x.Stage+suffix,UiLanguage.Stage(true,x.Stage)+suffix);
+                var suffix=x.DisplayPercentText is string percent?$" · {percent}":"…";SetStatus(x.Stage+suffix,UiLanguage.Stage(true,x.Stage)+suffix);
             });
             var report=await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;

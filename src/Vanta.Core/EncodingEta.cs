@@ -7,6 +7,16 @@ public sealed class EncodingEta
     private readonly Queue<(double Seconds,double Fraction)> samples=new();
     private double lastElapsed=-1,lastProgress=-1,lastFraction;
     private bool active;
+    private int advances;
+    private readonly double minimumDelta;
+    public EncodingEta(double? mediaSeconds=null)
+    {
+        if(mediaSeconds is double duration&&(!double.IsFinite(duration)||duration<=0))throw new ArgumentOutOfRangeException(nameof(mediaSeconds));
+        // Two percent is unattainable in a bounded recent window for long slow jobs.
+        // Require at least half a second of reported media time, capped at the
+        // original 2% threshold for short inputs. This is not a confidence bound.
+        minimumDelta=mediaSeconds is double length?Math.Min(.02,.5/length):.02;
+    }
     public void Observe(EncodeProgress progress,TimeSpan elapsed)
     {
         double t=elapsed.TotalSeconds;
@@ -14,10 +24,15 @@ public sealed class EncodingEta
         lastElapsed=t;
         if(progress.Stage!="Encoding"||progress.Fraction is not double f||!double.IsFinite(f)||f<0||f>=1)
         {
-            active=false;samples.Clear();lastProgress=-1;lastFraction=0;return;
+            active=false;samples.Clear();lastProgress=-1;lastFraction=0;advances=0;return;
         }
-        if(!active){active=true;samples.Clear();lastProgress=t;lastFraction=f;samples.Enqueue((t,f));return;}
+        if(!active){active=true;samples.Clear();lastProgress=t;lastFraction=f;advances=0;samples.Enqueue((t,f));return;}
         if(f<=lastFraction)return;
+        if(t-lastProgress>10)
+        {
+            samples.Clear();lastProgress=t;lastFraction=f;advances=0;samples.Enqueue((t,f));return;
+        }
+        advances=Math.Min(2,advances+1);
         // Keep at most one sample per second and a bounded recent window.
         lastFraction=f;lastProgress=t;
         if(t-samples.Last().Seconds>=1)
@@ -29,10 +44,10 @@ public sealed class EncodingEta
     public TimeSpan? Remaining(TimeSpan elapsed)
     {
         double t=elapsed.TotalSeconds;
-        if(!active||samples.Count<2||t<lastElapsed||t-lastProgress>10||lastFraction>=.999)return null;
+        if(!active||advances<2||samples.Count<2||t<lastElapsed||t-lastProgress>10||lastFraction>=.999)return null;
         var first=samples.Peek();var last=samples.Last();
         double span=last.Seconds-first.Seconds,delta=last.Fraction-first.Fraction;
-        if(span<3||delta<.02)return null;
+        if(span<3||delta<minimumDelta)return null;
         double seconds=(1-lastFraction)*span/delta;
         if(!double.IsFinite(seconds)||seconds<0||seconds>TimeSpan.FromDays(30).TotalSeconds)return null;
         return TimeSpan.FromSeconds(Math.Max(1,seconds));

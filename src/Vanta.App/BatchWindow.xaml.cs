@@ -352,7 +352,7 @@ public partial class BatchWindow:Window
         try{effectiveThreads=ThreadBudget.PerJob(totalThreads,parallel);}catch(ArgumentException ex){Summary.Text=ex.Message;return;}
         var jobs=ready.Select(r=>new BatchJob(r.Input,r.Output,r.Plan!,r.Stamp)).ToArray();
         using var cts=new CancellationTokenSource();current=cts;
-        foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Eta=new EncodingEta();r.Remaining=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
+        foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Eta=new EncodingEta(r.Media?.Seconds);r.Remaining=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
         lastBatchElapsed=null;
         activeRun=ready;activeParallel=parallel;activeThreads=effectiveThreads;
         activeToolKey=tools.Ffmpeg+"|"+tools.Ffprobe+"|parallel="+parallel;
@@ -367,7 +367,7 @@ public partial class BatchWindow:Window
                 if(x.Stage=="Preparing"&&r.AdmittedAt is null)r.AdmittedAt=batchClock.Elapsed;
                 if(x.Stage=="Complete"&&r.State!="Complete"&&x.Report is EncodeReport observed&&r.Media is MediaInfo m&&r.Plan is Plan p)
                     batchHistory.Record(new(r.Input,m,p,activeThreads,activeToolKey,observed.Total));
-                var state=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercent is int percent?$"Encoding {percent}%":x.Stage;
+                var state=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercentText is string percent?$"Encoding {percent}":x.Stage;
                 r.Eta?.Observe(new(x.Stage,x.Fraction),batchClock.Elapsed);
                 var remaining=r.Eta?.Remaining(batchClock.Elapsed);
                 if(x.Stage is "Complete" or "Failed" or "Canceled")r.Eta=null;

@@ -8,6 +8,16 @@ public sealed record EncodeProgress(string Stage,double? Fraction)
     public int? DisplayPercent=>Fraction is double f&&double.IsFinite(f)
         ? Stage=="Complete"?100:(int)Math.Floor(Math.Clamp(f,0,.99)*100)
         :null;
+    public string? DisplayPercentText
+    {
+        get
+        {
+            if(DisplayPercent is not int percent)return null;
+            if(percent!=0||Fraction is not double f||f<=0)return percent.ToString(CultureInfo.InvariantCulture)+"%";
+            double hundredths=Math.Floor(f*10000);
+            return hundredths<1?"<0.01%":(hundredths/100).ToString("0.00",CultureInfo.InvariantCulture)+"%";
+        }
+    }
 }
 public sealed class ProgressParser(double duration,IProgress<EncodeProgress>? observer)
 {
