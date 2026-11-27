@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<TimingKey,EncodeReport> timings=new();
     private TimeSpan? previousTail,validationStarted;
     private readonly TimingHistory timingHistory=new();
+    private readonly TimingHistory batchSessionHistory=new();
     private TimingKey? CurrentTimingKey(Plan p)=>sourcePath is not null&&sourceStamp is not null&&tools is not null
         ?new(sourcePath,sourceStamp,p with{Name=""},(ThreadsBox.SelectedItem as ThreadChoice)?.Count,SplitBox.IsChecked==true,tools.Ffmpeg,tools.Ffprobe):null;
     private static string DurationText(TimeSpan value)
@@ -197,7 +198,7 @@ public partial class MainWindow : Window
     }
     private void ShowBatch(string[]? paths=null)
     {
-        var batch=new BatchWindow(paths,korean){Owner=this};
+        var batch=new BatchWindow(paths,korean,batchSessionHistory){Owner=this};
         batch.ShowDialog();
         LanguageBox.SelectedIndex=batch.IsKorean?1:0;
     }

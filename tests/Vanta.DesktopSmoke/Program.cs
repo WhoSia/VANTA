@@ -181,7 +181,8 @@ internal static class DesktopSmoke
             Check((string)encode.Content=="압축 파일 저장…","Single action is a save command");
             Check(Get<TextBlock>(main,"ResultSummary").Text.Contains("실제 절감률")&&(string)Get<Button>(main,"PlayResultButton").Content=="결과 재생","Persistent result localizes after unrelated status changes");
             var second=Path.Combine(root,"second source.mp4");File.Copy(source,second);
-            var batch=new BatchWindow(korean:true);
+            var batchHistory=new TimingHistory();
+            var batch=new BatchWindow(korean:true,sessionHistory:batchHistory);
             try
             {
                 Get<ComboBox>(batch,"SharedPresetBox").SelectedValue="veryfast";
@@ -190,6 +191,7 @@ internal static class DesktopSmoke
                 await batch.AddAsync([source,second]);
                 var start=Get<Button>(batch,"StartButton");
                 Check(start.IsEnabled&&(string)start.Content=="영상 2개 압축 시작","Batch action counts ready files");
+                Check(Get<TextBlock>(batch,"BatchPreflightText").Text.Contains("0/2"),"First batch preflight does not invent time");
                 var batchLanguage=Get<ComboBox>(batch,"LanguageBox");
                 var batchRun=batch.StartAsync();
                 Check(batchLanguage.IsEnabled&&!start.IsEnabled,"Language available during batch encode");
@@ -216,6 +218,23 @@ internal static class DesktopSmoke
                 Check(!File.Exists(Path.Combine(root,"third source_vanta.mp4"))&&!File.Exists(Path.Combine(root,"fourth source_vanta.mp4"))&&!Directory.EnumerateFileSystemEntries(root,".vanta-*").Any(),"Canceled batch does not publish or leak staging files");
             }
             finally{batch.Close();}
+            Check(batchHistory.Count==2,"Only successful batch jobs recorded, including short inputs");
+            var reopened=new BatchWindow(korean:false,sessionHistory:batchHistory);
+            try
+            {
+                Get<ComboBox>(reopened,"SharedPresetBox").SelectedValue="veryfast";
+                Get<ComboBox>(reopened,"ParallelBox").SelectedItem=2;
+                Get<ComboBox>(reopened,"ThreadsBox").SelectedIndex=0;
+                await reopened.AddAsync([source,second]);
+                Check(Get<TextBlock>(reopened,"BatchPreflightText").Text.StartsWith("Before start ≈ "), "Reopened batch uses previous matching verified job times");
+                Get<ComboBox>(reopened,"ParallelBox").SelectedItem=1;
+                Check(Get<TextBlock>(reopened,"BatchPreflightText").Text.Contains("0/2"),"Changed parallelism withholds prior timings");
+                Get<ComboBox>(reopened,"ParallelBox").SelectedItem=2;
+                Check(Get<TextBlock>(reopened,"BatchPreflightText").Text.StartsWith("Before start ≈ "),"Restoring matching settings restores references");
+                Get<ComboBox>(reopened,"LanguageBox").SelectedIndex=1;
+                Check(Get<TextBlock>(reopened,"BatchPreflightText").Text.StartsWith("시작 전 예상 ≈ "),"Preflight ETA localizes");
+            }
+            finally{reopened.Close();}
             File.Delete(output);
             Get<Button>(main,"PlayResultButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(!Get<Button>(main,"PlayResultButton").IsEnabled&&Get<TextBlock>(main,"ResultSummary").Visibility==Visibility.Visible,"Deleted output cannot launch; historical summary remains");

@@ -15,7 +15,7 @@ public partial class BatchWindow:Window
     private readonly System.Diagnostics.Stopwatch batchClock=new();
     private readonly System.Windows.Threading.DispatcherTimer batchTimer=new(){Interval=TimeSpan.FromSeconds(1)};
     private Row[]? activeRun;
-    private readonly TimingHistory batchHistory=new();
+    private readonly TimingHistory batchHistory;
     private int activeParallel;
     private int? activeThreads;
     private string activeToolKey="";
@@ -50,9 +50,9 @@ public partial class BatchWindow:Window
     internal bool IsKorean=>korean;
     private string T(string en,string ko)=>UiLanguage.Text(korean,en,ko);
     private sealed record ProfileChoice(string Key,string Label){public override string ToString()=>Label;}
-    public BatchWindow(string[]? paths=null,bool korean=false)
+    public BatchWindow(string[]? paths=null,bool korean=false,TimingHistory? sessionHistory=null)
     {
-        initial=paths??[];this.korean=korean;
+        initial=paths??[];this.korean=korean;batchHistory=sessionHistory??new TimingHistory();
         InitializeComponent();ApplyLanguageResources();
         batchTimer.Tick+=(_,_)=>RefreshBatchProgress();
         Queue.ItemsSource=rows;
@@ -231,6 +231,21 @@ public partial class BatchWindow:Window
         PlayResultButton.IsEnabled=OpenResultButton.IsEnabled=row is not null&&row.State=="Complete"&&System.IO.File.Exists(row.Output);
         CopyButton.IsEnabled=row is not null;
     }
+    private string ToolScope(int parallel)=>tools!.Ffmpeg+"|"+tools.Ffprobe+"|parallel="+parallel;
+    private static string OutputScope(Row row,string toolScope)=>toolScope+"|volume="+(System.IO.Path.GetPathRoot(row.Output)??"").ToUpperInvariant();
+    private DurationRange? Reference(Row row,int? threads,string toolScope)
+    {
+        if(row.Media is not MediaInfo m||row.Plan is not Plan p||row.Stamp is not SourceStamp stamp||string.IsNullOrWhiteSpace(row.Output))return null;
+        string key=OutputScope(row,toolScope);
+        if(batchHistory.Previous(row.Input,stamp,m,p,threads,key) is TimeSpan previous)
+        {
+            return new(TimeSpan.FromSeconds(Math.Floor(previous.TotalSeconds)),TimeSpan.FromSeconds(Math.Max(1,Math.Ceiling(previous.TotalSeconds))));
+        }
+        return batchHistory.Estimate(row.Input,m,p,threads,key) is TimingRange observed?new(observed.Low,observed.High):null;
+    }
+    private string QueueReferenceText(DurationRange? estimate,int known,int needed,bool beforeStart)=>estimate is DurationRange range
+        ?(beforeStart?T("Before start ≈ ","시작 전 예상 ≈ "):T("Queue scenario ≈ ","전체 예상 범위 ≈ "))+UiLanguage.Duration(range.Low)+"–"+UiLanguage.Duration(range.High)+T(" · prior jobs, not guaranteed"," · 이전 작업 참고, 보장 없음")
+        :(beforeStart?T("Before start: time unknown","시작 전 예상 시간 미정"):T("Queue ETA unknown","전체 ETA 미정"))+T($" · references {known}/{needed}",$" · 시간 참고값 {known}/{needed}");
     private void UpdateSummary()
     {
         UpdateSelection();
@@ -246,11 +261,22 @@ public partial class BatchWindow:Window
         var totals=BatchTotals.From(rows.Where(r=>r.State=="Complete"&&r.Report is not null).Select(r=>r.Report!));
         if(lastBatchElapsed is TimeSpan elapsed)Summary.Text+=T($" | Last run elapsed {elapsed.TotalSeconds:F1}s",$" | 최근 실행 경과 시간 {elapsed.TotalSeconds:F1}초");
         if(totals.Completed>0)Summary.Text+=T($" | Completed: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB ({totals.Savings:P1} actual savings); {totals.JobTime.TotalSeconds:F1}s summed job time",$" | 완료: {totals.InputBytes/1e6:F2} → {totals.OutputBytes/1e6:F2} MB (실제 절감률 {totals.Savings:P1}); 작업 시간 합계 {totals.JobTime.TotalSeconds:F1}초");
+        BatchPreflightText.Text="";BatchPreflightText.Visibility=Visibility.Collapsed;
         if(current is null&&ParallelBox.SelectedItem is int parallel)
         {
             try
             {
                 var count=ThreadBudget.PerJob((ThreadsBox.SelectedItem as ThreadChoice)?.Count,parallel);
+                if(pending.Length>0&&tools is not null)
+                {
+                    BatchPreflightText.Visibility=Visibility.Visible;
+                    if(pending.Length>100)BatchPreflightText.Text=T("Before start: time unknown · large queue","시작 전 예상 시간 미정 · 대규모 대기열");
+                    else
+                    {
+                        var refs=pending.Select(r=>Reference(r,count,ToolScope(parallel))).ToArray();
+                        BatchPreflightText.Text=QueueReferenceText(QueueTiming.Estimate(parallel,[],refs),refs.Count(r=>r is not null),refs.Length,true);
+                    }
+                }
                 Summary.Text+=count is int n?T($" | {n} requested encoder threads/job (not a CPU cap)",$" | 작업당 인코더 스레드 {n}개 요청 (CPU 상한 아님)"):T(" | Automatic encoder threads"," | 자동 인코더 스레드");
             }
             catch(ArgumentException ex){Summary.Text+=" | "+ex.Message;StartButton.IsEnabled=false;}
@@ -275,17 +301,13 @@ public partial class BatchWindow:Window
         var active=new List<DurationRange?>();var queued=new List<DurationRange?>();
         foreach(var r in run.Where(r=>r.State is not ("Complete" or "Failed" or "Canceled")))
         {
-            DurationRange? reference=null;
-            if(r.Media is MediaInfo m&&r.Plan is Plan p&&batchHistory.Estimate(r.Input,m,p,activeThreads,activeToolKey) is TimingRange observed)
-                reference=new(observed.Low,observed.High);
+            DurationRange? reference=Reference(r,activeThreads,activeToolKey);
             if(r.AdmittedAt is TimeSpan start)active.Add(QueueTiming.Remaining(reference,batchClock.Elapsed-start));
             else queued.Add(reference);
         }
         var queueRange=QueueTiming.Estimate(activeParallel,active,queued);
         int known=active.Concat(queued).Count(r=>r is not null),needed=active.Count+queued.Count;
-        BatchEtaText.Text=queueRange is DurationRange estimate
-            ?T("Queue scenario ≈ ","전체 예상 범위 ≈ ")+UiLanguage.Duration(estimate.Low)+"–"+UiLanguage.Duration(estimate.High)+T(" · prior jobs, not guaranteed"," · 이전 작업 참고, 보장 없음")
-            :T($"Queue ETA unknown · references {known}/{needed}",$"전체 ETA 미정 · 시간 참고값 {known}/{needed}");
+        BatchEtaText.Text=QueueReferenceText(queueRange,known,needed,false);
     }
     private void Replan()
     {
@@ -355,7 +377,7 @@ public partial class BatchWindow:Window
         foreach(var r in ready){r.State="Queued";r.Detail="";r.Report=null;r.Eta=new EncodingEta(r.Media?.Seconds);r.Remaining=null;r.Verification=null;r.AdmittedAt=null;r.Refresh();}
         lastBatchElapsed=null;
         activeRun=ready;activeParallel=parallel;activeThreads=effectiveThreads;
-        activeToolKey=tools.Ffmpeg+"|"+tools.Ffprobe+"|parallel="+parallel;
+        activeToolKey=ToolScope(parallel);
         batchClock.Restart();BatchProgressCard.Visibility=Visibility.Visible;batchTimer.Start();
         SetBusy(true);RefreshBatchProgress();
         try
@@ -365,8 +387,8 @@ public partial class BatchWindow:Window
             {
                 var r=ready[x.Index];
                 if(x.Stage=="Preparing"&&r.AdmittedAt is null)r.AdmittedAt=batchClock.Elapsed;
-                if(x.Stage=="Complete"&&r.State!="Complete"&&x.Report is EncodeReport observed&&r.Media is MediaInfo m&&r.Plan is Plan p)
-                    batchHistory.Record(new(r.Input,m,p,activeThreads,activeToolKey,observed.Total));
+                if(x.Stage=="Complete"&&r.State!="Complete"&&x.Report is EncodeReport observed&&r.Media is MediaInfo m&&r.Plan is Plan p&&r.Stamp is SourceStamp stamp)
+                    batchHistory.Record(new(r.Input,m,p,activeThreads,OutputScope(r,activeToolKey),observed.Total,stamp));
                 var state=x.Stage=="Encoding"&&new EncodeProgress(x.Stage,x.Fraction).DisplayPercentText is string percent?$"Encoding {percent}":x.Stage;
                 r.Eta?.Observe(new(x.Stage,x.Fraction),batchClock.Elapsed);
                 var remaining=r.Eta?.Remaining(batchClock.Elapsed);

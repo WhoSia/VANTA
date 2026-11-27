@@ -133,6 +133,18 @@ Check(history.Count==3,"Timing reference rejects invalid frame rate");
 history.Record(new("outlier",historyMedia,historyPlan,4,"tools",Sec(100)));
 Check(history.Estimate("query",historyMedia,historyPlan,4,"tools") is null,"Timing reference refuses dispersed samples");
 
+var batchHistory=new TimingHistory();
+var shortMedia=historyMedia with{Seconds=4,VideoDurationSeconds=4};
+var shortStamp=new SourceStamp(shortMedia.Bytes,DateTime.UnixEpoch,DateTime.UnixEpoch);
+batchHistory.Record(new("batch",shortMedia,historyPlan,4,"parallel=2|volume=C:",Sec(2.5),shortStamp));
+Check(batchHistory.Previous("BATCH",shortStamp,shortMedia,historyPlan with{Name="Custom"},4,"parallel=2|volume=C:")==Sec(2.5),"Exact historical batch timing for short jobs");
+Check(batchHistory.Previous("batch",shortStamp with{LastWriteUtc=DateTime.UnixEpoch.AddSeconds(1)},shortMedia,historyPlan,4,"parallel=2|volume=C:") is null,"Exact reference invalidated by source stamp");
+Check(batchHistory.Previous("batch",shortStamp,shortMedia,historyPlan with{Preset="fast"},4,"parallel=2|volume=C:") is null,"Exact reference rejects changed settings");
+Check(batchHistory.Previous("batch",shortStamp,shortMedia,historyPlan,4,"parallel=1|volume=C:") is null&&batchHistory.Previous("batch",shortStamp,shortMedia,historyPlan,4,"parallel=2|volume=D:") is null,"Exact reference isolates concurrency and destination volume");
+Check(batchHistory.Estimate("other",shortMedia,historyPlan,4,"parallel=2|volume=C:") is null,"Short exact history never extrapolates");
+batchHistory.Record(new("invalid",shortMedia,historyPlan,4,"parallel=2|volume=C:",Sec(1),shortStamp with{Bytes=1}));
+Check(batchHistory.Count==1,"Mismatched source stamp not recorded");
+
 var namingRoot=Path.Combine(Path.GetTempPath(),"VANTA-names-"+Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(namingRoot);
 try
