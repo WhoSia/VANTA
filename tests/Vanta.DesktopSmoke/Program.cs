@@ -131,6 +131,26 @@ internal static class DesktopSmoke
             var output=Path.Combine(root,"output clip.mp4");
             var fixture=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-nostdin","-n","-f","lavfi","-i","testsrc2=s=640x360:r=30:d=3","-c:v","libx264","-crf","18","-threads","2","-pix_fmt","yuv420p",source],deadline.Token);
             Check(fixture.ExitCode==0&&File.Exists(source),"Actual desktop fixture");
+            // Deterministic pending diagnostic: CPU remains available, settings stay editable,
+            // cancel/join before the real encoder starts. No physical GPU required.
+            var started=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stopped=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var autoMain=new MainWindow(false,automaticGpuCheck:true,diagnostic:async (_,_,token)=>
+            {
+                started.TrySetResult(true);
+                try{await Task.Delay(Timeout.Infinite,token);return Array.Empty<EncoderDiagnostic>();}
+                finally{stopped.TrySetResult(true);}
+            });
+            try
+            {
+                await autoMain.LoadAsync(source);await started.Task.WaitAsync(deadline.Token);
+                Check(autoMain.AutoGpuPending&&Get<Button>(autoMain,"EncodeButton").IsEnabled&&Get<ComboBox>(autoMain,"CodecBox").IsEnabled,"CPU and settings stay available during automatic GPU discovery");
+                Check(Get<TextBlock>(autoMain,"GpuChoiceGuide").Text.Contains("CPU compression is ready now"),"Nonblocking GPU discovery guidance");
+                string autoOut=Path.Combine(root,"auto-discovery-cpu.mp4");
+                await autoMain.EncodeToAsync(autoOut);
+                Check(stopped.Task.IsCompleted&&!autoMain.AutoGpuPending&&File.Exists(autoOut),"CPU encode cancels and joins discovery before publishing");
+            }
+            finally{await autoMain.StopAutoGpuAsync();autoMain.Close();}
             await main.LoadAsync(source);
             var plans=Get<ListBox>(main,"Plans");
             var height=Get<TextBox>(main,"HeightBox");

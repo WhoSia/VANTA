@@ -105,15 +105,20 @@ public partial class MainWindow : Window
     private readonly bool automaticGpuCheck;
     private string? lastGpuToolchain;
     private EncoderDiagnostic[] sessionGpuEvidence=[];
+    private CancellationTokenSource? autoGpuCancellation;
+    private Task? autoGpuTask;
+    private readonly Func<Toolchain,IReadOnlyCollection<string>,CancellationToken,Task<IReadOnlyList<EncoderDiagnostic>>> gpuCheck;
+    internal bool AutoGpuPending=>autoGpuCancellation is not null;
     private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings,string Timing,string Purpose);
     private bool korean,languageReady;
     private readonly bool persistLanguage;
     private string statusEn="Open or drop a video to get started.",statusKo="영상 파일을 열거나 이 창에 끌어 놓으세요.";
     private string T(string en,string ko)=>UiLanguage.Text(korean,en,ko);
     public MainWindow():this(UiLanguage.Load(),true,true){}
-    public MainWindow(bool korean,bool persistLanguage=false,bool automaticGpuCheck=false)
+    public MainWindow(bool korean,bool persistLanguage=false,bool automaticGpuCheck=false,Func<Toolchain,IReadOnlyCollection<string>,CancellationToken,Task<IReadOnlyList<EncoderDiagnostic>>>? diagnostic=null)
     {
         this.korean=korean;this.persistLanguage=persistLanguage;this.automaticGpuCheck=automaticGpuCheck;
+        gpuCheck=diagnostic??((t,c,ct)=>EncoderDiagnostics.CheckAsync(t,c,ct,quick:true));
         InitializeComponent();UiLanguage.Apply(this,korean);
         etaTimer.Tick+=(_,_)=>RefreshJobProgress();
         CodecBox.ItemsSource=PlanRules.Codecs;
@@ -195,7 +200,7 @@ public partial class MainWindow : Window
     }
     private void OnClosing(object? sender,CancelEventArgs e)
     {
-        if(current is not null){e.Cancel=true;current.Cancel();SetStatus("Canceling. Close after cleanup completes.","취소 중입니다. 정리가 끝난 후 닫아 주세요.");}
+        if(current is not null||AutoGpuPending){e.Cancel=true;current?.Cancel();autoGpuCancellation?.Cancel();SetStatus("Canceling. Close after cleanup completes.","취소 중입니다. 정리가 끝난 후 닫아 주세요.");}
     }
     private async void OnOpen(object sender,RoutedEventArgs e)
     {
@@ -203,30 +208,69 @@ public partial class MainWindow : Window
         var dlg=new OpenFileDialog{Multiselect=true,Filter="Video files|*.mp4;*.mkv;*.mov;*.webm;*.avi|All files|*.*"};
         if(dlg.ShowDialog()!=true)return;
         if(dlg.FileNames.Length==1)await LoadAsync(dlg.FileName);
-        else if(current is null)ShowBatch(dlg.FileNames);
+        else if(current is null)await ShowBatchAsync(dlg.FileNames);
         else SetStatus("Finish or cancel analysis before opening a batch.","일괄 압축을 열기 전에 분석을 완료하거나 취소해 주세요.");
     }
     private async void OnDrop(object sender,DragEventArgs e)
     {
         if(encoding||e.Data.GetData(DataFormats.FileDrop) is not string[] paths)return;
         if(paths.Length==1)await LoadAsync(paths[0]);
-        else if(paths.Length>1&&current is null)ShowBatch(paths);
+        else if(paths.Length>1&&current is null)await ShowBatchAsync(paths);
     }
-    private void OnBatch(object sender,RoutedEventArgs e)
+    private async void OnBatch(object sender,RoutedEventArgs e)
     {
-        if(current is null)ShowBatch();
+        if(current is null)await ShowBatchAsync();
     }
-    private void ShowBatch(string[]? paths=null)
+    private async Task ShowBatchAsync(string[]? paths=null)
     {
+        if(current is not null||encoding)return;
+        encoding=true;
+        try{await StopAutoGpuAsync();}finally{encoding=false;RefreshEstimate();}
+        if(current is not null)return;
         var batch=new BatchWindow(paths,korean,batchSessionHistory){Owner=this};
         batch.ShowDialog();
         LanguageBox.SelectedIndex=batch.IsKorean?1:0;
     }
     private async void OnDiagnostics(object sender,RoutedEventArgs e)=>await CheckGpuAsync(false);
+    private void BeginAutoGpuCheck(Toolchain resolved)
+    {
+        if(AutoGpuPending)return;
+        if(lastGpuToolchain==GpuToolchainKey(resolved)){SetDeviceEvidence(sessionGpuEvidence);return;}
+        var cts=new CancellationTokenSource();autoGpuCancellation=cts;
+        RefreshGuidedGpu();
+        autoGpuTask=RunAutoGpuCheckAsync(resolved,cts);
+    }
+    private async Task RunAutoGpuCheckAsync(Toolchain resolved,CancellationTokenSource cts)
+    {
+        try
+        {
+            string? family=activePlan?.Codec=="libx265"?"hevc_":activePlan?.Codec=="libx264"?"h264_":null;
+            var ordered=EncoderDiagnostics.HardwareCandidates.OrderByDescending(c=>family is not null&&c.StartsWith(family,StringComparison.Ordinal)).ToArray();
+            var results=await gpuCheck(resolved,ordered,cts.Token);
+            cts.Token.ThrowIfCancellationRequested();
+            if(ReferenceEquals(autoGpuCancellation,cts)&&ReferenceEquals(tools,resolved)&&current is null&&!encoding)
+            {
+                lastGpuToolchain=GpuToolchainKey(resolved);sessionGpuEvidence=results.ToArray();
+                GpuDiagnosticDetail.Text=string.Join(Environment.NewLine,results.Select(r=>UiLanguage.DeviceName(r.Encoder)+": "+r.State+" — "+r.Detail));
+                SetDeviceEvidence(results);
+            }
+        }
+        catch(OperationCanceledException){}
+        catch(Exception ex){if(!cts.IsCancellationRequested)GpuDiagnosticDetail.Text=ex.Message;}
+        finally
+        {
+            if(ReferenceEquals(autoGpuCancellation,cts)){autoGpuCancellation=null;cts.Dispose();RefreshHardwareButton();}
+        }
+    }
+    internal async Task StopAutoGpuAsync()
+    {
+        autoGpuCancellation?.Cancel();
+        if(autoGpuTask is Task pending)await pending;
+    }
     private static string GpuToolchainKey(Toolchain t)=>t.Ffmpeg+"|"+t.Ffprobe;
     private async Task CheckGpuAsync(bool automatic)
     {
-        if(current is not null)return;
+        if(current is not null||encoding)return;
         using var cts=new CancellationTokenSource();current=cts;
         encoding=true;OpenButton.IsEnabled=BatchButton.IsEnabled=DiagnosticsButton.IsEnabled=EncodeButton.IsEnabled=false;
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
@@ -237,10 +281,11 @@ public partial class MainWindow : Window
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
+            await StopAutoGpuAsync();cts.Token.ThrowIfCancellationRequested();
             var resolved=tools??await Toolchain.DiscoverAsync(cts.Token);
             string? family=activePlan?.Codec=="libx265"?"hevc_":activePlan?.Codec=="libx264"?"h264_":null;
             var ordered=EncoderDiagnostics.HardwareCandidates.OrderByDescending(c=>!automatic&&c==preferredDevice).ThenByDescending(c=>family is not null&&c.StartsWith(family,StringComparison.Ordinal)).ToArray();
-            var results=await EncoderDiagnostics.CheckAsync(resolved,ordered,cts.Token,quick:true);
+            var results=await gpuCheck(resolved,ordered,cts.Token);
             cts.Token.ThrowIfCancellationRequested();
             lastGpuToolchain=GpuToolchainKey(resolved);sessionGpuEvidence=results.ToArray();SetDeviceEvidence(results);
             var passed=results.Where(r=>r.State=="Sample passed").ToArray();
@@ -262,12 +307,14 @@ public partial class MainWindow : Window
     }
     internal async Task LoadAsync(string path)
     {
+        if(encoding)return;
         current?.Cancel();ClearResult();appliedTarget=null;qualifiedDevices=[];RefreshGuidedGpu();
         using var cts=new CancellationTokenSource();current=cts;
         media=null;tools=null;sourcePath=null;sourceStamp=null;HardwareBox.SelectedIndex=-1;RecommendationBox.IsEnabled=false;RecommendationBox.ItemsSource=null;TargetBox.Clear();SplitBox.IsChecked=false;activePlan=null;Plans.ItemsSource=null;Editor.IsEnabled=false;EncodeButton.IsEnabled=false;Source.Text="";Estimate.Text="";Evidence.Text="";SetStatus("Analyzing…","분석 중…");
         CancelButton.IsEnabled=true;SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;StartJobProgress(true,"Analyzing");RefreshPreflightEta();
         try
         {
+            await StopAutoGpuAsync();cts.Token.ThrowIfCancellationRequested();
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
             var stamp=SourceStamp.Capture(path);
             var details=await Probe.InspectAsync(resolved.Ffprobe,path,cts.Token);
@@ -290,8 +337,7 @@ public partial class MainWindow : Window
         finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;StopJobProgress();RefreshEstimate();}}
         if(automaticGpuCheck&&media is not null&&tools is Toolchain discovered&&current is null&&!cts.IsCancellationRequested)
         {
-            if(lastGpuToolchain==GpuToolchainKey(discovered))SetDeviceEvidence(sessionGpuEvidence);
-            else await CheckGpuAsync(true);
+            BeginAutoGpuCheck(discovered);
         }
     }
     private void OnRecommendation(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
@@ -374,6 +420,7 @@ public partial class MainWindow : Window
             var eligible=qualifiedDevices.Where(HardwareAllowed).ToArray();
             GpuChoiceGuide.Text=current is not null||encoding?T("Finish or cancel the current task before choosing a device.","현재 작업을 마치거나 취소한 뒤 장치를 선택하세요.")
                 :media is null?T("Open a video to choose its size and speed. Checking your GPU is optional.","영상을 열고 용량과 속도를 선택하세요. GPU 확인은 선택 사항입니다.")
+                :AutoGpuPending?T("Checking GPU availability. CPU compression is ready now.","GPU 사용 가능 여부를 확인 중입니다. CPU 압축은 바로 시작할 수 있습니다.")
                 :qualifiedDevices.Length==0?T("No passed GPU test is recorded for this video. Check your GPU, or use CPU compression now.","이 영상에 대한 GPU 검사 통과 기록이 없습니다. GPU를 확인하거나 CPU로 바로 압축하세요.")
                 :activePlan is not Plan p?T("Choose or apply a valid size plan before using a tested GPU.","검사를 통과한 GPU를 쓰려면 유효한 압축 설정을 먼저 선택하거나 적용하세요.")
                 :eligible.Length==1?T("Use the tested GPU button at the bottom to try "+UiLanguage.DeviceName(eligible[0])+". Actual speed and size are unknown.","하단의 검사 통과 GPU 버튼으로 "+UiLanguage.DeviceName(eligible[0])+"를 사용할 수 있습니다. 실제 속도와 용량은 미측정입니다.")
@@ -427,6 +474,7 @@ public partial class MainWindow : Window
         DeviceBenchmarkResult? result=null;
         try
         {
+            await StopAutoGpuAsync();cts.Token.ThrowIfCancellationRequested();
             var resolved=await Toolchain.DiscoverAsync(cts.Token);
             result=await DeviceBenchmark.RunAsync(resolved,backend,cts.Token,new Progress<string>(stage=>
             {
@@ -552,7 +600,7 @@ public partial class MainWindow : Window
     private void OnCancel(object sender,RoutedEventArgs e)=>current?.Cancel();
     private bool ValidateEncodingRequest()
     {
-        if(current is not null||activePlan is null||sourcePath is null||tools is null||sourceStamp is null)return false;
+        if(current is not null||encoding||activePlan is null||sourcePath is null||tools is null||sourceStamp is null)return false;
         try{sourceStamp.RequireUnchanged(sourcePath);}catch(Exception ex){SetStatus(ex.Message);return false;}
         bool split=SplitBox.IsChecked==true;
         var threads=(ThreadsBox.SelectedItem as ThreadChoice)?.Count;
@@ -596,6 +644,7 @@ public partial class MainWindow : Window
         OpenButton.IsEnabled=false;Editor.IsEnabled=false;Plans.IsEnabled=false;RecommendationBox.IsEnabled=false;EncodeButton.IsEnabled=false;CancelButton.IsEnabled=true;ProgressCard.Visibility=Visibility.Visible;SetStatus("Encoding and validating…","압축 및 검증 중…");
         try
         {
+            await StopAutoGpuAsync();cts.Token.ThrowIfCancellationRequested();
             var progress=new Progress<EncodeProgress>(x=>
             {
                 if(current!=cts||cts.IsCancellationRequested)return;

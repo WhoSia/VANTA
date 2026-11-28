@@ -102,3 +102,8 @@ FFmpeg 7.1.5 Linux; 1440x810 30fps synthetic 4s AVC source generated using tests
 | HEVC | 1 | 12 | .294757 | .090935 | .079104 | .464796 | 49919 |
 
 Short-prefix median .448808s AVC, .539770s HEVC versus 1.239205s and 2.104029s full short fixture. Startup and flush dominate the sample; a 10x frame-count reduction is not a 10x time reduction. This supports bounded probe cost exploration only, not proof of GPU latency. Actual resident candidate uses 5s cancellation deadline; cleanup can extend it. Keep diagnostics summary short in ordinary UI, raw output in research area. Prefer explicitly selected backend on manual recheck. Next test actual hardware and long clips; compare cost of qualification vs avoided transfers. No automatic speed ranking from short test.
+
+
+## Nonblocking discovery / exact predecessor checkpoint
+
+edbc102 exact Windows 46122949379 passed all stages; artifact 15254264525 309458 bytes SHA256 dd7a292167ac3860ccbcc4964abc0caf9c67a42b1e34aada786443133d6b5731. Automatic first-load check now has separate cancellation/task ownership from foreground analysis or encoding. CPU and settings remain enabled, advisory results apply only to current toolchain while idle, no status overwrite. Cancel and join discovery before starting full encode, new source probe, manual diagnostic, benchmark or batch modal; closing requests cancellation and keeps window until cleanup. No overlapping background encoder with full job. Deterministic injected pending diagnostic plus real CPU encode smoke verifies availability and cancel/join; no device result inference. Discovery may still impose cleanup latency when starting a job. Candidate not yet executed. No release change.
