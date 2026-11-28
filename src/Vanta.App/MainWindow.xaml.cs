@@ -68,6 +68,8 @@ public partial class MainWindow : Window
     private void RefreshPreflightEta()
     {
         if(PreflightEta is null)return;
+        if(PlanSelectionText is not null)PlanSelectionText.Text=media is null?"":activePlan is null?T("Choose valid settings","유효한 설정을 선택하세요"):Plans.SelectedItem is PlanRow row?T("Selected: ","선택: ")+row.Name:T("Custom settings applied","직접 수정한 설정 적용 중");
+        if(ResetPlanButton is not null)ResetPlanButton.IsEnabled=media is not null&&tools is not null&&current is null&&!encoding;
 
         PreflightEta.Text=activePlan is Plan p?T("CPU reference: ","CPU 기준: ")+TimingText(p,false):"";
         if(ActivePlanSummary is not null)
@@ -99,15 +101,18 @@ public partial class MainWindow : Window
     }
     private EncodeReport? completedReport;
     private string[] qualifiedDevices=[];
+    private readonly bool automaticGpuCheck;
+    private string? lastGpuToolchain;
+    private EncoderDiagnostic[] sessionGpuEvidence=[];
     private sealed record PlanRow(Plan Plan,string Name,string Size,string Settings,string Savings,string Timing,string Purpose);
     private bool korean,languageReady;
     private readonly bool persistLanguage;
     private string statusEn="Open or drop a video to get started.",statusKo="영상 파일을 열거나 이 창에 끌어 놓으세요.";
     private string T(string en,string ko)=>UiLanguage.Text(korean,en,ko);
-    public MainWindow():this(UiLanguage.Load(),true){}
-    public MainWindow(bool korean,bool persistLanguage=false)
+    public MainWindow():this(UiLanguage.Load(),true,true){}
+    public MainWindow(bool korean,bool persistLanguage=false,bool automaticGpuCheck=false)
     {
-        this.korean=korean;this.persistLanguage=persistLanguage;
+        this.korean=korean;this.persistLanguage=persistLanguage;this.automaticGpuCheck=automaticGpuCheck;
         InitializeComponent();UiLanguage.Apply(this,korean);
         etaTimer.Tick+=(_,_)=>RefreshJobProgress();
         CodecBox.ItemsSource=PlanRules.Codecs;
@@ -216,7 +221,9 @@ public partial class MainWindow : Window
         batch.ShowDialog();
         LanguageBox.SelectedIndex=batch.IsKorean?1:0;
     }
-    private async void OnDiagnostics(object sender,RoutedEventArgs e)
+    private async void OnDiagnostics(object sender,RoutedEventArgs e)=>await CheckGpuAsync(false);
+    private static string GpuToolchainKey(Toolchain t)=>t.Ffmpeg+"|"+t.Ffprobe;
+    private async Task CheckGpuAsync(bool automatic)
     {
         if(current is not null)return;
         using var cts=new CancellationTokenSource();current=cts;
@@ -224,22 +231,24 @@ public partial class MainWindow : Window
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
         StartJobProgress(true,"Diagnostics");
         SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;
-        qualifiedDevices=[];RefreshGuidedGpu();
+        qualifiedDevices=[];lastGpuToolchain=null;sessionGpuEvidence=[];RefreshGuidedGpu();
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
-            var resolved=await Toolchain.DiscoverAsync(cts.Token);
-            var results=await EncoderDiagnostics.CheckAsync(resolved,EncoderDiagnostics.HardwareCandidates,cts.Token);
+            var resolved=tools??await Toolchain.DiscoverAsync(cts.Token);
+            string? family=activePlan?.Codec=="libx265"?"hevc_":activePlan?.Codec=="libx264"?"h264_":null;
+            var ordered=EncoderDiagnostics.HardwareCandidates.OrderByDescending(c=>family is not null&&c.StartsWith(family,StringComparison.Ordinal)).ToArray();
+            var results=await EncoderDiagnostics.CheckAsync(resolved,ordered,cts.Token,quick:true);
             cts.Token.ThrowIfCancellationRequested();
-            SetDeviceEvidence(results);
+            lastGpuToolchain=GpuToolchainKey(resolved);sessionGpuEvidence=results.ToArray();SetDeviceEvidence(results);
             var passed=results.Where(r=>r.State=="Sample passed").ToArray();
             string detail=string.Join(Environment.NewLine,results.Select(r=>UiLanguage.DeviceName(r.Encoder)+": "+r.State+" — "+r.Detail));
             var matching=passed.Where(r=>activePlan is Plan p&&p.Codec==(r.Encoder.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")).ToArray();
             if(matching.Length==1)HardwareBox.SelectedItem=matching[0].Encoder;
-            HardwareOptions.IsExpanded=matching.Length!=1;
+            if(!automatic)HardwareOptions.IsExpanded=matching.Length>1;
             string available=string.Join(", ",passed.Select(r=>UiLanguage.DeviceName(r.Encoder)));
-            SetStatus(passed.Length==0?"No GPU passed the short test. Use CPU compression or check the graphics driver.\n"+detail:"Available in short test: "+available+". Use the tested GPU shortcut if available, or choose in GPU settings. No compression started.\n"+detail,
-                passed.Length==0?"짧은 검사에 성공한 GPU가 없습니다. CPU로 압축하거나 그래픽 드라이버를 확인하세요.\n"+detail:"짧은 검사 성공: "+available+". 하단 GPU 압축 버튼이 있으면 사용하거나 GPU 설정에서 장치를 선택하세요. 압축은 시작하지 않았습니다.\n"+detail);
+            SetStatus(passed.Length==0?"No GPU passed within the short check budget. CPU is ready; retry the check if needed.\n"+detail:"Available in short test: "+available+". Use the tested GPU shortcut if available, or choose in GPU settings. No compression started.\n"+detail,
+                passed.Length==0?"짧은 검사 시간 안에 통과한 GPU가 없습니다. CPU로 압축하거나 검사를 다시 실행하세요.\n"+detail:"짧은 검사 성공: "+available+". 하단 GPU 압축 버튼이 있으면 사용하거나 GPU 설정에서 장치를 선택하세요. 압축은 시작하지 않았습니다.\n"+detail);
         }
         catch(OperationCanceledException){SetStatus("Diagnostics canceled or timed out.","진단이 취소되었거나 제한 시간을 초과했습니다.");}
         catch(Exception ex){SetStatus(ex.Message);}
@@ -277,6 +286,11 @@ public partial class MainWindow : Window
         catch(OperationCanceledException){if(current==cts)SetStatus("Analysis canceled.","분석이 취소되었습니다.");}
         catch(Exception ex){if(current==cts)SetStatus(ex.Message);}
         finally{if(current==cts){current=null;RecommendationBox.IsEnabled=media is not null;CancelButton.IsEnabled=false;StopJobProgress();RefreshEstimate();}}
+        if(automaticGpuCheck&&media is not null&&tools is Toolchain discovered&&current is null&&!cts.IsCancellationRequested)
+        {
+            if(lastGpuToolchain==GpuToolchainKey(discovered))SetDeviceEvidence(sessionGpuEvidence);
+            else await CheckGpuAsync(true);
+        }
     }
     private void OnRecommendation(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {
@@ -299,6 +313,14 @@ public partial class MainWindow : Window
         }
         if(rows.Length<3)SetStatus("Fewer than three positive bitrate-budget savings estimates. Custom settings are available.","용량 절감 예산이 가능한 플랜이 3개 미만입니다. 직접 설정할 수 있습니다.");
         else SetStatus("Choose a size above, then save. If speed matters, use a faster CPU option or check your GPU.","위에서 용량을 고른 뒤 저장하세요. 시간이 중요하면 빠른 CPU 압축을 선택하거나 GPU를 검사하세요.");
+    }
+    private void OnResetPlan(object sender,RoutedEventArgs e)
+    {
+        if(current is not null||encoding||media is null||tools is null)return;
+        ThreadsBox.SelectedIndex=0;SplitBox.IsChecked=false;
+        applying=true;
+        try{RecommendationBox.SelectedIndex=0;}finally{applying=false;}
+        RebuildPlans();
     }
     private void OnPlan(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
     {

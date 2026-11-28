@@ -18,7 +18,8 @@ internal static class DesktopSmoke
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
         Check(Get<Button>(main,"GuidedGpuButton").Visibility==Visibility.Collapsed&&main.GuidedBackend() is null,"No untested shortcut");
         Check(Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("Open a video"),"GPU guidance starts with source selection");
-        Check(!Get<Expander>(main,"AdvancedOptions").IsExpanded&&!Get<Expander>(main,"HardwareOptions").IsExpanded,"Advanced paths are initially collapsed");
+        Check(!Get<Expander>(main,"AdvancedOptions").IsExpanded&&!Get<Expander>(main,"HardwareOptions").IsExpanded&&!Get<Expander>(main,"ResearchOptions").IsExpanded,"Advanced and research paths are initially collapsed");
+        Check(!Get<Button>(main,"ResetPlanButton").IsEnabled,"No reset before source");
         Check(Get<TextBlock>(main,"HardwareHelp").Text.Contains("Open a video"),"Disabled GPU explains next action");
         Check(!Get<Button>(main,"HardwareTrialButton").IsEnabled&&Get<ComboBox>(main,"HardwareBox").SelectedIndex==-1,"No automatic hardware path");
         Check(!Get<Button>(main,"HardwareBenchButton").IsEnabled,"Benchmark requires explicit backend");
@@ -141,6 +142,12 @@ internal static class DesktopSmoke
             var split=Get<CheckBox>(main,"SplitBox");
             var encode=Get<Button>(main,"EncodeButton");
             Check(plans.Items.Count>0&&encode.IsEnabled,"Real source yields a usable plan");
+            Check(Get<TextBlock>(main,"PlanSelectionText").Text.Contains("Selected:")&&Get<Button>(main,"ResetPlanButton").IsEnabled,"Default plan is identified");
+            var defaultCodec=codec.SelectedItem;var defaultHeight=height.Text;var defaultRate=rate.Text;
+            codec.SelectedItem=(string)defaultCodec! =="libx265"?"libx264":"libx265";
+            Check(Get<TextBlock>(main,"PlanSelectionText").Text.Contains("Custom settings"),"Codec change is neutral custom state");
+            Get<Button>(main,"ResetPlanButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(Equals(codec.SelectedItem,defaultCodec)&&height.Text==defaultHeight&&rate.Text==defaultRate&&plans.SelectedIndex>=0&&encode.IsEnabled,"Reset restores default plan");
             var speed=Get<Button>(main,"SpeedFirstButton");
             var oldHeight=height.Text;var oldRate=rate.Text;
             split.IsChecked=true;

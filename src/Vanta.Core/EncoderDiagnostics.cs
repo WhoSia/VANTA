@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 namespace Vanta.Core;
 
@@ -9,13 +10,14 @@ public sealed record EncoderDiagnostic(string Encoder,string State,string Detail
 public static class EncoderDiagnostics
 {
     public static IReadOnlyList<string> HardwareCandidates {get;}=Array.AsReadOnly(new[]{"h264_nvenc","hevc_nvenc","h264_qsv","hevc_qsv","h264_amf","hevc_amf"});
-    public static async Task<IReadOnlyList<EncoderDiagnostic>> CheckAsync(Toolchain tools,IReadOnlyCollection<string> requested,CancellationToken ct=default)
+    public static async Task<IReadOnlyList<EncoderDiagnostic>> CheckAsync(Toolchain tools,IReadOnlyCollection<string> requested,CancellationToken ct=default,bool quick=false)
     {
         ct.ThrowIfCancellationRequested();
         if(requested.Any(c=>!HardwareCandidates.Contains(c)&&!PlanRules.Codecs.Contains(c)))
             throw new ArgumentException("Unsupported diagnostic encoder.");
+        var clock=Stopwatch.StartNew();
         using var listingDeadline=CancellationTokenSource.CreateLinkedTokenSource(ct);
-        listingDeadline.CancelAfter(TimeSpan.FromSeconds(10));
+        listingDeadline.CancelAfter(TimeSpan.FromSeconds(quick?2:10));
         var listed=await ProcessRunner.RunAsync(tools.Ffmpeg,["-hide_banner","-encoders"],listingDeadline.Token);
         if(listed.ExitCode!=0)throw new InvalidOperationException("Cannot list encoders.");
         var result=new List<EncoderDiagnostic>();
@@ -30,8 +32,10 @@ public static class EncoderDiagnostics
                 {
                     result.Add(new(codec,"Not listed","Encoder not included in this FFmpeg build."));continue;
                 }
+                var budget=quick?TimeSpan.FromSeconds(8)-clock.Elapsed:TimeSpan.FromSeconds(10);
+                if(budget<=TimeSpan.Zero){result.Add(new(codec,"Not tested","Short check budget exhausted; retry if needed."));continue;}
                 using var deadline=CancellationTokenSource.CreateLinkedTokenSource(ct);
-                deadline.CancelAfter(TimeSpan.FromSeconds(10));
+                deadline.CancelAfter(quick&&budget>TimeSpan.FromSeconds(2)?TimeSpan.FromSeconds(2):budget);
                 var output=Path.Combine(dir,codec+".mp4");
                 try
                 {
@@ -55,7 +59,7 @@ public static class EncoderDiagnostics
                     var decode=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-xerror","-nostdin","-i",output,"-map","0:v:0","-f","null","-"],deadline.Token);
                     result.Add(decode.ExitCode==0&&string.IsNullOrWhiteSpace(decode.Error)?new(codec,"Sample passed","12 synthetic frames encoded and decoded; not a production compatibility guarantee."):new(codec,"Failed",Short(decode.Error)));
                 }
-                catch(OperationCanceledException) when(!ct.IsCancellationRequested){result.Add(new(codec,"Timed out","10 second diagnostic limit."));}
+                catch(OperationCanceledException) when(!ct.IsCancellationRequested){result.Add(new(codec,"Timed out",quick?"Short check time budget reached; device support is unknown.":"10 second diagnostic limit."));}
                 catch(Exception ex) when(ex is not OperationCanceledException){result.Add(new(codec,"Failed",Short(ex.Message)));}
                 finally{if(File.Exists(output))File.Delete(output);}
             }

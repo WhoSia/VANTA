@@ -99,8 +99,8 @@ internal static class UiLanguage
         ("Ui091","Select a matching H.264 or HEVC backend. Device defaults, current height and bitrate.","현재 코덱과 일치하는 장치를 선택하세요. 장치 기본 설정, 현재 해상도와 비트레이트를 사용합니다."),
         ("Ui092","Compress with GPU and save…","GPU로 압축 및 저장…"),
         ("Ui093","Requires automatic threads and split off. Tests the selected device first; no CPU fallback. Full validation before saving.","스레드 자동, 분할 해제 필요. 선택한 장치부터 검사하며 CPU로 자동 전환하지 않습니다. 전체 검증 후 저장합니다."),
-        ("Ui094","Try GPU-resident pipeline…","GPU 연속 처리 시험…"),
-        ("Ui095","Experimental CUDA / QSV / D3D11 paths. AVC/HEVC 8-bit input; AMD original resolution only. No automatic fallback; CPU output verification.","실험용 CUDA / QSV / D3D11 경로. 8비트 AVC/HEVC 입력, AMD는 원본 해상도 유지. 자동 전환 없이 CPU 출력 검증."),
+        ("Ui094","Compress with full GPU processing…","GPU 연속 처리로 압축 및 저장…"),
+        ("Ui095","Experimental full-video encode, not a short test. CUDA / QSV / D3D11, AVC/HEVC 8-bit input; AMD original resolution only. No automatic fallback; CPU output verification.","실험용 전체 영상 압축이며 짧은 검사가 아닙니다. CUDA / QSV / D3D11, 8비트 AVC/HEVC 입력, AMD는 원본 해상도 유지. 자동 전환 없이 CPU 출력 검증."),
         ("Ui096","Compare CPU / selected GPU…","CPU / 선택 GPU 성능 비교…"),
         ("Ui097","Synthetic 3-second benchmark. Compares full verified time, bytes and SSIM. Does not read your video or save a video; may take several minutes.","3초 합성 영상 비교. 검증 포함 전체 시간·용량·SSIM을 측정합니다. 사용자 영상 접근 및 영상 저장 없음. 수 분 소요될 수 있습니다."),
         ("Ui098","Fast device preset · NVENC P1 / QSV veryfast","장치 속도 우선 · NVENC P1 / QSV veryfast"),
@@ -116,6 +116,9 @@ internal static class UiLanguage
         ("Ui108","Add videos, choose a common size, then start compression.","영상 추가 → 공통 압축 설정 선택 → 압축 시작"),
         ("Ui109","Resource settings (optional)","자원 설정 (선택)"),
         ("Ui110","Compress with tested GPU…","검사 통과 GPU로 압축…"),
+        ("Ui111","Restore balanced defaults","균형 기본값 복원"),
+        ("Ui112","Research / diagnostics (optional)","연구·진단 도구 (선택)"),
+        ("Ui113","For development measurements only. Choose a device in GPU settings first. Not required for compression.","개발 성능 측정 전용입니다. 먼저 GPU 설정에서 장치를 선택하세요. 일반 압축에는 필요하지 않습니다."),
         ("Ui071","One MP4 per ready video; original files are preserved. Individual settings override the shared preset.","준비된 영상마다 별도 MP4를 저장합니다. 원본은 유지되며 개별 설정이 공통 프리셋보다 우선합니다."),
     ];
     public static string Text(bool korean,string en,string ko)=>korean?ko:en;
