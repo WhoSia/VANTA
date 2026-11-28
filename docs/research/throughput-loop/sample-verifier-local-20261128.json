@@ -1,0 +1,102 @@
+{
+  "scope": "Actual local Linux FFmpeg 7.1.5 fixed-output verification proxy, 24 trials; no GPU/full C# or promotion",
+  "fixture": "1440x810 testsrc2 duration 2s, yuv420p, veryfast, 2 threads, fps passthrough, x265 pools=2:log-level=error, VFR select='not(mod(n,2))+not(mod(n,5))'",
+  "order": [
+    "baseline,candidate",
+    "candidate,baseline",
+    "baseline,candidate"
+  ],
+  "baseline": "ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=codec_name,height,nb_read_frames -of json; ffmpeg -v error -xerror -nostdin -i sample -map 0:v:0 -f null -",
+  "candidate": "same ffprobe without -count_frames; ffmpeg -v error -xerror -nostdin -progress pipe:1 -nostats -i sample -map 0:v:0 -an -fps_mode passthrough -f null -; require progress=end and frame count",
+  "evidence": [
+    {
+      "fixture": "avc30",
+      "codec": "h264",
+      "rate": 30,
+      "frames": 12,
+      "bytes": 150505,
+      "sha256": "d660ce18ec0ec3aa38f357005526131da8dbd7fba60e0976dca96a8bf0f1bf88",
+      "accepted": true,
+      "baseline": [
+        0.253270815,
+        0.17170633,
+        0.217779529
+      ],
+      "candidate": [
+        0.147265332,
+        0.142721497,
+        0.169874936
+      ],
+      "baselineMedian": 0.217779529,
+      "candidateMedian": 0.147265332,
+      "pairedMedianGain": 0.21996830106102394
+    },
+    {
+      "fixture": "hevc60",
+      "codec": "hevc",
+      "rate": "60000/1001",
+      "frames": 12,
+      "bytes": 91254,
+      "sha256": "281071f23e309c566e84646df1d3c758837a17992171fe3466030bb243227c27",
+      "accepted": true,
+      "baseline": [
+        0.190538919,
+        0.178516361,
+        0.174975596
+      ],
+      "candidate": [
+        0.139917447,
+        0.154431714,
+        0.148276781
+      ],
+      "baselineMedian": 0.178516361,
+      "candidateMedian": 0.148276781,
+      "pairedMedianGain": 0.15258593546953836
+    },
+    {
+      "fixture": "avc-vfr",
+      "codec": "h264",
+      "rate": 60,
+      "frames": 12,
+      "bytes": 134558,
+      "sha256": "9a1a54271a226681abb783b2903cca74a16c136de038c637eb68bb74f4d98fc2",
+      "accepted": true,
+      "baseline": [
+        0.163398454,
+        0.179739763,
+        0.208953086
+      ],
+      "candidate": [
+        0.211429983,
+        0.174331285,
+        0.155526694
+      ],
+      "baselineMedian": 0.179739763,
+      "candidateMedian": 0.174331285,
+      "pairedMedianGain": 0.03009060382481976
+    },
+    {
+      "fixture": "avc-short",
+      "codec": "h264",
+      "rate": 24,
+      "frames": 7,
+      "bytes": 105946,
+      "sha256": "62da6054c9030cc2e044f8f5b3c4434b8a0ac0171cdf976a60d325f432169879",
+      "accepted": false,
+      "baseline": [
+        0.160093615,
+        0.159416575,
+        0.158222245
+      ],
+      "candidate": [
+        0.148093741,
+        0.142496327,
+        0.140218391
+      ],
+      "baselineMedian": 0.159416575,
+      "candidateMedian": 0.142496327,
+      "pairedMedianGain": 0.10613857436091567
+    }
+  ],
+  "checks": "Expected codec, height, exact decoded count for all trials; SHA256 unchanged per trial; seven-frame negative control rejected by both 12-frame policies; timings exclude external hash check. No malformed/truncated progress or actual driver test."
+}

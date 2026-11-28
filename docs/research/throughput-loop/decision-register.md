@@ -107,3 +107,17 @@ Short-prefix median .448808s AVC, .539770s HEVC versus 1.239205s and 2.104029s f
 ## Nonblocking discovery / exact predecessor checkpoint
 
 edbc102 exact Windows 46122949379 passed all stages; artifact 15254264525 309458 bytes SHA256 dd7a292167ac3860ccbcc4964abc0caf9c67a42b1e34aada786443133d6b5731. Automatic first-load check now has separate cancellation/task ownership from foreground analysis or encoding. CPU and settings remain enabled, advisory results apply only to current toolchain while idle, no status overwrite. Cancel and join discovery before starting full encode, new source probe, manual diagnostic, benchmark or batch modal; closing requests cancellation and keeps window until cleanup. No overlapping background encoder with full job. Deterministic injected pending diagnostic plus real CPU encode smoke verifies availability and cancel/join; no device result inference. Discovery may still impose cleanup latency when starting a job. Candidate not yet executed. No release change.
+
+
+## Fixed-output short qualification verifier screen (local, 2026-11-28)
+
+Actual FFmpeg 7.1.5 Linux, 1440x810 generated samples, 4 fixtures × 3 reversed-order pairs, 24 validation-only executions. Baseline separately decodes via ffprobe count_frames and strict ffmpeg; candidate uses metadata-only ffprobe and final strict FFmpeg progress frame count, with fps_mode passthrough. All codec/height/frame counts and fixture SHA checks agree; both reject 7-frame negative against 12-frame requirement. Raw seconds rounded to ns, fixture digests and argument recipe in `sample-verifier-local-20261128.json`.
+
+| Fixture | Baseline median s | Candidate median s | Median paired reduction |
+|---|---:|---:|---:|
+| avc30 | 0.217780 | 0.147265 | 22.00% |
+| hevc60 | 0.178516 | 0.148277 | 15.26% |
+| avc-vfr | 0.179740 | 0.174331 | 3.01% |
+| avc-short | 0.159417 | 0.142496 | 10.61% |
+
+VFR first candidate is slower (0.211430 vs 0.163398 s). Absolute median differences all below 0.1s; no broad speed claim or automatic promotion. Investigate final progress parsing, malformed/truncated samples and driver-specific output before adopting. More valuable than sub-100ms startup savings: avoiding double full-media decoding, measuring combined validation under natural long clips and qualifying real devices. No full validation gate change. Distinguish this actual local experiment from CI result and device qualification.
