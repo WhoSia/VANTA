@@ -57,3 +57,20 @@ Exact `859829f32f4d00b2f9d58242313e1310b53972f2` Windows CI [46032382823](https:
 ## Next UX experiment: co-locate speed choices and device checks
 
 Move the existing GPU-check control into the speed section, with a persistent localized next-action guide for no source, no passed test, one/multiple matching devices, incompatible codec, split/manual threads and busy state. Retain explicit CPU action, hardware trial requalification, no speed ranking or automatic start/fallback. Test synthetic evidence states and keep minimum-window and real-media checks. No new dependency or default. This is a source candidate; actual WPF execution and user task success still require evidence.
+
+
+## Stage-overlap reanalysis — 2026-11-28 (existing measurements, not new encodes)
+
+Recomputed from stage-pipeline-a3ba38f.json (exact C# Windows 46028905424, 4 logical processors, two 180-frame synthetic AVC fixtures, same H.264 veryfast 810p/1791kbps and four requested threads, three paired repetitions). Every per-job output SHA matches within pair.
+
+| Rep | Serial s | Overlap s | Wall-time reduction |
+|---:|---:|---:|---:|
+| 0 | 5.3089699 | 3.7174876 | 29.9772% |
+| 1 | 4.2120480 | 4.0045758 | 4.9257% |
+| 2 | 4.3167716 | 3.7242559 | 13.7259% |
+
+Median reduction 13.7259%, below prospective 15% median screen. Three repetitions of the same two fixtures do not establish population-level evidence. Median per-job serial encoding share 55.1173%; validation share 39.9818%. Median stage durations serial -> overlapped: encoding 1.2723562 -> 1.39605045 s; validation .90553085 -> 1.08090805 s. This suggests resource contention during overlap, not a proven causal attribution. Batch makespan still improves in all three pairs; stage durations are not additive under overlap.
+
+Conditional planning calculation for a serial job: if fraction f of total time belongs to one stage and that stage alone is made k times faster with all other costs fixed, reduction = f*(1-1/k). Median shares imply 19.9909% total reduction if validation halves, 27.5586% if encoding halves. These are hypothetical sensitivity results for the measured short fixtures, not predicted speedups, not additive to overlap results.
+
+Decision: retain overlap as explicit experiment; no default promotion. Prioritize exact combined-validation paired full-job comparisons and Arc 140T qualification/throughput on representative media. Next discriminating factorial: serial vs overlap crossed with baseline vs combined validation; hold encoder settings, source and per-job output SHA constant, reverse order by block, track wall time, per-stage durations, CPU/RSS/I/O and verification wait. Repeat on long natural media, then separately on available real GPU; do not pool synthetic, derivative or device groups. Predeclare gate and retain all failures; compare relative gain and absolute time. If overlap loses due to CPU contention, test a lower-cost resource policy only with measured bottleneck evidence. No new execution in this reanalysis.
