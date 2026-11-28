@@ -34,6 +34,7 @@ public partial class MainWindow : Window
     private void StartJobProgress(bool split,string stage="Preparing")
     {
         RefreshGuidedGpu();
+        if(ResetPlanButton is not null)ResetPlanButton.IsEnabled=false;
         if(HardwareBenchButton is not null)HardwareBenchButton.IsEnabled=false;
         if(HardwareFastBox is not null)HardwareFastBox.IsEnabled=false;
         jobClock.Restart();eta=split?null:new EncodingEta(media?.Seconds);jobProgress=new(stage,null);validationStarted=null;previousTail=null;
@@ -231,24 +232,25 @@ public partial class MainWindow : Window
         Editor.IsEnabled=Plans.IsEnabled=RecommendationBox.IsEnabled=false;CancelButton.IsEnabled=true;
         StartJobProgress(true,"Diagnostics");
         SpeedFirstButton.IsEnabled=FastHevcButton.IsEnabled=HardwareTrialButton.IsEnabled=ResidentTrialButton.IsEnabled=false;
-        qualifiedDevices=[];lastGpuToolchain=null;sessionGpuEvidence=[];RefreshGuidedGpu();
+        string? preferredDevice=HardwareBox.SelectedItem as string;
+        qualifiedDevices=[];lastGpuToolchain=null;sessionGpuEvidence=[];GpuDiagnosticDetail.Text="";RefreshGuidedGpu();
         SetStatus("Testing listed hardware encoders on synthetic frames…","시험 영상으로 하드웨어 인코더를 검사 중입니다…");
         try
         {
             var resolved=tools??await Toolchain.DiscoverAsync(cts.Token);
             string? family=activePlan?.Codec=="libx265"?"hevc_":activePlan?.Codec=="libx264"?"h264_":null;
-            var ordered=EncoderDiagnostics.HardwareCandidates.OrderByDescending(c=>family is not null&&c.StartsWith(family,StringComparison.Ordinal)).ToArray();
+            var ordered=EncoderDiagnostics.HardwareCandidates.OrderByDescending(c=>!automatic&&c==preferredDevice).ThenByDescending(c=>family is not null&&c.StartsWith(family,StringComparison.Ordinal)).ToArray();
             var results=await EncoderDiagnostics.CheckAsync(resolved,ordered,cts.Token,quick:true);
             cts.Token.ThrowIfCancellationRequested();
             lastGpuToolchain=GpuToolchainKey(resolved);sessionGpuEvidence=results.ToArray();SetDeviceEvidence(results);
             var passed=results.Where(r=>r.State=="Sample passed").ToArray();
-            string detail=string.Join(Environment.NewLine,results.Select(r=>UiLanguage.DeviceName(r.Encoder)+": "+r.State+" — "+r.Detail));
+            GpuDiagnosticDetail.Text=string.Join(Environment.NewLine,results.Select(r=>UiLanguage.DeviceName(r.Encoder)+": "+r.State+" — "+r.Detail));
             var matching=passed.Where(r=>activePlan is Plan p&&p.Codec==(r.Encoder.StartsWith("hevc_",StringComparison.Ordinal)?"libx265":"libx264")).ToArray();
             if(matching.Length==1)HardwareBox.SelectedItem=matching[0].Encoder;
             if(!automatic)HardwareOptions.IsExpanded=matching.Length>1;
             string available=string.Join(", ",passed.Select(r=>UiLanguage.DeviceName(r.Encoder)));
-            SetStatus(passed.Length==0?"No GPU passed within the short check budget. CPU is ready; retry the check if needed.\n"+detail:"Available in short test: "+available+". Use the tested GPU shortcut if available, or choose in GPU settings. No compression started.\n"+detail,
-                passed.Length==0?"짧은 검사 시간 안에 통과한 GPU가 없습니다. CPU로 압축하거나 검사를 다시 실행하세요.\n"+detail:"짧은 검사 성공: "+available+". 하단 GPU 압축 버튼이 있으면 사용하거나 GPU 설정에서 장치를 선택하세요. 압축은 시작하지 않았습니다.\n"+detail);
+            SetStatus(passed.Length==0?"No GPU passed the short check. Use CPU or retry.":"GPU check complete: "+available+". No compression started.",
+                passed.Length==0?"짧은 검사에서 통과한 GPU가 없습니다. CPU를 사용하거나 다시 확인하세요.":"GPU 검사 완료: "+available+". 압축은 시작하지 않았습니다.");
         }
         catch(OperationCanceledException){SetStatus("Diagnostics canceled or timed out.","진단이 취소되었거나 제한 시간을 초과했습니다.");}
         catch(Exception ex){SetStatus(ex.Message);}
@@ -366,7 +368,7 @@ public partial class MainWindow : Window
         GuidedGpuButton.IsEnabled=backend is not null;
         GuidedGpuButton.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
         GuidedGpuHint.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
-        GuidedGpuHint.Text=backend is null?"":T(UiLanguage.DeviceName(backend)+" passed a short GPU test. At save, VANTA checks full-GPU compatibility briefly; otherwise uses the same GPU with CPU decoding. Actual speed and size unknown.",UiLanguage.DeviceName(backend)+" 짧은 GPU 검사 통과. 저장 시 GPU 연속 처리 가능 여부를 짧게 확인하고, 불가능하면 같은 GPU와 CPU 디코딩을 사용합니다. 실제 속도와 용량은 미측정입니다.");
+        GuidedGpuHint.Text=backend is null?"":T(UiLanguage.DeviceName(backend)+" passed. Full-GPU compatibility checked at save; otherwise same GPU with CPU decoding. Speed and size unknown.",UiLanguage.DeviceName(backend)+" 검사 통과. 저장 시 GPU 연속 처리를 확인하고, 불가능하면 같은 GPU와 CPU 디코딩을 사용합니다. 속도·용량 미측정.");
         if(GpuChoiceGuide is not null)
         {
             var eligible=qualifiedDevices.Where(HardwareAllowed).ToArray();

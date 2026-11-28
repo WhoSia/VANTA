@@ -84,3 +84,21 @@ Owner reports orange codec-change UI, lengthy device experiments, confusion from
 ## Automatic resident path candidate (owner request)
 
 Preflight only after explicit GPU save: keep exact backend requalification, then inspect input and try up to 12 frames of the actual input through hardware decoder/filter/encoder with a five-second deadline, temporary file and independent codec/height/frame-count/strict-decode check. If unsupported, refused or timed out, choose same GPU encoder with CPU decoding before actual full encode. Explicit user cancellation and source-change errors propagate; never retry a failed full job or fall back to CPU-only. Report actual path and separate qualification time. Short sample is compatibility evidence, not measured speed or whole-file proof. Explicit full-video resident trial moved into research area. CPU sample verifier positive/negative controls included; actual device behavior unverified. Scope: single-video guided and explicit basic GPU buttons only; batch auto path deferred. No version or validation gate change.
+
+
+## Local 12-frame compatibility probe cost, CPU proxy (2026-11-28)
+
+FFmpeg 7.1.5 Linux; 1440x810 30fps synthetic 4s AVC source generated using testsrc2, libx264 ultrafast 4 threads yuv420p. Source SHA-256 77f1ccfe566a26edfc26b0d5036320bab39fe71fc34378448b6b578fd53358c6. Same ABR 1791kbps, veryfast, 4 threads, yuv420p, fps passthrough, x265 pools=4:log-level=error. Compare 12-frame bounded prefix and 120-frame full fixture, two reversed-order repetitions per codec. Timing sums actual encode, independent ffprobe count/height/codec query and strict output decode; no full VANTA clock/audio/publication/SSIM tests. All eight outputs passed count and height controls and strict decode. CPU only, no hardware performance or time guarantee.
+
+| Codec | Rep | Frames | Encode s | Probe s | Strict decode s | Total s | Bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| H264 | 0 | 12 | .293958 | .110421 | .092989 | .497368 | 84603 |
+| H264 | 0 | 120 | .788503 | .299968 | .183048 | 1.271520 | 888301 |
+| H264 | 1 | 120 | .747044 | .273041 | .186805 | 1.206890 | 888301 |
+| H264 | 1 | 12 | .152196 | .094456 | .153597 | .400248 | 84603 |
+| HEVC | 0 | 12 | .422696 | .103849 | .088198 | .614744 | 49919 |
+| HEVC | 0 | 120 | 1.296706 | .411938 | .254930 | 1.963574 | 890361 |
+| HEVC | 1 | 120 | 1.622529 | .410180 | .211775 | 2.244483 | 890361 |
+| HEVC | 1 | 12 | .294757 | .090935 | .079104 | .464796 | 49919 |
+
+Short-prefix median .448808s AVC, .539770s HEVC versus 1.239205s and 2.104029s full short fixture. Startup and flush dominate the sample; a 10x frame-count reduction is not a 10x time reduction. This supports bounded probe cost exploration only, not proof of GPU latency. Actual resident candidate uses 5s cancellation deadline; cleanup can extend it. Keep diagnostics summary short in ordinary UI, raw output in research area. Prefer explicitly selected backend on manual recheck. Next test actual hardware and long clips; compare cost of qualification vs avoided transfers. No automatic speed ranking from short test.
