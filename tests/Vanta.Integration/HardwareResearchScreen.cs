@@ -55,6 +55,15 @@ internal static class HardwareResearchScreen
         catch(ArgumentException){invalidRejected=true;}
         Check(invalidRejected&&!File.Exists(bad),"Invalid backend must not publish");
         string before=Hash(source);
+        string shortSample=Path.Combine(root,"resident-probe-control.mp4");
+        var sample=await ProcessRunner.RunAsync(tools.Ffmpeg,["-v","error","-xerror","-nostdin","-n","-i",source,"-map","0:V:0","-an","-frames:v","12","-c:v","libx264","-preset","veryfast","-pix_fmt","yuv420p",shortSample],ct);
+        Check(sample.ExitCode==0&&await ResidentQualification.VerifySampleAsync(tools,shortSample,plan,ct),"12-frame sample verifier accepts CPU positive control");
+        Check(!await ResidentQualification.VerifySampleAsync(tools,shortSample,plan with{Height=plan.Height+2},ct),"Sample verifier rejects wrong dimensions");
+        Check(!await ResidentQualification.VerifySampleAsync(tools,shortSample,plan with{Codec="libx265"},ct),"Sample verifier rejects wrong codec");
+        File.Delete(shortSample);
+        bool conflict=false;
+        try{await Encoder.EncodeHardwareTrialAsync(tools,source,bad,plan,"h264_nvenc",ct,gpuResident:true,autoResident:true);}catch(ArgumentException){conflict=true;}
+        Check(conflict&&!File.Exists(bad),"Auto and explicit resident modes are mutually exclusive");
         string trialBad=Path.Combine(root,"trial-invalid.mp4");
         bool invalidTrial=false;
         try{await Encoder.EncodeHardwareTrialAsync(tools,source,trialBad,plan,"unknown",ct);}

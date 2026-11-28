@@ -16,6 +16,8 @@ public sealed record EncodeReport(TimeSpan Preparation,TimeSpan Encoding,TimeSpa
     public int? QsvAsyncDepth {get;init;}
     // Explicit device qualification is included in Preparation and Total.
     public TimeSpan HardwareQualification {get;init;}
+    // Null for explicit paths; compatibility check is not a speed measurement.
+    public string? ResidentQualification {get;init;}
     // When set, per-track payload and timestamp checks are folded into TimelineCheck.
     public int? InterleavedAudioPeakPending {get;init;}
     // True only after a resource-limit refusal and complete per-track retry.

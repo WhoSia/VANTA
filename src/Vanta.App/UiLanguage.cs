@@ -98,7 +98,7 @@ internal static class UiLanguage
         ("Ui090","GPU / device encoding trial","GPU / 하드웨어 시험 압축"),
         ("Ui091","Select a matching H.264 or HEVC backend. Device defaults, current height and bitrate.","현재 코덱과 일치하는 장치를 선택하세요. 장치 기본 설정, 현재 해상도와 비트레이트를 사용합니다."),
         ("Ui092","Compress with GPU and save…","GPU로 압축 및 저장…"),
-        ("Ui093","Requires automatic threads and split off. Tests the selected device first; no CPU fallback. Full validation before saving.","스레드 자동, 분할 해제 필요. 선택한 장치부터 검사하며 CPU로 자동 전환하지 않습니다. 전체 검증 후 저장합니다."),
+        ("Ui093","Requires automatic threads and split off. Rechecks GPU, then briefly tests full GPU processing; otherwise uses the same GPU with CPU decoding. No CPU-only fallback. Full validation before saving.","스레드 자동, 분할 해제 필요. 장치를 다시 검사하고 GPU 연속 처리를 짧게 확인합니다. 불가능하면 같은 GPU와 CPU 디코딩을 사용하며 CPU 전용으로 전환하지 않습니다. 전체 검증 후 저장합니다."),
         ("Ui094","Compress with full GPU processing…","GPU 연속 처리로 압축 및 저장…"),
         ("Ui095","Experimental full-video encode, not a short test. CUDA / QSV / D3D11, AVC/HEVC 8-bit input; AMD original resolution only. No automatic fallback; CPU output verification.","실험용 전체 영상 압축이며 짧은 검사가 아닙니다. CUDA / QSV / D3D11, 8비트 AVC/HEVC 입력, AMD는 원본 해상도 유지. 자동 전환 없이 CPU 출력 검증."),
         ("Ui096","Compare CPU / selected GPU…","CPU / 선택 GPU 성능 비교…"),
@@ -155,7 +155,7 @@ internal static class UiLanguage
     {
         if(!korean)return stage;
         if(stage.StartsWith("Encoding ",StringComparison.Ordinal))return "압축 중 "+stage["Encoding ".Length..];
-        return stage switch {"Diagnostics"=>"하드웨어 진단 중","Qualifying hardware"=>"하드웨어 초기화 검사 중","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Waiting for encoder"=>"인코더 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
+        return stage switch {"Diagnostics"=>"하드웨어 진단 중","Qualifying hardware"=>"하드웨어 초기화 검사 중","Checking GPU path"=>"GPU 연속 처리 확인 중","GPU resident selected"=>"GPU 연속 처리 선택","GPU encoder selected"=>"GPU 인코딩 선택 (CPU 디코딩)","Preparing"=>"준비 중","Waiting for validation"=>"검증 대기","Waiting for encoder"=>"인코더 대기","Analyzing"=>"분석 중","Ready"=>"준비","Queued"=>"대기","Encoding"=>"압축 중","Validating"=>"검증 중","Complete"=>"완료","Failed"=>"실패","Canceled"=>"취소됨","Skipped"=>"건너뜀","Experimental split"=>"실험적 분할 압축",_=>stage};
     }
     internal static string Verification(bool korean,Vanta.Core.VerificationPhase? phase)=>phase switch
     {

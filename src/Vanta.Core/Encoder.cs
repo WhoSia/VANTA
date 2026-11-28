@@ -8,11 +8,12 @@ public static class Encoder
         =>EncodeResearchAsync(ffmpeg,ffprobe,input,output,plan,ct,progress,experimentalSplit,encoderThreads,expectedSource);
     // Explicit single-job device trial. No automatic backend selection or CPU fallback.
     // A successful tiny diagnostic is necessary, not sufficient; full validation still applies.
-    public static Task<EncodeReport> EncodeHardwareTrialAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,SourceStamp? expectedSource=null,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null)
-        =>EncodeHardwareTrialCoreAsync(tools,input,output,plan,backend,ct,progress,expectedSource,gpuResident,fastHardware,qsvAsyncDepth,null,null);
-    internal static async Task<EncodeReport> EncodeHardwareTrialCoreAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct,IProgress<EncodeProgress>? progress,SourceStamp? expectedSource,bool gpuResident,bool fastHardware,int? qsvAsyncDepth,SemaphoreSlim? encoderGate,SemaphoreSlim? validationGate)
+    public static Task<EncodeReport> EncodeHardwareTrialAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,SourceStamp? expectedSource=null,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null,bool autoResident=false)
+        =>EncodeHardwareTrialCoreAsync(tools,input,output,plan,backend,ct,progress,expectedSource,gpuResident,fastHardware,qsvAsyncDepth,null,null,autoResident);
+    internal static async Task<EncodeReport> EncodeHardwareTrialCoreAsync(Toolchain tools,string input,string output,Plan plan,string backend,CancellationToken ct,IProgress<EncodeProgress>? progress,SourceStamp? expectedSource,bool gpuResident,bool fastHardware,int? qsvAsyncDepth,SemaphoreSlim? encoderGate,SemaphoreSlim? validationGate,bool autoResident=false)
     {
         ct.ThrowIfCancellationRequested();
+        if(autoResident&&(gpuResident||qsvAsyncDepth.HasValue))throw new ArgumentException("Automatic resident selection cannot be combined with an explicit resident path or async depth.");
         // Software presets do not map to hardware presets. Use backend defaults.
         var applied=plan with {Preset="medium"};
         HardwareEncoderPolicy.Validate(backend,applied,false,null,null);
@@ -35,10 +36,21 @@ public static class Encoder
         if(diagnostic.State!="Sample passed")
             throw new NotSupportedException(backend+" hardware qualification failed: "+diagnostic.State+" — "+diagnostic.Detail);
         stamp.RequireUnchanged(input);
+        string? residentCheck=null;
+        if(autoResident)
+        {
+            progress?.Report(new("Checking GPU path",null));
+            residentCheck=await ResidentQualification.CheckAsync(tools,input,applied,backend,stamp,fastHardware,ct);
+            ct.ThrowIfCancellationRequested();stamp.RequireUnchanged(input);
+            gpuResident=residentCheck=="Sample passed";
+            // Only choose between two GPU paths before full encoding begins.
+            // A failed full encode never retries or switches devices.
+            progress?.Report(new(gpuResident?"GPU resident selected":"GPU encoder selected",null));
+        }
         var qualification=clock.Elapsed;
         var report=await EncodeResearchAsync(tools.Ffmpeg,tools.Ffprobe,input,output,applied,ct,progress,
             expectedSource:stamp,researchHardwareEncoder:backend,gpuResident:gpuResident,fastHardware:fastHardware,qsvAsyncDepth:qsvAsyncDepth,validationGate:validationGate,encodeLease:encoderLease);
-        return report with {HardwareQualification=qualification,Preparation=report.Preparation+qualification,Total=report.Total+qualification};
+        return report with {HardwareQualification=qualification,ResidentQualification=residentCheck,Preparation=report.Preparation+qualification,Total=report.Total+qualification};
     }
     // Internal test entrypoint; public callers retain the existing two-part and serial-hash defaults.
     internal static async Task<EncodeReport> EncodeResearchAsync(string ffmpeg,string ffprobe,string input,string output,Plan plan,CancellationToken ct=default,IProgress<EncodeProgress>? progress=null,bool experimentalSplit=false,int? encoderThreads=null,SourceStamp? expectedSource=null,int splitSegments=2,int splitWorkers=2,bool parallelAudioHash=false,bool keyframeAligned=false,int? researchCrf=null,bool longestFirst=false,bool fusedAudioValidation=false,string? researchHardwareEncoder=null,bool parallelDecodeValidation=false,bool singleDecodeValidation=false,bool interleavedAudioValidation=false,SemaphoreSlim? validationGate=null,SourceClockSnapshot? sourceClockSnapshot=null,bool tenBitSdr=false,bool extendedAudioResearch=false,MotionSearchMode motionSearch=MotionSearchMode.Default,bool interleavedFallback=false,bool gpuResident=false,bool fastHardware=false,int? qsvAsyncDepth=null,ValidationLease? encodeLease=null)

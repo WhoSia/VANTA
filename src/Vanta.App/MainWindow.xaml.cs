@@ -52,7 +52,7 @@ public partial class MainWindow : Window
                 ?T("Remaining ≈ ","예상 잔여 ≈ ")+DurationText(tail)+T(" · previous run reference"," · 이전 실행 참고")
                 :T("Verification · remaining time unknown","검증 중 · 남은 시간 미정")):
             p.Stage=="Complete"?T("Verified","검증 완료"):
-            p.Stage is "Analyzing" or "Diagnostics" or "Qualifying hardware"?T("Remaining time unknown","남은 시간 미정"):
+            p.Stage is "Analyzing" or "Diagnostics" or "Qualifying hardware" or "Checking GPU path" or "GPU resident selected" or "GPU encoder selected"?T("Remaining time unknown","남은 시간 미정"):
             eta is null?T("Remaining time unknown for split encoding","분할 압축 · 남은 시간 미정"):
             eta?.Remaining(jobClock.Elapsed) is TimeSpan remaining
                 ?(CompletionReference.TotalRemaining(remaining,previousTail) is TimeSpan total
@@ -366,7 +366,7 @@ public partial class MainWindow : Window
         GuidedGpuButton.IsEnabled=backend is not null;
         GuidedGpuButton.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
         GuidedGpuHint.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
-        GuidedGpuHint.Text=backend is null?"":T(UiLanguage.DeviceName(backend)+" passed a short GPU test. Device defaults; actual speed and size unknown.",UiLanguage.DeviceName(backend)+" 짧은 GPU 검사 통과. 장치 기본 설정을 사용하며 실제 속도와 용량은 미측정입니다.");
+        GuidedGpuHint.Text=backend is null?"":T(UiLanguage.DeviceName(backend)+" passed a short GPU test. At save, VANTA checks full-GPU compatibility briefly; otherwise uses the same GPU with CPU decoding. Actual speed and size unknown.",UiLanguage.DeviceName(backend)+" 짧은 GPU 검사 통과. 저장 시 GPU 연속 처리 가능 여부를 짧게 확인하고, 불가능하면 같은 GPU와 CPU 디코딩을 사용합니다. 실제 속도와 용량은 미측정입니다.");
         if(GpuChoiceGuide is not null)
         {
             var eligible=qualifiedDevices.Where(HardwareAllowed).ToArray();
@@ -389,7 +389,7 @@ public partial class MainWindow : Window
     }
     private async void OnGuidedGpu(object sender,RoutedEventArgs e)
     {
-        if(GuidedBackend() is string backend)await SaveAndEncodeAsync(backend,false,false);
+        if(GuidedBackend() is string backend)await SaveAndEncodeAsync(backend,false,false,autoResident:true);
     }
     private void RefreshHardwareButton()
     {
@@ -463,7 +463,7 @@ public partial class MainWindow : Window
     }
     private async void OnHardwareTrial(object sender,RoutedEventArgs e)
     {
-        if(HardwareBox.SelectedItem is string backend&&HardwareAllowed(backend))await SaveAndEncodeAsync(backend);
+        if(HardwareBox.SelectedItem is string backend&&HardwareAllowed(backend))await SaveAndEncodeAsync(backend,autoResident:true);
     }
     private void OnSpeedFirst(object sender,RoutedEventArgs e)=>ApplyFastPath("libx264");
     private void OnFastHevc(object sender,RoutedEventArgs e)=>ApplyFastPath("libx265");
@@ -560,7 +560,7 @@ public partial class MainWindow : Window
         return true;
     }
     private async void OnEncode(object sender,RoutedEventArgs e)=>await SaveAndEncodeAsync(null);
-    private async Task SaveAndEncodeAsync(string? backend,bool resident=false,bool? fastOverride=null)
+    private async Task SaveAndEncodeAsync(string? backend,bool resident=false,bool? fastOverride=null,bool autoResident=false)
     {
         if(!ValidateEncodingRequest()||backend is not null&&!HardwareAllowed(backend)||resident&&!ResidentAllowed(backend))return;
         var input=sourcePath!;
@@ -573,9 +573,9 @@ public partial class MainWindow : Window
             {SetStatus("Choose a new filename; VANTA does not overwrite existing files.","새 파일 이름을 선택해 주세요. 기존 파일은 덮어쓰지 않습니다.");return;}
         }
         catch(Exception ex){SetStatus(ex.Message);return;}
-        await EncodeToAsync(dlg.FileName,backend,resident,fastOverride);
+        await EncodeToAsync(dlg.FileName,backend,resident,fastOverride,autoResident);
     }
-    internal async Task EncodeToAsync(string output,string? hardware=null,bool resident=false,bool? fastOverride=null)
+    internal async Task EncodeToAsync(string output,string? hardware=null,bool resident=false,bool? fastOverride=null,bool autoResident=false)
     {
         if(!ValidateEncodingRequest()||hardware is not null&&!HardwareAllowed(hardware)||resident&&!ResidentAllowed(hardware))return;
         var p=activePlan!;var input=sourcePath!;var resolved=tools!;var stamp=sourceStamp!;
@@ -603,7 +603,7 @@ public partial class MainWindow : Window
             });
             var report=hardware is null
                 ?await Encoder.EncodeAsync(resolved.Ffmpeg,resolved.Ffprobe,input,output,p,cts.Token,progress,experimentalSplit:split,encoderThreads:threads,expectedSource:stamp)
-                :await Encoder.EncodeHardwareTrialAsync(resolved,input,output,p,hardware,cts.Token,progress,stamp,resident,fastHardware);
+                :await Encoder.EncodeHardwareTrialAsync(resolved,input,output,p,hardware,cts.Token,progress,stamp,resident,fastHardware,autoResident:autoResident);
             completedOutput=System.IO.Path.GetFullPath(output);completedReport=report;
             if(timingKey is not null){if(timings.Count>=16&&!timings.ContainsKey(timingKey))timings.Remove(timings.Keys.First());timings[timingKey]=report;
                 if(!split&&media is MediaInfo measured)timingHistory.Record(new(timingKey.Path,measured,timingKey.Plan,timingKey.Threads,timingKey.Ffmpeg+"|"+timingKey.Ffprobe,report.Total));}
