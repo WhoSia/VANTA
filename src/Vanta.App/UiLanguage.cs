@@ -91,7 +91,7 @@ internal static class UiLanguage
         ("Ui083","These options keep your selected resolution and bitrate. H.264 is widely compatible; HEVC can compress more efficiently.","선택한 해상도와 비트레이트는 유지합니다. H.264는 호환성이 좋고 HEVC는 압축 효율이 높을 수 있습니다."),
         ("Ui084","Keep HEVC · veryfast","HEVC · 매우 빠르게"),
         ("Ui085","Explicit HEVC veryfast choice. Same bitrate and height; quality and actual size may differ. No encoding started.","HEVC 매우 빠르게 직접 선택. 해상도와 비트레이트 유지, 실제 화질·용량은 달라질 수 있음. 압축 시작 안 함."),
-        ("Ui086","Faster settings may change picture quality or file size. For GPU acceleration, check your GPU above.","빠른 설정은 화질이나 실제 용량에 영향을 줄 수 있습니다. GPU 가속은 위의 내 GPU 확인을 이용하세요."),
+        ("Ui086","Faster CPU settings may change picture quality or file size. A GPU can be faster, but needs a device check.","빠른 CPU 설정은 화질이나 실제 용량에 영향을 줄 수 있습니다. GPU는 더 빠를 수 있지만 장치 확인이 필요합니다."),
         ("Ui087","Fast · H.264","빠른 일괄 · H.264"),
         ("Ui088","Fast · HEVC","빠른 일괄 · HEVC"),
         ("Ui089","Change shared codec and preset, recompute budget tiers. Individual overrides retained. No encoding started.","공통 코덱과 프리셋 변경, 용량 예산 재계산. 개별 설정 유지. 압축 시작 안 함."),

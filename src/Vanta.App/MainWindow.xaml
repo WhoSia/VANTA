@@ -20,7 +20,7 @@
 <TextBlock Text="{DynamicResource Ui002}" Foreground="#BECBDD" Margin="0,2,0,0"/>
 </StackPanel></Border><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24,16,24,24">
 <Border Background="White" BorderBrush="#D0D9E4" BorderThickness="1" CornerRadius="4" Padding="16"><StackPanel>
-<WrapPanel><Button x:Name="OpenButton" Content="{DynamicResource Ui003}" Click="OnOpen"/><Button x:Name="BatchButton" Content="{DynamicResource Ui004}" Click="OnBatch"/><Button x:Name="DiagnosticsButton" Content="{DynamicResource Ui005}" Click="OnDiagnostics"/></WrapPanel>
+<WrapPanel><Button x:Name="OpenButton" Content="{DynamicResource Ui003}" Click="OnOpen"/><Button x:Name="BatchButton" Content="{DynamicResource Ui004}" Click="OnBatch"/></WrapPanel>
 <TextBlock x:Name="Source" Text="{DynamicResource Ui106}" FontSize="15" FontWeight="SemiBold" Foreground="#15263C" TextWrapping="Wrap" Margin="0,12,0,0"/>
 </StackPanel></Border>
 <TextBlock Text="{DynamicResource Ui006}" FontSize="19" FontWeight="SemiBold" Foreground="#15263C" Margin="0,16,0,6"/>
@@ -43,6 +43,7 @@
 <TextBlock Text="{DynamicResource Ui083}" Foreground="#526071" TextWrapping="Wrap" Margin="0,4,0,10"/>
 <WrapPanel><Button x:Name="SpeedFirstButton" Content="{DynamicResource Ui075}" IsEnabled="False" Click="OnSpeedFirst" FontWeight="SemiBold" Background="#F4C578" Foreground="#192D47" BorderBrush="#F4C578" Margin="0,0,8,6" ToolTip="{DynamicResource Ui076}"/><Button x:Name="FastHevcButton" Content="{DynamicResource Ui084}" IsEnabled="False" Click="OnFastHevc" Background="#F0F4F8" Foreground="#192D47" Margin="0,0,0,6" ToolTip="{DynamicResource Ui085}"/></WrapPanel>
 <TextBlock Text="{DynamicResource Ui086}" Foreground="#526071" FontSize="12" TextWrapping="Wrap"/>
+<Separator Margin="0,10,0,8"/><WrapPanel><Button x:Name="DiagnosticsButton" Content="{DynamicResource Ui005}" Click="OnDiagnostics" Margin="0,0,8,6"/></WrapPanel><TextBlock x:Name="GpuChoiceGuide" Foreground="#344D69" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
 </StackPanel></Border>
 
 <Expander x:Name="HardwareOptions" Header="{DynamicResource Ui105}" IsExpanded="False" Margin="0,10,0,0"><Border Background="White" BorderBrush="#D0D9E4" BorderThickness="1" Padding="12"><StackPanel>

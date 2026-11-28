@@ -345,6 +345,18 @@ public partial class MainWindow : Window
         GuidedGpuButton.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
         GuidedGpuHint.Visibility=backend is null?Visibility.Collapsed:Visibility.Visible;
         GuidedGpuHint.Text=backend is null?"":T(UiLanguage.DeviceName(backend)+" passed a short GPU test. Device defaults; actual speed and size unknown.",UiLanguage.DeviceName(backend)+" 짧은 GPU 검사 통과. 장치 기본 설정을 사용하며 실제 속도와 용량은 미측정입니다.");
+        if(GpuChoiceGuide is not null)
+        {
+            var eligible=qualifiedDevices.Where(HardwareAllowed).ToArray();
+            GpuChoiceGuide.Text=current is not null||encoding?T("Finish or cancel the current task before choosing a device.","현재 작업을 마치거나 취소한 뒤 장치를 선택하세요.")
+                :media is null?T("Open a video to choose its size and speed. Checking your GPU is optional.","영상을 열고 용량과 속도를 선택하세요. GPU 확인은 선택 사항입니다.")
+                :qualifiedDevices.Length==0?T("No passed GPU test is recorded for this video. Check your GPU, or use CPU compression now.","이 영상에 대한 GPU 검사 통과 기록이 없습니다. GPU를 확인하거나 CPU로 바로 압축하세요.")
+                :activePlan is not Plan p?T("Choose or apply a valid size plan before using a tested GPU.","검사를 통과한 GPU를 쓰려면 유효한 압축 설정을 먼저 선택하거나 적용하세요.")
+                :eligible.Length==1?T("Use the tested GPU button at the bottom to try "+UiLanguage.DeviceName(eligible[0])+". Actual speed and size are unknown.","하단의 검사 통과 GPU 버튼으로 "+UiLanguage.DeviceName(eligible[0])+"를 사용할 수 있습니다. 실제 속도와 용량은 미측정입니다.")
+                :eligible.Length>1?T("More than one matching GPU passed. Open GPU settings to choose: "+string.Join(", ",eligible.Select(UiLanguage.DeviceName))+". No speed ranking yet.","현재 설정에 맞는 GPU가 여러 개 통과했습니다. GPU 설정에서 선택하세요: "+string.Join(", ",eligible.Select(UiLanguage.DeviceName))+". 속도 순위는 아직 모릅니다.")
+                :SplitBox.IsChecked==true||(ThreadsBox.SelectedItem as ThreadChoice)?.Count is not null?T("A GPU passed, but split encoding or manual threads prevent its use. Turn off split and set threads to Auto in detailed settings, or use CPU.","GPU 검사에 통과한 장치가 있지만 분할 또는 수동 스레드 설정 때문에 사용할 수 없습니다. 세부 설정에서 분할을 끄고 스레드를 자동으로 설정하거나 CPU를 사용하세요.")
+                :T("The passed GPU tests do not match the current codec ("+(p.Codec=="libx265"?"HEVC":"H.264")+"). Choose a matching codec in detailed settings, or use CPU.","검사 통과 장치가 현재 코덱("+(p.Codec=="libx265"?"HEVC":"H.264")+")과 일치하지 않습니다. 세부 설정에서 일치하는 코덱을 선택하거나 CPU를 사용하세요.");
+        }
         // CPU remains an explicit alternative, and is the primary action when no
         // unique tested device can be recommended.
         if(EncodeButton is not null)

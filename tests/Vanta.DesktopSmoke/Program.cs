@@ -17,6 +17,7 @@ internal static class DesktopSmoke
         var main=new MainWindow(false);
         Check(!Get<Button>(main,"EncodeButton").IsEnabled,"No encode before source");
         Check(Get<Button>(main,"GuidedGpuButton").Visibility==Visibility.Collapsed&&main.GuidedBackend() is null,"No untested shortcut");
+        Check(Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("Open a video"),"GPU guidance starts with source selection");
         Check(!Get<Expander>(main,"AdvancedOptions").IsExpanded&&!Get<Expander>(main,"HardwareOptions").IsExpanded,"Advanced paths are initially collapsed");
         Check(Get<TextBlock>(main,"HardwareHelp").Text.Contains("Open a video"),"Disabled GPU explains next action");
         Check(!Get<Button>(main,"HardwareTrialButton").IsEnabled&&Get<ComboBox>(main,"HardwareBox").SelectedIndex==-1,"No automatic hardware path");
@@ -160,12 +161,16 @@ internal static class DesktopSmoke
             var guided=Get<Button>(main,"GuidedGpuButton");
             main.SetDeviceEvidence([new("hevc_qsv","Sample passed","synthetic test control"),new("hevc_nvenc","Failed","test control")]);
             Check(guided.IsEnabled&&guided.Visibility==Visibility.Visible&&main.GuidedBackend()=="hevc_qsv","Unique qualified matching GPU exposed independently of manual selection");
+            Check(Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("Intel Quick Sync")&&Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("unknown"),"Unique tested device is identified without claiming speed");
             CheckLayout(main,"Status","GuidedGpuButton",560,480);
             main.SetDeviceEvidence([new("hevc_qsv","Sample passed","control"),new("hevc_nvenc","Sample passed","control")]);
             Check(main.GuidedBackend() is null&&!guided.IsEnabled,"No arbitrary choice among multiple qualified devices");
+            Check(Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("More than one matching GPU")&&Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("NVIDIA"),"Multiple-device guidance explains explicit choice");
             main.SetDeviceEvidence([new("hevc_qsv","Sample passed","control")]);
-            split.IsChecked=true;Check(!guided.IsEnabled,"Guided GPU cannot bypass split");split.IsChecked=false;Check(guided.IsEnabled,"Valid settings restore shortcut");
-            main.SetDeviceEvidence([]);Check(!guided.IsEnabled,"Cleared evidence disables shortcut");
+            split.IsChecked=true;Check(!guided.IsEnabled&&Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("split encoding"),"Guided GPU cannot bypass split and explains correction");split.IsChecked=false;Check(guided.IsEnabled,"Valid settings restore shortcut");
+            main.SetDeviceEvidence([new("h264_qsv","Sample passed","control")]);
+            Check(!guided.IsEnabled&&Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("do not match the current codec"),"Passed device with wrong codec explains correction");
+            main.SetDeviceEvidence([]);Check(!guided.IsEnabled&&Get<TextBlock>(main,"GpuChoiceGuide").Text.Contains("No passed GPU test"),"Cleared evidence disables shortcut and gives next step");
             split.IsChecked=true;Check(!hardwareTrial.IsEnabled,"Split excludes hardware trial");split.IsChecked=false;
             threads.SelectedIndex=1;Check(!hardwareTrial.IsEnabled,"Manual thread budget excludes device trial");threads.SelectedIndex=0;
             target.Text="invalid";Check(!hardwareTrial.IsEnabled&&!residentTrial.IsEnabled&&Get<Expander>(main,"AdvancedOptions").IsExpanded,"Pending target excludes hardware trial and reveals correction");

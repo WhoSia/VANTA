@@ -52,3 +52,8 @@ No analytics or real participants measured yet. Compare 1533d91 against guided c
 ## 2026-11-28 verified single-extraction checkpoint
 
 Exact `859829f32f4d00b2f9d58242313e1310b53972f2` Windows CI [46032382823](https://github.com/WhoSia/VANTA/actions/runs/46032382823) completed successfully. Build, Core smoke, WPF control and real-media tests, FFmpeg integration, ten-bit/HDR refusal, local package installation, portable preparation and artifact upload all passed. [Portable download](https://github.com/WhoSia/VANTA/actions/runs/46032382823/artifacts/15214708794), 306599 bytes; Actions-reported SHA-256 `946b138b9b961538d94ef96163ab35ee5bdc0a2f708f5eeaa1417e3064832402`; expiry 2026-12-04T16:23:45Z. Extract once into a new folder. This supersedes previous download guidance; independent download-byte inspection and owner-PC acceptance were not performed. Physical GPU throughput remains unverified. No version/default/release change.
+
+
+## Next UX experiment: co-locate speed choices and device checks
+
+Move the existing GPU-check control into the speed section, with a persistent localized next-action guide for no source, no passed test, one/multiple matching devices, incompatible codec, split/manual threads and busy state. Retain explicit CPU action, hardware trial requalification, no speed ranking or automatic start/fallback. Test synthetic evidence states and keep minimum-window and real-media checks. No new dependency or default. This is a source candidate; actual WPF execution and user task success still require evidence.
